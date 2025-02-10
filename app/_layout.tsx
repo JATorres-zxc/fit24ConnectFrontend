@@ -1,7 +1,7 @@
 import React from "react";
 import { Tabs } from "expo-router";
-import Ionicons from '@expo/vector-icons/Ionicons'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function RootLayout() {
@@ -20,10 +20,22 @@ export default function RootLayout() {
       }}
     >
       <Tabs.Screen 
-        name="index" 
+        name="(auth)/login" 
         options={{ 
-          headerShown: false,
-          href: null,
+          title: 'Login',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'log-in' : 'log-in-outline'} color={color} size={24} />
+          ),
+        }} 
+      />
+
+      <Tabs.Screen 
+        name="(auth)/register" 
+        options={{ 
+          title: 'Register',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'person-add' : 'person-add-outline'} color={color} size={24} />
+          ),
         }} 
       />
 
