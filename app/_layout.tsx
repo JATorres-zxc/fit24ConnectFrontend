@@ -19,8 +19,9 @@ export default function RootLayout() {
         },
       }}
     >
+      
       <Tabs.Screen 
-        name="(auth)/login" 
+        name="login" 
         options={{ 
           title: 'Login',
           tabBarIcon: ({ color, focused }) => (
@@ -30,61 +31,12 @@ export default function RootLayout() {
       />
 
       <Tabs.Screen 
-        name="(auth)/register" 
+        name="register" 
         options={{ 
           title: 'Register',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'person-add' : 'person-add-outline'} color={color} size={24} />
           ),
-        }} 
-      />
-
-      <Tabs.Screen 
-        name="mealplan" 
-        options={{ 
-          title: 'Meal Plan',
-          tabBarIcon: ({ color, focused }) => (
-            <MaterialIcons name={'set-meal'} color={color} size={24} />
-          ),
-        }} 
-      />
-
-      <Tabs.Screen 
-        name="workout" 
-        options={{ 
-          title: 'Workout',
-          tabBarIcon: ({ color, focused }) => (
-            <MaterialCommunityIcons name={focused ? 'arm-flex' : 'arm-flex-outline'} color={color} size={24} />
-          ),
-        }} 
-      />
-
-      <Tabs.Screen 
-        name="scan" 
-        options={{ 
-          title: 'Scan',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'scan-sharp' : 'scan-outline'} color={color} size={24} />
-          ),
-        }} 
-      />
-
-      <Tabs.Screen 
-        name="history" 
-        options={{ 
-          title: 'History',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'clipboard' : 'clipboard-outline'} color={color} size={24} />
-          ),
-        }} 
-      />
-
-      <Tabs.Screen 
-        name="profile" 
-        options={{ 
-          headerShown: false,
-          href: null,
         }} 
       />
 

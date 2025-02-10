@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Tabs } from "expo-router";
 import React, { useState } from "react";
 import {
     View,
@@ -21,7 +21,11 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
         // Add your registration logic here, e.g., API call to Django backend
         console.log("Registering with:", { email, password, referralCode });
         // Navigate to another screen after successful registration
-        navigation.navigate("index.tsx");
+        return (
+            <Tabs>
+                <Tabs.Screen name="Login" options={{ headerShown: false }} />
+            </Tabs>
+        );
     };
 
     return (
@@ -66,7 +70,13 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     Already have an account?{" "}
                     <Text
                         style={styles.linkText}
-                        onPress={() => navigation.navigate("login")}
+                        onPress={() => {
+                            return (
+                                <Tabs>
+                                    <Tabs.Screen name="Login" options={{ headerShown: false }} />
+                                </Tabs>
+                            );
+                        }}
                     >
                         Log In
                     </Text>

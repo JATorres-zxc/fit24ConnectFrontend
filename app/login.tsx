@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Tabs } from "expo-router";
 import React, { useState } from "react";
 import {
     View,
@@ -52,7 +52,11 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     onPress={() => {
                         // Placeholder for API login logic
                         // Assuming login is successful, navigate to the homepage
-                        navigation.navigate("mealplan")
+                        return (
+                            <Tabs>
+                              <Tabs.Screen name="(home)" options={{ headerShown: false }} />
+                            </Tabs>
+                          );
                     }}
                 >
                     <Text style={styles.buttonText}>
@@ -67,7 +71,13 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     Don&apos;t have an account?{" "}
                     <Text
                         style={styles.linkText}
-                        onPress={() => navigation.navigate("register")}
+                        onPress={() => {
+                            return (
+                                <Tabs>
+                                    <Tabs.Screen name="Register" options={{ headerShown: false }} />
+                                </Tabs>
+                            );
+                        }}
                     >
                         Sign Up
                     </Text>
