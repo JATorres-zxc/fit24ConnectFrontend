@@ -31,10 +31,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
             <Text style={styles.headerText}>REGISTER</Text>
 
             <View style={styles.logoContainer}>
-                <Image
-                    source={{ uri: "assets/images/icon.png" }}
-                    style={styles.logo}
-                />
+                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
             </View>
 
             <View style={styles.formContainer}>
@@ -92,30 +89,17 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 24,
         fontWeight: "bold",
+        marginTop: 60,
     },
     logoContainer: {
-        marginTop: 20,
-        backgroundColor: "#fff",
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        justifyContent: "center",
+        flex: 1,
+        backgroundColor: "#000", // Black background
         alignItems: "center",
-        ...Platform.select({
-            ios: {
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.2,
-                shadowRadius: 4,
-            },
-            android: {
-                elevation: 5,
-            },
-        }),
+        paddingTop: 15
     },
     logo: {
-        width: 80,
-        height: 80,
+        width: 180,
+        height: 180,
         resizeMode: "contain",
     },
     formContainer: {

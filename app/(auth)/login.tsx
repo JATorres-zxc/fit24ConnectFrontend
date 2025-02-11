@@ -25,10 +25,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
             <View style={styles.logoContainer}>
                 {/* Replace with your Fit24 logo */}
-                <Image
-                    source={{ uri: "assets/images/icon.png" }}
-                    style={styles.logo}
-                />
+                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
             </View>
 
             {/* White Card at the Bottom with Curved Top Corners */}
@@ -104,29 +101,14 @@ const styles = StyleSheet.create({
         marginTop: 60,
     },
     logoContainer: {
-        marginTop: 20,
-        backgroundColor: "#fff",
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        justifyContent: "center",
+        flex: 1,
+        backgroundColor: "#000", // Black background
         alignItems: "center",
-        // You can add a shadow for iOS / elevation for Android if desired
-        ...Platform.select({
-            ios: {
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.2,
-                shadowRadius: 4,
-            },
-            android: {
-                elevation: 5,
-            },
-        }),
+        paddingTop: 15
     },
     logo: {
-        width: 80,
-        height: 80,
+        width: 180,
+        height: 180,
         resizeMode: "contain",
     },
     formContainer: {
