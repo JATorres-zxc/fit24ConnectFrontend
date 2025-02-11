@@ -52,8 +52,16 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     style={styles.button}
                     onPress={() => {
                         // Placeholder for API login logic
-                        // Assuming login is successful, navigate to the homepage
+                        // TODO: Identify user type (customer, trainer, admin)
+                        
                         router.push('/(tabs)/home');
+
+                        // IF member:
+                        // router.push(isMember ? '/(tabs)/home' : isTrainer ? '/(trainer)/home' : '/(admin)/home');
+                        // IF trainer:
+                        // router.push('/(trainer)/home');
+                        // IF admin:
+                        // router.push('/(admin)/home');
                     }}
                 >
                     <Text style={styles.buttonText}>

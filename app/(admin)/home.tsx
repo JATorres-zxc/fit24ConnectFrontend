@@ -11,6 +11,7 @@ export default function Home() {
       <View style={styles.footerContainer}>
         <Button label="Create Announcement" theme="primary" />
       </View>
+
     </View>
   );
 }
