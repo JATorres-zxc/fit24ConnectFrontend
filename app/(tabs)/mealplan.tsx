@@ -1,9 +1,19 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image} from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import Toast from 'react-native-toast-message';
 
 const MealPlanScreen = () => {
   const [isRequestingMeal, setIsRequestingMeal] = useState(false); // Toggle state
+
+  const handleSubmit = () => {
+      setIsRequestingMeal(false);
+      Toast.show({
+          type: 'success',
+          text1: 'Request Submitted',
+          text2: 'Your meal plan request has been submitted successfully.'
+      });
+  };
 
   return (
     <View style={styles.container}>
@@ -27,8 +37,8 @@ const MealPlanScreen = () => {
           <TextInput placeholder="Enter Your Weight Goal" style={styles.input} />
           <TextInput placeholder="Enter Your Allergen/s" style={styles.input} />
 
-          <TouchableOpacity style={styles.button} onPress={() => setIsRequestingMeal(false)}>
-            <Text style={styles.buttonText}>Submit Request</Text>
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+              <Text style={styles.buttonText}>Submit Request</Text>
           </TouchableOpacity>
         </View>
       ) : (
