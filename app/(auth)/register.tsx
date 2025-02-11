@@ -17,13 +17,13 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [referralCode, setReferralCode] = useState("");
+    const [confirmPassword, setConfirmationPassword] = useState("");
 
     const handleRegister = () => {
         // Add your registration logic here, e.g., API call to Django backend
-        console.log("Registering with:", { email, password, referralCode });
+        console.log("Registering with:", { email, password, confirmPassword });
         // Navigate to another screen after successful registration
-        navigation.navigate("index.tsx");
+        router.push('/(auth)/login');
     };
 
     return (
@@ -52,10 +52,11 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     onChangeText={setPassword}
                 />
                 <TextInput
-                    placeholder="Referral Code"
+                    placeholder="Confirm Password"
                     style={styles.input}
-                    value={referralCode}
-                    onChangeText={setReferralCode}
+                    secureTextEntry
+                    value={confirmPassword}
+                    onChangeText={setConfirmationPassword}
                 />
 
                 <TouchableOpacity style={styles.button} onPress={handleRegister}>

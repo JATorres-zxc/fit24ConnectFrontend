@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#000", // Black background
         alignItems: "center",
+        paddingTop: 60,
         // We won't use justifyContent: center here,
         // because we want space at the top for the title & logo.
     },
