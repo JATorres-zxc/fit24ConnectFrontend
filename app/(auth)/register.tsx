@@ -9,7 +9,7 @@ import {
     StyleSheet,
     Platform,
 } from "react-native";
-
+import Toast from 'react-native-toast-message';
 import { NavigationProp } from '@react-navigation/native';
 
 const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
@@ -22,8 +22,24 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
     const handleRegister = () => {
         // Add your registration logic here, e.g., API call to Django backend
         console.log("Registering with:", { email, password, confirmPassword });
-        // Navigate to another screen after successful registration
-        router.push('/(auth)/login');
+
+        // Placeholder for registration success condition
+        const isSuccess = true; // Replace with actual registration success condition
+
+        if (isSuccess) {
+            Toast.show({
+                type: 'success',
+                text1: 'Registration Successful',
+                text2: 'You have successfully registered.'
+            });
+            router.push('/(auth)/login');
+        } else {
+            Toast.show({
+                type: 'error',
+                text1: 'Registration Failed',
+                text2: 'There was an error with your registration.'
+            });
+        }
     };
 
     return (
@@ -72,6 +88,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     </Text>
                 </Text>
             </View>
+            <Toast />
         </View>
     );
 };

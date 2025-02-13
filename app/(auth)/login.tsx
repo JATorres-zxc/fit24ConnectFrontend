@@ -9,7 +9,7 @@ import {
     StyleSheet,
     Platform,
 } from "react-native";
-
+import Toast from 'react-native-toast-message';
 import { NavigationProp } from '@react-navigation/native';
 
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
@@ -17,6 +17,30 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
+
+    const handleLogin = () => {
+        // Placeholder for API login logic
+        // TODO: Identify user type (customer, trainer, admin)
+        const isSuccess = true; // Replace with actual login success condition
+
+        if (isSuccess) {
+            Toast.show({
+                type: 'success',
+                text1: 'Login Successful',
+                text2: 'You have successfully logged in.'
+            });
+            setTimeout(() => {
+                router.push('/(tabs)/home');
+            }, 2000); // 2-second delay
+        } else {
+            Toast.show({
+                type: 'error',
+                text1: 'Login Failed',
+                text2: 'Invalid username or password.'
+            });
+            setError('Invalid username or password.');
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -47,19 +71,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => {
-                        // Placeholder for API login logic
-                        // TODO: Identify user type (customer, trainer, admin)
-                        
-                        router.push('/(tabs)/home');
-
-                        // IF member:
-                        // router.push(isMember ? '/(tabs)/home' : isTrainer ? '/(trainer)/home' : '/(admin)/home');
-                        // IF trainer:
-                        // router.push('/(trainer)/home');
-                        // IF admin:
-                        // router.push('/(admin)/home');
-                    }}
+                    onPress={handleLogin}
                 >
                     <Text style={styles.buttonText}>
                         Log In (Connect to Django Backend)
@@ -79,6 +91,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     </Text>
                 </Text>
             </View>
+            <Toast />
         </View>
     );
 };
