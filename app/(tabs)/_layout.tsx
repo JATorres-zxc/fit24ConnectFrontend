@@ -12,6 +12,7 @@ export default function RootLayout() {
         headerStyle: {
           backgroundColor: '#f9f9f9',
         },
+        headerShown: false,
         headerShadowVisible: false,
         headerTintColor: '#000000',
         tabBarStyle: {
@@ -22,7 +23,6 @@ export default function RootLayout() {
       <Tabs.Screen 
         name="home" 
         options={{ 
-          headerShown: false,
           href: null,
         }} 
       />
@@ -51,7 +51,6 @@ export default function RootLayout() {
         name="scan" 
         options={{ 
           title: 'Scan',
-          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'scan-sharp' : 'scan-outline'} color={color} size={24} />
           ),
@@ -71,7 +70,13 @@ export default function RootLayout() {
       <Tabs.Screen 
         name="profile" 
         options={{ 
-          headerShown: false,
+          href: null,
+        }} 
+      />
+
+      <Tabs.Screen 
+        name="notifications" 
+        options={{ 
           href: null,
         }} 
       />

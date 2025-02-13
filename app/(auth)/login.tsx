@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { NavigationProp } from '@react-navigation/native';
+import { Fonts } from '@/constants/Fonts';
 
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const router = useRouter();
@@ -57,7 +58,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     }}
                 >
                     <Text style={styles.buttonText}>
-                        Log In (Connect to Django Backend)
+                        Log In
                     </Text>
                 </TouchableOpacity>
                 {error && <Text style={styles.errorText}>{error}</Text>}
@@ -128,9 +129,9 @@ const styles = StyleSheet.create({
         right: 0,
 
         // White background with curved top corners
-        backgroundColor: "#fff",
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
+        backgroundColor: "#f9f9f9",
+        borderTopLeftRadius: 35,
+        borderTopRightRadius: 35,
 
         // Provide enough vertical space for form fields
         minHeight: "55%", // Adjust to taste
@@ -149,20 +150,21 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     button: {
-        width: "90%",
-        backgroundColor: "#FFD700", // Gold
+        width: "40%",
+        backgroundColor: "#d7be69", // Gold
         padding: 12,
         borderRadius: 8,
         alignItems: "center",
         marginTop: 10,
     },
     buttonText: {
-        fontWeight: "bold",
+        fontFamily: Fonts.medium,
+        color: "#fffefe"
     },
     orText: {
         textAlign: "center",
         marginVertical: 10,
-        color: "#666",
+        fontFamily: Fonts.semibold,
     },
     errorText: {
         color: "red",
@@ -182,10 +184,11 @@ const styles = StyleSheet.create({
     bottomText: {
         textAlign: "center",
         marginTop: 10,
-        color: "#666",
+        color: "#8f8f8f",
+        fontFamily: Fonts.italic,
     },
     linkText: {
-        color: "#1E90FF",
-        fontWeight: "600",
+        color: "#8f8f8f",
+        fontFamily: Fonts.semiboldItalic,
     },
 });

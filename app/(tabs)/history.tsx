@@ -1,9 +1,11 @@
 import { Text, View, StyleSheet } from 'react-native';
 
+import Header from '@/components/HistoryHeader';
+
 export default function HistoryScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>History screen</Text>
+      <Header />
     </View>
   );
 }
@@ -11,8 +13,7 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
-    justifyContent: 'center',
+    backgroundColor: '#f9f9f9',
     alignItems: 'center',
   },
   text: {

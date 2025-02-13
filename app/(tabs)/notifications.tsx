@@ -1,8 +1,8 @@
 import { Text, View, StyleSheet } from 'react-native';
 
-import Header from '@/components/ProfileHeader';
+import Header from '@/components/NotificationsHeader';
 
-export default function ProfileScreen() {
+export default function NotificationScreen() {
   return (
     <View style={styles.container}>
       <Header />

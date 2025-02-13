@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { NavigationProp } from '@react-navigation/native';
+import { Fonts } from '@/constants/Fonts';
 
 const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const router = useRouter();
@@ -58,9 +59,9 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     onChangeText={setReferralCode}
                 />
 
-                <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                <TouchableOpacity style={styles.button} onPress={() => router.push('/home')}>
                     <Text style={styles.buttonText}>
-                        Register (Connect to Django Backend)
+                        Register
                     </Text>
                 </TouchableOpacity>
 
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
     headerText: {
         color: "#fff",
         fontSize: 24,
-        fontWeight: "bold",
+        fontFamily: Fonts.semibold,
     },
     logoContainer: {
         marginTop: 20,
@@ -122,9 +123,9 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: "#fff",
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
+        backgroundColor: "#f9f9f9",
+        borderTopLeftRadius: 35,
+        borderTopRightRadius: 35,
         minHeight: "55%",
         padding: 20,
         alignItems: "center",
@@ -139,23 +140,25 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     button: {
-        width: "90%",
-        backgroundColor: "#FFD700",
+        width: "40%",
+        backgroundColor: "#d7be69",
         padding: 12,
         borderRadius: 8,
         alignItems: "center",
         marginTop: 10,
     },
     buttonText: {
-        fontWeight: "bold",
+        fontFamily: Fonts.medium,
+        color: "#fffefe"
     },
     bottomText: {
         textAlign: "center",
         marginTop: 10,
-        color: "#666",
+        color: "#8f8f8f",
+        fontFamily: Fonts.italic,
     },
     linkText: {
-        color: "#1E90FF",
-        fontWeight: "600",
+        color: "#8f8f8f",
+        fontFamily: Fonts.semiboldItalic,
     },
 });
