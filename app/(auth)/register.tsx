@@ -18,10 +18,60 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmationPassword] = useState("");
+    const [error, setError] = useState<string | null>(null);
+
+    const sanitizeInput = (input: string) => {
+        return input.replace(/[^a-zA-Z0-9@.]/g, '');
+    };
 
     const handleRegister = () => {
-        // Add your registration logic here, e.g., API call to Django backend
-        console.log("Registering with:", { email, password, confirmPassword });
+        // Sanitize inputs
+        const sanitizedEmail = sanitizeInput(email);
+        const sanitizedPassword = sanitizeInput(password);
+        const sanitizedConfirmPassword = sanitizeInput(confirmPassword);
+
+        // Validate input fields
+        if (!sanitizedEmail) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Email is required'
+            });
+            return;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(sanitizedEmail)) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Invalid email format'
+            });
+            return;
+        }
+        if (!sanitizedPassword) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Password is required'
+            });
+            return;
+        }
+        if (sanitizedPassword.length < 6) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Password must be at least 6 characters'
+            });
+            return;
+        }
+        if (sanitizedPassword !== sanitizedConfirmPassword) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Passwords do not match'
+            });
+            return;
+        }
 
         // Placeholder for registration success condition
         const isSuccess = true; // Replace with actual registration success condition
@@ -32,7 +82,9 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 text1: 'Registration Successful',
                 text2: 'You have successfully registered.'
             });
-            router.push('/(auth)/login');
+            setTimeout(() => {
+                router.push('/(auth)/login');
+            }, 2000); // 2-second delay
         } else {
             Toast.show({
                 type: 'error',
@@ -77,6 +129,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                         Register (Connect to Django Backend)
                     </Text>
                 </TouchableOpacity>
+                {error && <Text style={styles.errorText}>{error}</Text>}
 
                 <Text style={styles.bottomText}>
                     Already have an account?{" "}
@@ -150,6 +203,10 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         fontWeight: "bold",
+    },
+    errorText: {
+        color: "red",
+        marginTop: 10,
     },
     bottomText: {
         textAlign: "center",

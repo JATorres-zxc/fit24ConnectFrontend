@@ -7,16 +7,30 @@ const MealPlanScreen = () => {
   const [isRequestingMeal, setIsRequestingMeal] = useState(false); // Toggle state
 
   const handleSubmit = () => {
-      setIsRequestingMeal(false);
+    // Placeholder for meal plan request success condition
+    const isSuccess = true; // Replace with actual success condition
+
+    if (isSuccess) {
       Toast.show({
-          type: 'success',
-          text1: 'Request Submitted',
-          text2: 'Your meal plan request has been submitted successfully.'
+        type: 'success',
+        text1: 'Request Submitted',
+        text2: 'Your meal plan request has been submitted successfully.'
       });
+      setTimeout(() => {
+        setIsRequestingMeal(false);
+      }, 2000); // 2-second delay
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: 'Request Failed',
+        text2: 'There was an error with your meal plan request.'
+      });
+    }
   };
 
   return (
     <View style={styles.container}>
+      <Toast />
 
       {isRequestingMeal ? (
         // Request Meal Plan View

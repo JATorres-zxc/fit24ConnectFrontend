@@ -18,9 +18,35 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
 
+    const sanitizeInput = (input: string) => {
+        return input.replace(/[^a-zA-Z0-9@.]/g, '');
+    };
+
     const handleLogin = () => {
+        // Sanitize inputs
+        const sanitizedEmail = sanitizeInput(email);
+        const sanitizedPassword = sanitizeInput(password);
+
+        // Validate input fields
+        if (!sanitizedEmail) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Email is required'
+            });
+            return;
+        }
+        if (!sanitizedPassword) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Password is required'
+            });
+            return;
+        }
+
         // Placeholder for API login logic
-        // TODO: Identify user type (customer, trainer, admin)
+        // TODO: Replace with actual backend call
         const isSuccess = true; // Replace with actual login success condition
 
         if (isSuccess) {
