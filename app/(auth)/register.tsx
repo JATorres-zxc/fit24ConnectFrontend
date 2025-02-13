@@ -96,9 +96,9 @@ const styles = StyleSheet.create({
     logoContainer: {
         marginTop: 20,
         backgroundColor: "#fff",
-        width: 120,
-        height: 120,
-        borderRadius: 60,
+        width: 200,
+        height: 200,
+        borderRadius: 100,
         justifyContent: "center",
         alignItems: "center",
         ...Platform.select({
@@ -126,29 +126,30 @@ const styles = StyleSheet.create({
         backgroundColor: "#f9f9f9",
         borderTopLeftRadius: 35,
         borderTopRightRadius: 35,
-        minHeight: "55%",
-        padding: 20,
+        height: 450,
+        paddingTop: 50,
         alignItems: "center",
     },
     input: {
-        width: "90%",
+        width: "80%", 
         borderColor: "#ccc",
         borderWidth: 1,
         borderRadius: 8,
         paddingHorizontal: 12,
         paddingVertical: 10,
-        marginBottom: 12,
+        marginVertical: 5,
+        fontFamily: Fonts.regular,
     },
     button: {
-        width: "40%",
+        width: "30%",
         backgroundColor: "#d7be69",
         padding: 12,
         borderRadius: 8,
         alignItems: "center",
-        marginTop: 10,
+        marginTop: 50,
     },
     buttonText: {
-        fontFamily: Fonts.medium,
+        fontFamily: Fonts.semibold,
         color: "#fffefe"
     },
     bottomText: {
@@ -156,6 +157,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         color: "#8f8f8f",
         fontFamily: Fonts.italic,
+        fontSize: 12,
     },
     linkText: {
         color: "#8f8f8f",
