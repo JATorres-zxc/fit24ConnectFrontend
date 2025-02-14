@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image} from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import Toast from 'react-native-toast-message';
+import Header from '@/components/MealPlanHeader';
 
 const MealPlanScreen = () => {
   const [isRequestingMeal, setIsRequestingMeal] = useState(false); // Toggle state
@@ -9,7 +10,6 @@ const MealPlanScreen = () => {
   const handleSubmit = () => {
     // Placeholder for meal plan request success condition
     const isSuccess = true; // Replace with actual success condition
-
     if (isSuccess) {
       Toast.show({
         type: 'success',
@@ -30,7 +30,7 @@ const MealPlanScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Toast />
+      <Header />
 
       {isRequestingMeal ? (
         // Request Meal Plan View
@@ -58,7 +58,6 @@ const MealPlanScreen = () => {
       ) : (
         // Nutritional Meal Plan View
         <View style={styles.planContainer}>
-          <Text style={styles.title}>🍽 Nutritional Meal Plan</Text>
           <Text style={styles.subtitle}>You have no existing meal plan.</Text>
 
           <TouchableOpacity style={styles.button} onPress={() => setIsRequestingMeal(true)}>
@@ -66,6 +65,7 @@ const MealPlanScreen = () => {
           </TouchableOpacity>
         </View>
       )}
+    <Toast />
     </View>
   );
 };

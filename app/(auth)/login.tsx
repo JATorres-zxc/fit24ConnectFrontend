@@ -137,22 +137,21 @@ const styles = StyleSheet.create({
     headerText: {
         color: "#fff",
         fontSize: 24,
-        fontWeight: "bold",
+        fontFamily: Fonts.semibold,
         marginTop: 60,
     },
     logoContainer: {
         marginTop: 20,
-        backgroundColor: "#fff",
-        width: 200,
-        height: 200,
+        backgroundColor: "transparent",
+        width: 150,
+        height: 150,
         borderRadius: 100,
         justifyContent: "center",
         alignItems: "center",
-        paddingTop: 15
     },
     logo: {
-        width: 180,
-        height: 180,
+        width: 200,
+        height: 200,
         resizeMode: "contain",
     },
     formContainer: {
