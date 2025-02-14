@@ -71,14 +71,6 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
     return (
         <View style={styles.container}>
-            {/* Top Section (Black Background) */}
-            <Text style={styles.headerText}>LOGIN</Text>
-
-            <View style={styles.logoContainer}>
-                {/* Replace with your Fit24 logo */}
-                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
-            </View>
-
             {/* White Card at the Bottom with Curved Top Corners */}
             <View style={styles.formContainer}>
                 <TextInput
@@ -118,6 +110,15 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     </Text>
                 </Text>
             </View>
+
+            {/* Top Section (Black Background) */}
+            <Text style={styles.headerText}>LOGIN</Text>
+
+            <View style={styles.logoContainer}>
+                {/* Replace with your Fit24 logo */}
+                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
+            </View>
+
             <Toast />
         </View>
     );

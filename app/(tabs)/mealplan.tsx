@@ -6,24 +6,65 @@ import Header from '@/components/MealPlanHeader';
 
 const MealPlanScreen = () => {
   const [isRequestingMeal, setIsRequestingMeal] = useState(false); // Toggle state
+  const [mealPlan, setMealPlan] = useState(null); // State to store meal plan
+  const [trainer, setTrainer] = useState(""); // State to store selected trainer
+  const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
+  const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
+  const [allergens, setAllergens] = useState(""); // State to store allergens
 
-  const handleSubmit = () => {
-    // Placeholder for meal plan request success condition
-    const isSuccess = true; // Replace with actual success condition
-    if (isSuccess) {
+  const handleSubmit = async () => {
+    if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
       Toast.show({
-        type: 'success',
-        text1: 'Request Submitted',
-        text2: 'Your meal plan request has been submitted successfully.'
+        type: 'error',
+        text1: 'Missing Fields',
+        text2: 'Please fill out all fields before submitting.',
+        position: 'top'
       });
-      setTimeout(() => {
-        setIsRequestingMeal(false);
-      }, 2000); // 2-second delay
-    } else {
+      return;
+    }
+    
+    try {
+      // Replace with actual API call
+      const response = await fetch('https://api.example.com/submitMealPlan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          trainer,
+          fitnessGoal,
+          weightGoal,
+          allergens,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        Toast.show({
+          type: 'success',
+          text1: 'Request Submitted',
+          text2: 'Your meal plan request has been submitted successfully.',
+          position: 'top' // Add this line to show toast at the top
+        });
+        setTimeout(() => {
+          setIsRequestingMeal(false);
+          setMealPlan(result); // Update meal plan with the new data
+        }, 2000); // 2-second delay
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Request Failed',
+          text2: 'There was an error with your meal plan request.',
+          position: 'top' // Add this line to show toast at the top
+        });
+      }
+    } catch (error) {
       Toast.show({
         type: 'error',
         text1: 'Request Failed',
-        text2: 'There was an error with your meal plan request.'
+        text2: 'There was an error with your meal plan request.',
+        position: 'top' // Add this line to show toast at the top
       });
     }
   };
@@ -41,15 +82,42 @@ const MealPlanScreen = () => {
 
           <Text style={styles.title}>Request Meal Plan</Text>
 
-          <Picker style={styles.input}>
-            <Picker.Item label="Trainer" value="trainer" />
+          <Picker
+            selectedValue={trainer}
+            onValueChange={(itemValue) => setTrainer(itemValue)}
+            style={styles.input}
+          >
+            <Picker.Item label="Select Trainer" value="" />
             <Picker.Item label="Trainer A" value="trainerA" />
             <Picker.Item label="Trainer B" value="trainerB" />
+            <Picker.Item label="Trainer C" value="trainerC" />
           </Picker>
 
-          <TextInput placeholder="Enter Your Fitness Goal" style={styles.input} />
-          <TextInput placeholder="Enter Your Weight Goal" style={styles.input} />
-          <TextInput placeholder="Enter Your Allergen/s" style={styles.input} />
+          <Picker
+            selectedValue={fitnessGoal}
+            onValueChange={(itemValue) => setFitnessGoal(itemValue)}
+            style={styles.input}
+            >
+            <Picker.Item label="Select Fitness Goal" value="" />
+            <Picker.Item label="Lose Weight" value="loseWeight" />
+            <Picker.Item label="Build Muscle" value="buildMuscle" />
+            <Picker.Item label="Maintain Weight" value="maintainWeight" />
+          </Picker>
+
+          <TextInput
+            placeholder="Enter Your Weight Goal (e.g., 70)"
+            style={styles.input}
+            value={weightGoal}
+            onChangeText={(text) => setWeightGoal(text.replace(/[^0-9]/g, ''))}
+            keyboardType="numeric"
+          />
+
+          <TextInput
+            placeholder="Enter Your Allergen/s (comma separated)"
+            style={styles.input}
+            value={allergens}
+            onChangeText={setAllergens}
+          />
 
           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
               <Text style={styles.buttonText}>Submit Request</Text>
@@ -58,11 +126,22 @@ const MealPlanScreen = () => {
       ) : (
         // Nutritional Meal Plan View
         <View style={styles.planContainer}>
-          <Text style={styles.subtitle}>You have no existing meal plan.</Text>
-
-          <TouchableOpacity style={styles.button} onPress={() => setIsRequestingMeal(true)}>
-            <Text style={styles.buttonText}>Request Meal Plan</Text>
-          </TouchableOpacity>
+          {mealPlan ? (
+            <>
+              <Text style={styles.subtitle}>Your Meal Plan:</Text>
+              <Text>{"Member Details HERE."}</Text>
+              <TouchableOpacity style={styles.button} onPress={() => setIsRequestingMeal(true)}>
+                <Text style={styles.buttonText}>Request New Meal Plan</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <Text style={styles.subtitle}>You have no existing meal plan.</Text>
+              <TouchableOpacity style={styles.button} onPress={() => setIsRequestingMeal(true)}>
+                <Text style={styles.buttonText}>Request Meal Plan</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       )}
     <Toast />
