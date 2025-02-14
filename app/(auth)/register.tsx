@@ -9,7 +9,7 @@ import {
     StyleSheet,
     Platform,
 } from "react-native";
-
+import Toast from 'react-native-toast-message';
 import { NavigationProp } from '@react-navigation/native';
 
 const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
@@ -17,13 +17,81 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [referralCode, setReferralCode] = useState("");
+    const [confirmPassword, setConfirmationPassword] = useState("");
+    const [error, setError] = useState<string | null>(null);
+
+    const sanitizeInput = (input: string) => {
+        return input.replace(/[^a-zA-Z0-9@.]/g, '');
+    };
 
     const handleRegister = () => {
-        // Add your registration logic here, e.g., API call to Django backend
-        console.log("Registering with:", { email, password, referralCode });
-        // Navigate to another screen after successful registration
-        navigation.navigate("index.tsx");
+        // Sanitize inputs
+        const sanitizedEmail = sanitizeInput(email);
+        const sanitizedPassword = sanitizeInput(password);
+        const sanitizedConfirmPassword = sanitizeInput(confirmPassword);
+
+        // Validate input fields
+        if (!sanitizedEmail) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Email is required'
+            });
+            return;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(sanitizedEmail)) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Invalid email format'
+            });
+            return;
+        }
+        if (!sanitizedPassword) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Password is required'
+            });
+            return;
+        }
+        if (sanitizedPassword.length < 6) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Password must be at least 6 characters'
+            });
+            return;
+        }
+        if (sanitizedPassword !== sanitizedConfirmPassword) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Passwords do not match'
+            });
+            return;
+        }
+
+        // Placeholder for registration success condition
+        const isSuccess = true; // Replace with actual registration success condition
+
+        if (isSuccess) {
+            Toast.show({
+                type: 'success',
+                text1: 'Registration Successful',
+                text2: 'You have successfully registered.'
+            });
+            setTimeout(() => {
+                router.push('/(auth)/login');
+            }, 2000); // 2-second delay
+        } else {
+            Toast.show({
+                type: 'error',
+                text1: 'Registration Failed',
+                text2: 'There was an error with your registration.'
+            });
+        }
     };
 
     return (
@@ -31,10 +99,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
             <Text style={styles.headerText}>REGISTER</Text>
 
             <View style={styles.logoContainer}>
-                <Image
-                    source={{ uri: "assets/images/icon.png" }}
-                    style={styles.logo}
-                />
+                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
             </View>
 
             <View style={styles.formContainer}>
@@ -52,10 +117,11 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     onChangeText={setPassword}
                 />
                 <TextInput
-                    placeholder="Referral Code"
+                    placeholder="Confirm Password"
                     style={styles.input}
-                    value={referralCode}
-                    onChangeText={setReferralCode}
+                    secureTextEntry
+                    value={confirmPassword}
+                    onChangeText={setConfirmationPassword}
                 />
 
                 <TouchableOpacity style={styles.button} onPress={handleRegister}>
@@ -63,6 +129,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                         Register (Connect to Django Backend)
                     </Text>
                 </TouchableOpacity>
+                {error && <Text style={styles.errorText}>{error}</Text>}
 
                 <Text style={styles.bottomText}>
                     Already have an account?{" "}
@@ -74,6 +141,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     </Text>
                 </Text>
             </View>
+            <Toast />
         </View>
     );
 };
@@ -91,30 +159,17 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 24,
         fontWeight: "bold",
+        marginTop: 60,
     },
     logoContainer: {
-        marginTop: 20,
-        backgroundColor: "#fff",
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        justifyContent: "center",
+        flex: 1,
+        backgroundColor: "#000", // Black background
         alignItems: "center",
-        ...Platform.select({
-            ios: {
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.2,
-                shadowRadius: 4,
-            },
-            android: {
-                elevation: 5,
-            },
-        }),
+        paddingTop: 15
     },
     logo: {
-        width: 80,
-        height: 80,
+        width: 180,
+        height: 180,
         resizeMode: "contain",
     },
     formContainer: {
@@ -148,6 +203,10 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         fontWeight: "bold",
+    },
+    errorText: {
+        color: "red",
+        marginTop: 10,
     },
     bottomText: {
         textAlign: "center",

@@ -1,9 +1,9 @@
 import { Text, View, StyleSheet } from 'react-native';
 
-export default function WorkoutScreen() {
+export default function MealPlanScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Workout screen</Text>
+      <Text style={styles.text}>Meal Plan screen</Text>
     </View>
   );
 }
@@ -17,6 +17,5 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#fff',
-    
   },
 });

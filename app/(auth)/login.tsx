@@ -9,7 +9,7 @@ import {
     StyleSheet,
     Platform,
 } from "react-native";
-
+import Toast from 'react-native-toast-message';
 import { NavigationProp } from '@react-navigation/native';
 
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
@@ -18,6 +18,56 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
 
+    const sanitizeInput = (input: string) => {
+        return input.replace(/[^a-zA-Z0-9@.]/g, '');
+    };
+
+    const handleLogin = () => {
+        // Sanitize inputs
+        const sanitizedEmail = sanitizeInput(email);
+        const sanitizedPassword = sanitizeInput(password);
+
+        // Validate input fields
+        if (!sanitizedEmail) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Email is required'
+            });
+            return;
+        }
+        if (!sanitizedPassword) {
+            Toast.show({
+            type: 'error',
+            text1: 'Validation Error',
+            text2: 'Password is required'
+            });
+            return;
+        }
+
+        // Placeholder for API login logic
+        // TODO: Replace with actual backend call
+        const isSuccess = true; // Replace with actual login success condition
+
+        if (isSuccess) {
+            Toast.show({
+                type: 'success',
+                text1: 'Login Successful',
+                text2: 'You have successfully logged in.'
+            });
+            setTimeout(() => {
+                router.push('/(tabs)/home');
+            }, 2000); // 2-second delay
+        } else {
+            Toast.show({
+                type: 'error',
+                text1: 'Login Failed',
+                text2: 'Invalid username or password.'
+            });
+            setError('Invalid username or password.');
+        }
+    };
+
     return (
         <View style={styles.container}>
             {/* Top Section (Black Background) */}
@@ -25,10 +75,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
             <View style={styles.logoContainer}>
                 {/* Replace with your Fit24 logo */}
-                <Image
-                    source={{ uri: "assets/images/icon.png" }}
-                    style={styles.logo}
-                />
+                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
             </View>
 
             {/* White Card at the Bottom with Curved Top Corners */}
@@ -50,11 +97,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => {
-                        // Placeholder for API login logic
-                        // Assuming login is successful, navigate to the homepage
-                        router.push('/(tabs)/home');
-                    }}
+                    onPress={handleLogin}
                 >
                     <Text style={styles.buttonText}>
                         Log In (Connect to Django Backend)
@@ -74,6 +117,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     </Text>
                 </Text>
             </View>
+            <Toast />
         </View>
     );
 };
@@ -85,6 +129,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#000", // Black background
         alignItems: "center",
+        paddingTop: 60,
         // We won't use justifyContent: center here,
         // because we want space at the top for the title & logo.
     },
@@ -95,29 +140,14 @@ const styles = StyleSheet.create({
         marginTop: 60,
     },
     logoContainer: {
-        marginTop: 20,
-        backgroundColor: "#fff",
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        justifyContent: "center",
+        flex: 1,
+        backgroundColor: "#000", // Black background
         alignItems: "center",
-        // You can add a shadow for iOS / elevation for Android if desired
-        ...Platform.select({
-            ios: {
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.2,
-                shadowRadius: 4,
-            },
-            android: {
-                elevation: 5,
-            },
-        }),
+        paddingTop: 15
     },
     logo: {
-        width: 80,
-        height: 80,
+        width: 180,
+        height: 180,
         resizeMode: "contain",
     },
     formContainer: {
