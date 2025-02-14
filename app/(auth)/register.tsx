@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import Toast from 'react-native-toast-message';
 import { NavigationProp } from '@react-navigation/native';
+import { Fonts } from '@/constants/Fonts';
 
 const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const router = useRouter();
@@ -124,9 +125,9 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     onChangeText={setConfirmationPassword}
                 />
 
-                <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                <TouchableOpacity style={styles.button} onPress={() => router.push('/home')}>
                     <Text style={styles.buttonText}>
-                        Register (Connect to Django Backend)
+                        Register
                     </Text>
                 </TouchableOpacity>
                 {error && <Text style={styles.errorText}>{error}</Text>}
@@ -158,12 +159,15 @@ const styles = StyleSheet.create({
     headerText: {
         color: "#fff",
         fontSize: 24,
-        fontWeight: "bold",
-        marginTop: 60,
+        fontFamily: Fonts.semibold,
     },
     logoContainer: {
-        flex: 1,
-        backgroundColor: "#000", // Black background
+        marginTop: 20,
+        backgroundColor: "#fff",
+        width: 200,
+        height: 200,
+        borderRadius: 100,
+        justifyContent: "center",
         alignItems: "center",
         paddingTop: 15
     },
@@ -177,32 +181,34 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: "#fff",
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
-        minHeight: "55%",
-        padding: 20,
+        backgroundColor: "#f9f9f9",
+        borderTopLeftRadius: 35,
+        borderTopRightRadius: 35,
+        height: 450,
+        paddingTop: 50,
         alignItems: "center",
     },
     input: {
-        width: "90%",
+        width: "80%", 
         borderColor: "#ccc",
         borderWidth: 1,
         borderRadius: 8,
         paddingHorizontal: 12,
         paddingVertical: 10,
-        marginBottom: 12,
+        marginVertical: 5,
+        fontFamily: Fonts.regular,
     },
     button: {
-        width: "90%",
-        backgroundColor: "#FFD700",
+        width: "30%",
+        backgroundColor: "#d7be69",
         padding: 12,
         borderRadius: 8,
         alignItems: "center",
-        marginTop: 10,
+        marginTop: 50,
     },
     buttonText: {
-        fontWeight: "bold",
+        fontFamily: Fonts.semibold,
+        color: "#fffefe"
     },
     errorText: {
         color: "red",
@@ -211,10 +217,12 @@ const styles = StyleSheet.create({
     bottomText: {
         textAlign: "center",
         marginTop: 10,
-        color: "#666",
+        color: "#8f8f8f",
+        fontFamily: Fonts.italic,
+        fontSize: 12,
     },
     linkText: {
-        color: "#1E90FF",
-        fontWeight: "600",
+        color: "#8f8f8f",
+        fontFamily: Fonts.semiboldItalic,
     },
 });

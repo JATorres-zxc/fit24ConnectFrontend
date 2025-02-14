@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Camera, CameraView } from 'expo-camera';
 
 import Header from '@/components/ScanHeader';
+import { Fonts } from '@/constants/Fonts';
 
 export default function ScanScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -32,16 +33,20 @@ export default function ScanScreen() {
   return (
 
     <View style={styles.container}>
-      <Header />
+      <View style={styles.headerContainer}>
+        <Header />
+      </View>
 
-      <View style={styles.scannercontainer}>
-        <CameraView
-          onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
-          barcodeScannerSettings={{
-            barcodeTypes: ["qr", "pdf417"],
-          }}
-          style={StyleSheet.absoluteFillObject}
-        />
+      <View style={styles.contentContainer}>
+        <View style={styles.scannercontainer}>
+          <CameraView
+            onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+            barcodeScannerSettings={{
+              barcodeTypes: ["qr", "pdf417"],
+            }}
+            style={{ width: '100%', height: '100%' }}
+          />
+        </View>
 
         <Text style={styles.text}>Point camera to the designated Facility QR</Text>
       </View>
@@ -56,11 +61,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     alignItems: 'center',
   },
-  scannercontainer: {
-    backgroundColor: 'red',
+  headerContainer: {
+    width: '85%',
+    position: 'absolute',
+    top: 0,
+  },
+  contentContainer: {
+    flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scannercontainer: {
+    width: 300,
+    height: 300,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
   text: {
-    fontStyle: 'italic',
+    fontFamily: Fonts.italic,
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: 10,
   },
 });

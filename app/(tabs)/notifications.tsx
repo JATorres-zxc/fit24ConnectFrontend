@@ -1,8 +1,8 @@
 import { Text, View, StyleSheet } from 'react-native';
 
-import Header from '@/components/WorkoutHeader';
+import Header from '@/components/NotificationsHeader';
 
-export default function WorkoutScreen() {
+export default function NotificationScreen() {
   return (
     <View style={styles.container}>
       <Header />
@@ -18,6 +18,5 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#fff',
-    
   },
 });

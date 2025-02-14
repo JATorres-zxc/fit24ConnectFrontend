@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import Toast from 'react-native-toast-message';
 import { NavigationProp } from '@react-navigation/native';
+import { Fonts } from '@/constants/Fonts';
 
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const router = useRouter();
@@ -100,7 +101,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     onPress={handleLogin}
                 >
                     <Text style={styles.buttonText}>
-                        Log In (Connect to Django Backend)
+                        Log In
                     </Text>
                 </TouchableOpacity>
                 {error && <Text style={styles.errorText}>{error}</Text>}
@@ -140,8 +141,12 @@ const styles = StyleSheet.create({
         marginTop: 60,
     },
     logoContainer: {
-        flex: 1,
-        backgroundColor: "#000", // Black background
+        marginTop: 20,
+        backgroundColor: "#fff",
+        width: 200,
+        height: 200,
+        borderRadius: 100,
+        justifyContent: "center",
         alignItems: "center",
         paddingTop: 15
     },
@@ -158,41 +163,43 @@ const styles = StyleSheet.create({
         right: 0,
 
         // White background with curved top corners
-        backgroundColor: "#fff",
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
+        backgroundColor: "#f9f9f9",
+        borderTopLeftRadius: 35,
+        borderTopRightRadius: 35,
 
         // Provide enough vertical space for form fields
-        minHeight: "55%", // Adjust to taste
-        padding: 20,
+        height: 450, // Adjust to taste
+        paddingTop: 50,
 
         // Align items to center if you want narrower inputs
         alignItems: "center",
     },
     input: {
-        width: "90%", // Make the input take up most of the card width
+        width: "80%", 
         borderColor: "#ccc",
         borderWidth: 1,
         borderRadius: 8,
         paddingHorizontal: 12,
         paddingVertical: 10,
-        marginBottom: 12,
+        marginVertical: 5,
+        fontFamily: Fonts.regular,
     },
     button: {
-        width: "90%",
-        backgroundColor: "#FFD700", // Gold
+        width: "30%",
+        backgroundColor: "#d7be69", 
         padding: 12,
         borderRadius: 8,
         alignItems: "center",
-        marginTop: 10,
+        marginTop: 50,
     },
     buttonText: {
-        fontWeight: "bold",
+        fontFamily: Fonts.semibold,
+        color: "#fffefe"
     },
     orText: {
         textAlign: "center",
         marginVertical: 10,
-        color: "#666",
+        fontFamily: Fonts.semibold,
     },
     errorText: {
         color: "red",
@@ -212,10 +219,12 @@ const styles = StyleSheet.create({
     bottomText: {
         textAlign: "center",
         marginTop: 10,
-        color: "#666",
+        color: "#8f8f8f",
+        fontFamily: Fonts.italic,
+        fontSize: 12,
     },
     linkText: {
-        color: "#1E90FF",
-        fontWeight: "600",
+        color: "#8f8f8f",
+        fontFamily: Fonts.semiboldItalic,
     },
 });

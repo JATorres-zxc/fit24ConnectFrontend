@@ -3,11 +3,11 @@ import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome'
-import { Fonts } from '../constants/Fonts';
+import { Fonts } from '@/constants/Fonts';
 
 export default function Header() {
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView>
       <View style={styles.header}>
 
         <View style={styles.leftSection}>
@@ -18,7 +18,7 @@ export default function Header() {
             onPress={() => router.push('/home')} 
           />
           <Text style={styles.headerText}>
-            Facility Access
+            Facility Access Logs
           </Text>
         </View>
 
@@ -32,12 +32,8 @@ export default function Header() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: '#f9f9f9',
-  },
   header: {
-    width: '100%',
-    backgroundColor: '#f9f9f9',
+    width: '85%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between'

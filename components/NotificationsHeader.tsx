@@ -3,24 +3,28 @@ import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome'
-import { Fonts } from '../constants/Fonts';
+import { Fonts } from '@/constants/Fonts';
 
-interface HeaderProps {
-  name: string;
-}
-
-export default function Header({ name }: HeaderProps) {
+export default function Header() {
   return (
     <SafeAreaView>
       <View style={styles.header}>
-        <Text style={styles.headerText}>
-          Back to the Grind,{' '}
-          <Text style={{ fontFamily: Fonts.semiboldItalic }}>{name}!</Text>
-        </Text>
+
+        <View style={styles.leftSection}>
+          <FontAwesome 
+            name='home' 
+            color={'black'} 
+            size={24} 
+            onPress={() => router.push('/home')} 
+          />
+          <Text style={styles.headerText}>
+            Notifications
+          </Text>
+        </View>
 
         <View style={styles.headerIcon}>
-            <FontAwesome name='user-circle' color={'black'} size={24} onPress={() => router.push('/profile')} />
-            <FontAwesome name='bell-o' color={'black'} size={24} onPress={() => router.push('/notifications')} />
+          <FontAwesome name='user-circle' color={'black'} size={24} onPress={() => router.push('/profile')} />
+          <FontAwesome name='bell-o' color={'black'} size={24} onPress={() => router.push('/notifications')} />
         </View>
       </View>
     </SafeAreaView>
@@ -30,10 +34,14 @@ export default function Header({ name }: HeaderProps) {
 const styles = StyleSheet.create({
   header: {
     width: '85%',
-    backgroundColor: '#f9f9f9',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between'
+  },
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
   headerText: {
     fontSize: 20,
