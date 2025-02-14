@@ -125,7 +125,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     onChangeText={setConfirmationPassword}
                 />
 
-                <TouchableOpacity style={styles.button} onPress={() => router.push('/home')}>
+                <TouchableOpacity style={styles.button} onPress={() => handleRegister()}>
                     <Text style={styles.buttonText}>
                         Register
                     </Text>
