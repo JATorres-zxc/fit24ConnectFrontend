@@ -26,6 +26,7 @@ export default function Header() {
           <FontAwesome name='user-circle' color={'black'} size={24} onPress={() => router.push('/profile')} />
           <FontAwesome name='bell-o' color={'black'} size={24} onPress={() => router.push('/notifications')} />
         </View>
+        
       </View>
     </SafeAreaView>
   );
