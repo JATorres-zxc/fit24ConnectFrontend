@@ -28,14 +28,6 @@ const MealPlanScreen = () => {
     }
   };
 
-<<<<<<< HEAD
-import Header from '@/components/MealPlanHeader';
-
-export default function MealPlanScreen() {
-  return (
-    <View style={styles.container}>
-      <Header />
-=======
   return (
     <View style={styles.container}>
       <Toast />
@@ -74,7 +66,6 @@ export default function MealPlanScreen() {
           </TouchableOpacity>
         </View>
       )}
->>>>>>> 2005c3a09c676a5ed9a2aacc3cdb82dea3e6ff11
     </View>
   );
 };
@@ -83,15 +74,10 @@ export default function MealPlanScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-<<<<<<< HEAD
-    backgroundColor: '#f9f9f9',
-    alignItems: 'center',
-=======
     backgroundColor: "#fff",
     padding: 20,
     justifyContent: "flex-start",
     alignItems: "center",
->>>>>>> 2005c3a09c676a5ed9a2aacc3cdb82dea3e6ff11
   },
   logo: {
     width: 100,
