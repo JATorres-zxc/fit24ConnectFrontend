@@ -18,7 +18,6 @@ export default function Home() {
       <View style={styles.announcementsContainer}>
         <AnnouncementsContainer announcements={announcements} />
       </View>
-
     </View>
   );
 }

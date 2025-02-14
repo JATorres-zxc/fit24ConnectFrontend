@@ -1,11 +1,9 @@
 import { Text, View, StyleSheet } from 'react-native';
 
-import Header from '@/components/WorkoutHeader';
-
-export default function WorkoutScreen() {
+export default function MealPlanScreen() {
   return (
     <View style={styles.container}>
-      <Header />
+      <Text style={styles.text}>Meal Plan screen</Text>
     </View>
   );
 }
@@ -13,11 +11,11 @@ export default function WorkoutScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#25292e',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   text: {
     color: '#fff',
-    
   },
 });
