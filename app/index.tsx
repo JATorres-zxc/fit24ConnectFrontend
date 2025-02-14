@@ -1,33 +1,6 @@
-import { Text, View, StyleSheet } from "react-native";
+// app/index.tsx
+import { Redirect } from 'expo-router';
 
-import Button from '@/components/CreateAnnouncementButton';
-import Header from '@/components/HomeHeader';
-
-export default function Home() {
-  return (
-    <View style={styles.container}>
-      <Header name='Jilliane' />
-
-      <View style={styles.footerContainer}>
-        <Button label="Create Announcement" theme="primary" />
-      </View>
-
-    </View>
-  );
+export default function Index() {
+  return <Redirect href="/(auth)/login" />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9f9f9',
-    alignItems: 'center',
-  },
-  text: {
-    color: '#000000',
-  },
-  footerContainer: {
-    width: '85%',
-    flex: 1,
-    alignItems: 'center',
-  },
-});

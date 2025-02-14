@@ -4,17 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 
-interface HeaderProps {
-  name: string;
-}
-
 export default function Header() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
 
         <Text style={styles.headerText}>
-          <FontAwesome name='home' color={'black'} size={24} onPress={() => router.push('/')} />
+          <FontAwesome name='home' color={'black'} size={24} onPress={() => router.push('/home')} />
           Facility Access
         </Text>
 
