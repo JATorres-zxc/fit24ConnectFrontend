@@ -18,7 +18,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'Missing Fields',
         text2: 'Please fill out all fields before submitting.',
-        position: 'top'
+        position: 'bottom'
       });
       return;
     }
@@ -45,7 +45,7 @@ const MealPlanScreen = () => {
           type: 'success',
           text1: 'Request Submitted',
           text2: 'Your meal plan request has been submitted successfully.',
-          position: 'top' // Add this line to show toast at the top
+          position: 'bottom' // Add this line to show toast at the top
         });
         setTimeout(() => {
           setIsRequestingMeal(false);
@@ -56,7 +56,7 @@ const MealPlanScreen = () => {
           type: 'error',
           text1: 'Request Failed',
           text2: 'There was an error with your meal plan request.',
-          position: 'top' // Add this line to show toast at the top
+          position: 'bottom' // Add this line to show toast at the top
         });
       }
     } catch (error) {
@@ -64,7 +64,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'Request Failed',
         text2: 'There was an error with your meal plan request.',
-        position: 'top' // Add this line to show toast at the top
+        position: 'bottom' // Add this line to show toast at the top
       });
     }
   };

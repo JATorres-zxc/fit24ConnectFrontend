@@ -31,17 +31,19 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
         // Validate input fields
         if (!sanitizedEmail) {
             Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Email is required'
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Email is required',
+                position: 'bottom'
             });
             return;
         }
         if (!sanitizedPassword) {
             Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Password is required'
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Password is required',
+                position: 'bottom'
             });
             return;
         }
@@ -54,7 +56,8 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             Toast.show({
                 type: 'success',
                 text1: 'Login Successful',
-                text2: 'You have successfully logged in.'
+                text2: 'You have successfully logged in.',
+                position: 'bottom'
             });
             setTimeout(() => {
                 router.push('/(tabs)/home');
@@ -63,7 +66,8 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             Toast.show({
                 type: 'error',
                 text1: 'Login Failed',
-                text2: 'Invalid username or password.'
+                text2: 'Invalid username or password.',
+                position: 'bottom'
             });
             setError('Invalid username or password.');
         }
