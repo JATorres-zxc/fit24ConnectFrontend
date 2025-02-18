@@ -23,7 +23,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
         return input.replace(/[^a-zA-Z0-9@.]/g, '');
     };
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
         // Sanitize inputs
         const sanitizedEmail = sanitizeInput(email);
         const sanitizedPassword = sanitizeInput(password);
@@ -48,28 +48,48 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             return;
         }
 
-        // Placeholder for API login logic
-        // TODO: Replace with actual backend call
-        const isSuccess = true; // Replace with actual login success condition
-
-        if (isSuccess) {
-            Toast.show({
-                type: 'success',
-                text1: 'Login Successful',
-                text2: 'You have successfully logged in.',
-                position: 'bottom'
+        try {
+            // Make API call to backend
+            const response = await fetch('http://127.0.0.1:8000/api/account/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: sanitizedEmail,
+                    password: sanitizedPassword,
+                }),
             });
-            setTimeout(() => {
-                router.push('/(tabs)/home');
-            }, 2000); // 2-second delay
-        } else {
+
+            const result = await response.json();
+
+            if (response.ok) {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Login Successful',
+                    text2: 'You have successfully logged in.',
+                    position: 'bottom'
+                });
+                setTimeout(() => {
+                    router.push('/(tabs)/home');
+                }, 2000); // 2-second delay
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Login Failed',
+                    text2: result.message || 'Invalid username or password.',
+                    position: 'bottom'
+                });
+                setError(result.message || 'Invalid username or password.');
+            }
+        } catch (error) {
             Toast.show({
                 type: 'error',
                 text1: 'Login Failed',
-                text2: 'Invalid username or password.',
+                text2: 'An error occurred. Please try again.',
                 position: 'bottom'
             });
-            setError('Invalid username or password.');
+            setError('An error occurred. Please try again.');
         }
     };
 
