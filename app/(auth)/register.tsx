@@ -25,7 +25,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
         return input.replace(/[^a-zA-Z0-9@.]/g, '');
     };
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
         // Sanitize inputs
         const sanitizedEmail = sanitizeInput(email);
         const sanitizedPassword = sanitizeInput(password);
@@ -34,69 +34,89 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
         // Validate input fields
         if (!sanitizedEmail) {
             Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Email is required',
-            position: 'bottom'
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Email is required',
+                position: 'bottom'
             });
             return;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(sanitizedEmail)) {
             Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Invalid email format',
-            position: 'bottom'
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Invalid email format',
+                position: 'bottom'
             });
             return;
         }
         if (!sanitizedPassword) {
             Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Password is required',
-            position: 'bottom'
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Password is required',
+                position: 'bottom'
             });
             return;
         }
         if (sanitizedPassword.length < 6) {
             Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Password must be at least 6 characters',
-            position: 'bottom'
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Password must be at least 6 characters',
+                position: 'bottom'
             });
             return;
         }
         if (sanitizedPassword !== sanitizedConfirmPassword) {
             Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Passwords do not match',
-            position: 'bottom'
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Passwords do not match',
+                position: 'bottom'
             });
             return;
         }
 
-        // Placeholder for registration success condition
-        const isSuccess = true; // Replace with actual registration success condition
-
-        if (isSuccess) {
-            Toast.show({
-                type: 'success',
-                text1: 'Registration Successful',
-                text2: 'You have successfully registered.',
-                position: 'bottom'
+        try {
+            // Make API call to backend
+            const response = await fetch('http://127.0.0.1:8000/api/account/register/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: sanitizedEmail,
+                    password: sanitizedPassword,
+                }),
             });
-            setTimeout(() => {
-                router.push('/(auth)/login');
-            }, 2000); // 2-second delay
-        } else {
+
+            const result = await response.json();
+
+            if (response.ok) {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Registration Successful',
+                    text2: 'You have successfully registered.',
+                    position: 'bottom'
+                });
+                setTimeout(() => {
+                    router.push('/(auth)/login');
+                }, 2000); // 2-second delay
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Registration Failed',
+                    text2: result.message || 'There was an error with your registration.',
+                    position: 'bottom'
+                });
+            }
+        } catch (error) {
             Toast.show({
                 type: 'error',
                 text1: 'Registration Failed',
-                text2: 'There was an error with your registration.',
+                text2: 'An error occurred. Please try again.',
                 position: 'bottom'
             });
         }
@@ -132,7 +152,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     onChangeText={setConfirmationPassword}
                 />
 
-                <TouchableOpacity style={styles.button} onPress={() => handleRegister()}>
+                <TouchableOpacity style={styles.button} onPress={handleRegister}>
                     <Text style={styles.buttonText}>
                         Register
                     </Text>
