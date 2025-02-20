@@ -4,6 +4,16 @@ import { Picker } from "@react-native-picker/picker";
 import Toast from 'react-native-toast-message';
 import Header from '@/components/MealPlanHeader';
 
+// Define color variables
+const colors = {
+  background: "#fff",
+  primary: "#D4AF37",
+  textPrimary: "#333",
+  textSecondary: "#666",
+  border: "#ccc",
+  buttonText: "#fff",
+};
+
 const MealPlanScreen = () => {
   const [isRequestingMeal, setIsRequestingMeal] = useState(false); // Toggle state
   const [mealPlan, setMealPlan] = useState({
@@ -171,7 +181,7 @@ const MealPlanScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.background,
     padding: 20,
     justifyContent: "flex-start",
     alignItems: "center",
@@ -192,7 +202,7 @@ const styles = StyleSheet.create({
   backText: {
     alignSelf: "flex-start",
     fontSize: 16,
-    color: "#333",
+    color: colors.textPrimary,
     marginBottom: 10,
   },
   title: {
@@ -203,7 +213,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
+    color: colors.textSecondary,
     textAlign: "center",
     marginBottom: 20,
   },
@@ -211,12 +221,12 @@ const styles = StyleSheet.create({
     width: "100%",
     padding: 12,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.border,
     borderRadius: 5,
     marginBottom: 10,
   },
   button: {
-    backgroundColor: "#D4AF37",
+    backgroundColor: colors.primary,
     padding: 12,
     borderRadius: 5,
     alignItems: "center",
@@ -224,7 +234,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   buttonText: {
-    color: "#fff",
+    color: colors.buttonText,
     fontWeight: "bold",
   },
   mealItem: {
@@ -236,7 +246,7 @@ const styles = StyleSheet.create({
   },
   mealDescription: {
     fontSize: 16,
-    color: "#666",
+    color: colors.textSecondary,
   },
 });
 
