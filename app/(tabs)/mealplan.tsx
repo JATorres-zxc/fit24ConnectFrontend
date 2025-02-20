@@ -1,12 +1,22 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import Toast from 'react-native-toast-message';
 import Header from '@/components/MealPlanHeader';
 
 const MealPlanScreen = () => {
   const [isRequestingMeal, setIsRequestingMeal] = useState(false); // Toggle state
-  const [mealPlan, setMealPlan] = useState(null); // State to store meal plan
+  const [mealPlan, setMealPlan] = useState({
+    trainer: "Trainer A",
+    fitnessGoal: "Lose Weight",
+    weightGoal: "70",
+    allergens: "Peanuts, Dairy",
+    meals: [
+      { meal: "Breakfast", description: "Oatmeal with fruits" },
+      { meal: "Lunch", description: "Grilled chicken salad" },
+      { meal: "Dinner", description: "Steamed vegetables with quinoa" },
+    ],
+  }); // State to store meal plan
   const [trainer, setTrainer] = useState(""); // State to store selected trainer
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
@@ -45,7 +55,7 @@ const MealPlanScreen = () => {
           type: 'success',
           text1: 'Request Submitted',
           text2: 'Your meal plan request has been submitted successfully.',
-          position: 'bottom' // Add this line to show toast at the top
+          position: 'bottom'
         });
         setTimeout(() => {
           setIsRequestingMeal(false);
@@ -56,7 +66,7 @@ const MealPlanScreen = () => {
           type: 'error',
           text1: 'Request Failed',
           text2: 'There was an error with your meal plan request.',
-          position: 'bottom' // Add this line to show toast at the top
+          position: 'bottom'
         });
       }
     } catch (error) {
@@ -64,7 +74,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'Request Failed',
         text2: 'There was an error with your meal plan request.',
-        position: 'bottom' // Add this line to show toast at the top
+        position: 'bottom'
       });
     }
   };
@@ -97,7 +107,7 @@ const MealPlanScreen = () => {
             selectedValue={fitnessGoal}
             onValueChange={(itemValue) => setFitnessGoal(itemValue)}
             style={styles.input}
-            >
+          >
             <Picker.Item label="Select Fitness Goal" value="" />
             <Picker.Item label="Lose Weight" value="loseWeight" />
             <Picker.Item label="Build Muscle" value="buildMuscle" />
@@ -120,7 +130,7 @@ const MealPlanScreen = () => {
           />
 
           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-              <Text style={styles.buttonText}>Submit Request</Text>
+            <Text style={styles.buttonText}>Submit Request</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -129,7 +139,12 @@ const MealPlanScreen = () => {
           {mealPlan ? (
             <>
               <Text style={styles.subtitle}>Your Meal Plan:</Text>
-              <Text>{"Member Details HERE."}</Text>
+              {mealPlan.meals.map((meal, index) => (
+                <View key={index} style={styles.mealItem}>
+                  <Text style={styles.mealTitle}>{meal.meal}</Text>
+                  <Text style={styles.mealDescription}>{meal.description}</Text>
+                </View>
+              ))}
               <TouchableOpacity style={styles.button} onPress={() => setIsRequestingMeal(true)}>
                 <Text style={styles.buttonText}>Request New Meal Plan</Text>
               </TouchableOpacity>
@@ -144,7 +159,7 @@ const MealPlanScreen = () => {
           )}
         </View>
       )}
-    <Toast />
+      <Toast />
     </View>
   );
 };
@@ -165,7 +180,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   planContainer: {
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   formContainer: {
     width: "100%",
@@ -208,6 +223,17 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  mealItem: {
+    marginBottom: 10,
+  },
+  mealTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  mealDescription: {
+    fontSize: 16,
+    color: "#666",
   },
 });
 
