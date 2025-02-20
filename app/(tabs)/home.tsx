@@ -3,6 +3,7 @@ import { Text, View, StyleSheet } from "react-native";
 import Button from '@/components/CreateAnnouncementButton';
 import Header from '@/components/HomeHeader';
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
+import { Colors } from '@/constants/Colors';
 
 const announcements = [
   { id: '1', title: "New Gym Equipment Arrived!", content: "We've added new treadmills and weights to the gym.", date: "Feb 10, 2025", admin: "Jane" },
@@ -25,7 +26,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: Colors.bg,
     alignItems: "center",
   },
   announcementsContainer: {
