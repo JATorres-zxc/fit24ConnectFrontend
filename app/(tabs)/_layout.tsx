@@ -1,22 +1,24 @@
 import React from "react";
 import { Tabs } from "expo-router";
+
 import Ionicons from '@expo/vector-icons/Ionicons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Colors } from '@/constants/Colors';
 
 export default function RootLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#d7be69',
+        tabBarActiveTintColor: Colors.gold,
         headerStyle: {
-          backgroundColor: '#f9f9f9',
+          backgroundColor: Colors.bg,
         },
         headerShown: false,
         headerShadowVisible: false,
-        headerTintColor: '#000000',
+        headerTintColor: 'black',
         tabBarStyle: {
-          backgroundColor: '#ffffff',
+          backgroundColor: 'white',
         },
       }}
     >

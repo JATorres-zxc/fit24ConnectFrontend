@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, FlatList } from "react-native";
 
 import { Fonts } from '@/constants/Fonts';
+import { Colors } from '@/constants/Colors';
 
 interface Announcement {
   id: string;
@@ -74,8 +75,8 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
   },
   cardContent: {
-    backgroundColor: '#ffffff',
-    borderColor: 'gray',
+    backgroundColor: 'white',
+    borderColor: Colors.icongray,
     borderWidth: 1,
     padding: 5,
   },
