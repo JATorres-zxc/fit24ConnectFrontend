@@ -383,9 +383,10 @@ const MealPlanScreen = () => {
               )}
             </View>
           )}
-          <Toast />
+          
         </View>
       </ScrollView>
+      <Toast />
     </KeyboardAvoidingView>
   );
 };
