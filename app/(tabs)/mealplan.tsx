@@ -285,7 +285,7 @@ const MealPlanScreen = () => {
                 onChangeText={setAllergens}
               />
 
-              <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
                 <Text style={styles.buttonText}>Submit Request</Text>
               </TouchableOpacity>
             </View>
@@ -304,7 +304,7 @@ const MealPlanScreen = () => {
                 multiline
                 numberOfLines={4}
               />
-
+              <Text style={styles.requestHeaders}>Overall Rating</Text>
               <Picker
                 selectedValue={rating}
                 onValueChange={(itemValue) => setRating(itemValue)}
@@ -324,7 +324,7 @@ const MealPlanScreen = () => {
 
               </Picker>
 
-              <TouchableOpacity style={styles.button} onPress={handleFeedbackSubmit}>
+              <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
                 <Text style={styles.buttonText}>Submit Feedback</Text>
               </TouchableOpacity>
             </View>
@@ -434,6 +434,16 @@ const styles = StyleSheet.create({
     top: -5,
     width: "50%",
     height: 45,
+  },
+  submitButton: {
+    backgroundColor: colors.primary,
+    padding: 12,
+    borderRadius: 5,
+    alignSelf: "center",
+    top: -5,
+    width: "50%",
+    height: 45,
+    marginTop: 10,
   },
   buttonBlack: {
     padding: 12,
@@ -595,6 +605,7 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     backgroundColor: colors.buttonBlack,
     paddingHorizontal: 10,
+    marginBottom: 25,
     color: 'white', // Ensures text color is white
   },
   trashIcon: {
