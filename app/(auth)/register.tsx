@@ -7,7 +7,9 @@ import {
     TouchableOpacity,
     Image,
     StyleSheet,
+    KeyboardAvoidingView,
     Platform,
+    ScrollView,
 } from "react-native";
 import Toast from 'react-native-toast-message';
 import { NavigationProp } from '@react-navigation/native';
@@ -80,21 +82,24 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
         }
 
         try {
-            // Make API call to backend
-            const response = await fetch('http://127.0.0.1:8000/api/account/register/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: sanitizedEmail,
-                    password: sanitizedPassword,
-                }),
-            });
+            // Commented out API call for testing
+            // const response = await fetch('http://127.0.0.1:8000/api/account/register/', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({
+            //         email: sanitizedEmail,
+            //         password: sanitizedPassword,
+            //     }),
+            // });
 
-            const result = await response.json();
+            // const result = await response.json();
 
-            if (response.ok) {
+            // Temporary Success Placeholder
+            const temp_response = true;
+
+            if (temp_response) {
                 Toast.show({
                     type: 'success',
                     text1: 'Registration Successful',
@@ -108,7 +113,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 Toast.show({
                     type: 'error',
                     text1: 'Registration Failed',
-                    text2: result.message || 'There was an error with your registration.',
+                    text2: 'There was an error with your registration.',
                     position: 'bottom'
                 });
             }
@@ -123,54 +128,57 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.headerText}>REGISTER</Text>
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <View style={styles.logoContainer}>
+                    <Image source={require("./assets/images/icon.png")} style={styles.logo} />
+                </View>
 
-            <View style={styles.logoContainer}>
-                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
-            </View>
+                <View style={styles.formContainer}>
+                    <TextInput
+                        placeholder="Email"
+                        style={styles.input}
+                        value={email}
+                        onChangeText={setEmail}
+                    />
+                    <TextInput
+                        placeholder="Password"
+                        style={styles.input}
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword}
+                    />
+                    <TextInput
+                        placeholder="Confirm Password"
+                        style={styles.input}
+                        secureTextEntry
+                        value={confirmPassword}
+                        onChangeText={setConfirmationPassword}
+                    />
 
-            <View style={styles.formContainer}>
-                <TextInput
-                    placeholder="Email"
-                    style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
-                />
-                <TextInput
-                    placeholder="Password"
-                    style={styles.input}
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword}
-                />
-                <TextInput
-                    placeholder="Confirm Password"
-                    style={styles.input}
-                    secureTextEntry
-                    value={confirmPassword}
-                    onChangeText={setConfirmationPassword}
-                />
+                    <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                        <Text style={styles.buttonText}>
+                            Register
+                        </Text>
+                    </TouchableOpacity>
+                    {error && <Text style={styles.errorText}>{error}</Text>}
 
-                <TouchableOpacity style={styles.button} onPress={handleRegister}>
-                    <Text style={styles.buttonText}>
-                        Register
+                    <Text style={styles.bottomText}>
+                        Already have an account?{" "}
+                        <Text
+                            style={styles.linkText}
+                            onPress={() => router.push('/(auth)/login')}
+                        >
+                            Log In
+                        </Text>
                     </Text>
-                </TouchableOpacity>
-                {error && <Text style={styles.errorText}>{error}</Text>}
-
-                <Text style={styles.bottomText}>
-                    Already have an account?{" "}
-                    <Text
-                        style={styles.linkText}
-                        onPress={() => router.push('/(auth)/login')}
-                    >
-                        Log In
-                    </Text>
-                </Text>
-            </View>
+                </View>
+            </ScrollView>
             <Toast />
-        </View>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -179,22 +187,16 @@ export default RegisterScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#000",
-        alignItems: "center",
-        paddingTop: 60,
+        backgroundColor: "#000", // Black background
     },
-    headerText: {
-        color: "#fff",
-        fontSize: 24,
-        fontFamily: Fonts.semibold,
-        marginTop: 60,
+    scrollContainer: {
+        flexGrow: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingVertical: 20,
     },
     logoContainer: {
-        marginTop: 20,
-        backgroundColor: "transparent",
-        width: 150,
-        height: 150,
-        borderRadius: 100,
+        marginBottom: 20,
         justifyContent: "center",
         alignItems: "center",
     },
@@ -204,19 +206,17 @@ const styles = StyleSheet.create({
         resizeMode: "contain",
     },
     formContainer: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
+        width: "100%",
         backgroundColor: "#f9f9f9",
         borderTopLeftRadius: 35,
         borderTopRightRadius: 35,
-        height: 450,
         paddingTop: 50,
+        paddingBottom: 20,
+        paddingHorizontal: 20,
         alignItems: "center",
     },
     input: {
-        width: "80%", 
+        width: "100%",
         borderColor: "#ccc",
         borderWidth: 1,
         borderRadius: 8,
@@ -226,12 +226,12 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.regular,
     },
     button: {
-        width: "30%",
+        width: "100%",
         backgroundColor: "#d7be69",
         padding: 12,
         borderRadius: 8,
         alignItems: "center",
-        marginTop: 50,
+        marginTop: 20,
     },
     buttonText: {
         fontFamily: Fonts.semibold,
