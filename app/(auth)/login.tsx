@@ -7,7 +7,9 @@ import {
     TouchableOpacity,
     Image,
     StyleSheet,
+    KeyboardAvoidingView,
     Platform,
+    ScrollView,
 } from "react-native";
 import Toast from 'react-native-toast-message';
 import { NavigationProp } from '@react-navigation/native';
@@ -49,21 +51,24 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
         }
 
         try {
-            // Make API call to backend
-            const response = await fetch('http://127.0.0.1:8000/api/account/login/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: sanitizedEmail,
-                    password: sanitizedPassword,
-                }),
-            });
+            // Commented out API call for testing
+            // const response = await fetch('http://127.0.0.1:8000/api/account/login/', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({
+            //         email: sanitizedEmail,
+            //         password: sanitizedPassword,
+            //     }),
+            // });
 
-            const result = await response.json();
+            // const result = await response.json();
 
-            if (response.ok) {
+            // Temporary Success Placeholder
+            const temp_response = true;
+
+            if (temp_response) {
                 Toast.show({
                     type: 'success',
                     text1: 'Login Successful',
@@ -77,10 +82,10 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 Toast.show({
                     type: 'error',
                     text1: 'Login Failed',
-                    text2: result.message || 'Invalid username or password.',
+                    text2: 'Invalid username or password.',
                     position: 'bottom'
                 });
-                setError(result.message || 'Invalid username or password.');
+                setError('Invalid username or password.');
             }
         } catch (error) {
             Toast.show({
@@ -94,57 +99,56 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     };
 
     return (
-        <View style={styles.container}>
-            {/* White Card at the Bottom with Curved Top Corners */}
-            <View style={styles.formContainer}>
-                <TextInput
-                    placeholder="Username/Email"
-                    style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
-                />
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <View style={styles.logoContainer}>
+                    <Image source={require("./assets/images/icon.png")} style={styles.logo} />
+                </View>
 
-                <TextInput
-                    placeholder="Password"
-                    style={styles.input}
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword}
-                />
+                <View style={styles.formContainer}>
+                    <TextInput
+                        placeholder="Username/Email"
+                        style={styles.input}
+                        value={email}
+                        onChangeText={setEmail}
+                    />
 
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={handleLogin}
-                >
-                    <Text style={styles.buttonText}>
-                        Log In
-                    </Text>
-                </TouchableOpacity>
-                {error && <Text style={styles.errorText}>{error}</Text>}
+                    <TextInput
+                        placeholder="Password"
+                        style={styles.input}
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword}
+                    />
 
-                <Text style={styles.orText}>OR</Text>
-
-                <Text style={styles.bottomText}>
-                    Don&apos;t have an account?{" "}
-                    <Text
-                        style={styles.linkText}
-                        onPress={() => router.push('/(auth)/register')}
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleLogin}
                     >
-                        Sign Up
+                        <Text style={styles.buttonText}>
+                            Log In
+                        </Text>
+                    </TouchableOpacity>
+                    {error && <Text style={styles.errorText}>{error}</Text>}
+
+                    <Text style={styles.orText}>OR</Text>
+
+                    <Text style={styles.bottomText}>
+                        Don&apos;t have an account?{" "}
+                        <Text
+                            style={styles.linkText}
+                            onPress={() => router.push('/(auth)/register')}
+                        >
+                            Sign Up
+                        </Text>
                     </Text>
-                </Text>
-            </View>
-
-            {/* Top Section (Black Background) */}
-            <Text style={styles.headerText}>LOGIN</Text>
-
-            <View style={styles.logoContainer}>
-                {/* Replace with your Fit24 logo */}
-                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
-            </View>
-
+                </View>
+            </ScrollView>
             <Toast />
-        </View>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -154,23 +158,15 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#000", // Black background
-        alignItems: "center",
-        paddingTop: 60,
-        // We won't use justifyContent: center here,
-        // because we want space at the top for the title & logo.
     },
-    headerText: {
-        color: "#fff",
-        fontSize: 24,
-        fontFamily: Fonts.semibold,
-        marginTop: 60,
+    scrollContainer: {
+        flexGrow: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingVertical: 20,
     },
     logoContainer: {
-        marginTop: 20,
-        backgroundColor: "transparent",
-        width: 150,
-        height: 150,
-        borderRadius: 100,
+        marginBottom: 20,
         justifyContent: "center",
         alignItems: "center",
     },
@@ -180,26 +176,17 @@ const styles = StyleSheet.create({
         resizeMode: "contain",
     },
     formContainer: {
-        // Position absolutely at the bottom
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-
-        // White background with curved top corners
+        width: "100%",
         backgroundColor: "#f9f9f9",
         borderTopLeftRadius: 35,
         borderTopRightRadius: 35,
-
-        // Provide enough vertical space for form fields
-        height: 450, // Adjust to taste
         paddingTop: 50,
-
-        // Align items to center if you want narrower inputs
+        paddingBottom: 20,
+        paddingHorizontal: 20,
         alignItems: "center",
     },
     input: {
-        width: "80%", 
+        width: "100%",
         borderColor: "#ccc",
         borderWidth: 1,
         borderRadius: 8,
@@ -209,12 +196,12 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.regular,
     },
     button: {
-        width: "30%",
-        backgroundColor: "#d7be69", 
+        width: "100%",
+        backgroundColor: "#d7be69",
         padding: 12,
         borderRadius: 8,
         alignItems: "center",
-        marginTop: 50,
+        marginTop: 20,
     },
     buttonText: {
         fontFamily: Fonts.semibold,
@@ -228,17 +215,6 @@ const styles = StyleSheet.create({
     errorText: {
         color: "red",
         marginTop: 10,
-    },
-    socialContainer: {
-        flexDirection: "row",
-        justifyContent: "center",
-    },
-    iconButton: {
-        marginHorizontal: 10,
-    },
-    socialIcon: {
-        width: 40,
-        height: 40,
     },
     bottomText: {
         textAlign: "center",
