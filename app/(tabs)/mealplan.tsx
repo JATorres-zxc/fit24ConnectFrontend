@@ -82,6 +82,8 @@ const MealPlanScreen = () => {
       //     fitnessGoal,
       //     weightGoal,
       //     allergens,
+      //     feedback,
+      //     rating,
       //   }),
       // });
 
@@ -265,7 +267,7 @@ const MealPlanScreen = () => {
                 placeholder="Enter Your Fitness Goal"
                 style={styles.input}
                 value={fitnessGoal}
-                onChangeText={(text) => setFitnessGoal(text.replace(/[^0-9]/g, ''))}
+                onChangeText={setFitnessGoal}
               />
 
               <Text style={styles.requestHeaders}>Weight Goal</Text>
@@ -273,7 +275,7 @@ const MealPlanScreen = () => {
                 placeholder="Enter Your Weight Goal"
                 style={styles.input}
                 value={weightGoal}
-                onChangeText={(text) => setWeightGoal(text.replace(/[^0-9]/g, ''))}
+                onChangeText={setWeightGoal}
                 keyboardType="numeric"
               />
 
