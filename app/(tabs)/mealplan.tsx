@@ -82,6 +82,8 @@ const MealPlanScreen = () => {
       //     fitnessGoal,
       //     weightGoal,
       //     allergens,
+      //     feedback,
+      //     rating,
       //   }),
       // });
 
