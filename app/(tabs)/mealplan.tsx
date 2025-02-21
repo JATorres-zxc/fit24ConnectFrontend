@@ -267,7 +267,7 @@ const MealPlanScreen = () => {
                 placeholder="Enter Your Fitness Goal"
                 style={styles.input}
                 value={fitnessGoal}
-                onChangeText={setFitnessGoal}
+                onChangeText={(text) => setFitnessGoal(text)}
               />
 
               <Text style={styles.requestHeaders}>Weight Goal</Text>
@@ -275,7 +275,7 @@ const MealPlanScreen = () => {
                 placeholder="Enter Your Weight Goal"
                 style={styles.input}
                 value={weightGoal}
-                onChangeText={setWeightGoal}
+                onChangeText={(number) => setWeightGoal(number.replace(/[^0-9]/g, ""))}
                 keyboardType="numeric"
               />
 
