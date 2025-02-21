@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.regular,
     },
     button: {
-        width: "100%",
+        width: "30%",
         backgroundColor: "#d7be69",
         padding: 12,
         borderRadius: 8,
