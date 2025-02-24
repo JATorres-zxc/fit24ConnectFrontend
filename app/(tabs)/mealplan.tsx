@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform 
 } from "react-native";
@@ -40,11 +40,27 @@ const MealPlanScreen = () => {
     feedbacks: [],
   }); // State to store meal plan
   const [trainer, setTrainer] = useState(""); // State to store selected trainer
+  const [trainers, setTrainers] = useState([]);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
   const [allergens, setAllergens] = useState(""); // State to store allergens
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState(""); // State to store rating
+
+  // Fetching trainers from API
+
+  // useEffect(() => {
+  //   const fetchTrainers = async () => {
+  //     try {
+  //       const response = await axios.get('YOUR_API_ENDPOINT_HERE');
+  //       setTrainers(response.data);
+  //     } catch (error) {
+  //       console.error('Error fetching trainers:', error);
+  //     }
+  //   };
+
+  //   fetchTrainers();
+  // }, []);
 
   const handleSubmit = async () => {
     if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
@@ -249,6 +265,13 @@ const MealPlanScreen = () => {
                   <Picker.Item label="Trainer A" value="trainerA" />
                   <Picker.Item label="Trainer B" value="trainerB" />
                   <Picker.Item label="Trainer C" value="trainerC" />
+
+                  {/* Dynamic Picker Item from API */}
+
+                  {/* <Picker.Item label="Select Trainer" value="" />
+                  {trainers.map((trainer) => (
+                    <Picker.Item key={trainer.id} label={trainer.name} value={trainer.id} />
+                  ))} */}
                   
                 </Picker>
               </View>
