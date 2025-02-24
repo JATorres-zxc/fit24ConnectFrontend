@@ -20,4 +20,5 @@ export const Colors = {
     shadowColor: "#000",
     linkText: "#8f8f8f",
     offishWhite: "#fffefe",
+    offishBlack: "#343434",
 };

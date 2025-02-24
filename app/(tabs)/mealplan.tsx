@@ -241,7 +241,8 @@ const MealPlanScreen = () => {
                   style={styles.picker}
                   itemStyle = {{ color: Colors.buttonText }}
                   prompt="Select trainer"
-                  selectionColor = {Colors.textSecondary}
+                  dropdownIconColor={Colors.buttonBlack}
+                  dropdownIconRippleColor={Colors.buttonBlack}
                   mode="dropdown" // Optional for Android
                 >
                   <Picker.Item label="Select Trainer" value="" style={styles.input}/>
