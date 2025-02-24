@@ -15,6 +15,9 @@ import Toast from 'react-native-toast-message';
 import { NavigationProp } from '@react-navigation/native';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import { Dimensions } from 'react-native'
+
+const screenHeight = Dimensions.get('window').height;
 
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const router = useRouter();
@@ -162,9 +165,9 @@ const styles = StyleSheet.create({
     },
     scrollContainer: {
         flexGrow: 1,
+        paddingTop: screenHeight * 0.1 + 50,
         justifyContent: "center",
         alignItems: "center",
-        paddingVertical: 20,
     },
     logoContainer: {
         marginBottom: 20,
@@ -178,11 +181,12 @@ const styles = StyleSheet.create({
     },
     formContainer: {
         width: "100%",
+        flex: 1,
         backgroundColor: Colors.background,
         borderTopLeftRadius: 35,
         borderTopRightRadius: 35,
         paddingTop: 50,
-        paddingBottom: 20,
+        paddingBottom: -50,
         paddingHorizontal: 20,
         alignItems: "center",
     },
