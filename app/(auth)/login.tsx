@@ -14,6 +14,7 @@ import {
 import Toast from 'react-native-toast-message';
 import { NavigationProp } from '@react-navigation/native';
 import { Fonts } from '@/constants/Fonts';
+import { Colors } from '@/constants/Colors';
 
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const router = useRouter();
@@ -157,7 +158,7 @@ export default LoginScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#000", // Black background
+        backgroundColor: Colors.buttonBlack, // Black background
     },
     scrollContainer: {
         flexGrow: 1,
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
     },
     formContainer: {
         width: "100%",
-        backgroundColor: "#f9f9f9",
+        backgroundColor: Colors.background,
         borderTopLeftRadius: 35,
         borderTopRightRadius: 35,
         paddingTop: 50,
@@ -187,7 +188,7 @@ const styles = StyleSheet.create({
     },
     input: {
         width: "100%",
-        borderColor: "#ccc",
+        borderColor: Colors.border,
         borderWidth: 1,
         borderRadius: 8,
         paddingHorizontal: 12,
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
     },
     button: {
         width: "30%",
-        backgroundColor: "#d7be69",
+        backgroundColor: Colors.background2,
         padding: 12,
         borderRadius: 8,
         alignItems: "center",
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         fontFamily: Fonts.semibold,
-        color: "#fffefe"
+        color: Colors.offishWhite,
     },
     orText: {
         textAlign: "center",
@@ -219,12 +220,12 @@ const styles = StyleSheet.create({
     bottomText: {
         textAlign: "center",
         marginTop: 10,
-        color: "#8f8f8f",
+        color: Colors.linkText,
         fontFamily: Fonts.italic,
         fontSize: 12,
     },
     linkText: {
-        color: "#8f8f8f",
+        color: Colors.linkText,
         fontFamily: Fonts.semiboldItalic,
     },
 });

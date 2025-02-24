@@ -6,20 +6,7 @@ import { Picker } from "@react-native-picker/picker";
 import Toast from 'react-native-toast-message';
 import Header from '@/components/MealPlanHeader';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
-
-// Define color variables
-const colors = {
-  background: "#fff",
-  primary: "#D4AF37",
-  textPrimary: "#333",
-  textSecondary: "#666",
-  border: "#ccc",
-  buttonText: "#fff",
-  buttonRed: "#FF6347",
-  buttonBlack: "#000",
-  buttonGreen: "#27AE60",
-  shadowColor: "#000",
-};
+import { Colors } from '@/constants/Colors';
 
 const MealPlanScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
@@ -247,20 +234,23 @@ const MealPlanScreen = () => {
               </TouchableOpacity>
 
               <Text style={styles.requestHeaders}>Choose Trainer</Text>
-              <Picker
-                selectedValue={trainer}
-                onValueChange={(itemValue) => setTrainer(itemValue)}
-                style={styles.picker}
-                itemStyle={{ color: colors.buttonText }}
-                prompt="Select trainer"
-                mode="dropdown" // Optional for Android
-              >
-                <Picker.Item label="Select Trainer" value="" />
-                <Picker.Item label="Trainer A" value="trainerA" />
-                <Picker.Item label="Trainer B" value="trainerB" />
-                <Picker.Item label="Trainer C" value="trainerC" />
-                
-              </Picker>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={trainer}
+                  onValueChange={(itemValue) => setTrainer(itemValue)}
+                  style={styles.picker}
+                  itemStyle = {{ color: Colors.buttonText }}
+                  prompt="Select trainer"
+                  selectionColor = {Colors.textSecondary}
+                  mode="dropdown" // Optional for Android
+                >
+                  <Picker.Item label="Select Trainer" value="" style={styles.input}/>
+                  <Picker.Item label="Trainer A" value="trainerA" />
+                  <Picker.Item label="Trainer B" value="trainerB" />
+                  <Picker.Item label="Trainer C" value="trainerC" />
+                  
+                </Picker>
+              </View>
 
               <Text style={styles.requestHeaders}>Fitness Goal</Text>
               <TextInput
@@ -307,24 +297,26 @@ const MealPlanScreen = () => {
                 numberOfLines={4}
               />
               <Text style={styles.requestHeaders}>Overall Rating</Text>
-              <Picker
-                selectedValue={rating}
-                onValueChange={(itemValue) => setRating(itemValue)}
-                style={styles.pickerBlack}
-                itemStyle={{ color: colors.buttonText }}
-                mode="dropdown" // Optional for Android
-                dropdownIconColor={colors.buttonText}
-                dropdownIconRippleColor={colors.buttonText}
-                prompt={"Select a Rating:"} // Android only
-              >
-                <Picker.Item label="Enter Your Rating" value="" />
-                <Picker.Item label="1 - Poor" value="1" />
-                <Picker.Item label="2 - Fair" value="2" />
-                <Picker.Item label="3 - Good" value="3" />
-                <Picker.Item label="4 - Very Good" value="4" />
-                <Picker.Item label="5 - Excellent" value="5" />
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={rating}
+                  onValueChange={(itemValue) => setRating(itemValue)}
+                  style={styles.pickerBlack}
+                  itemStyle={{ color: Colors.buttonText }}
+                  mode="dropdown" // Optional for Android
+                  dropdownIconColor={Colors.buttonText}
+                  dropdownIconRippleColor={Colors.buttonText}
+                  prompt={"Select a Rating:"} // Android only
+                >
+                  <Picker.Item label="Enter Your Rating" value="" />
+                  <Picker.Item label="1 - Poor" value="1" />
+                  <Picker.Item label="2 - Fair" value="2" />
+                  <Picker.Item label="3 - Good" value="3" />
+                  <Picker.Item label="4 - Very Good" value="4" />
+                  <Picker.Item label="5 - Excellent" value="5" />
 
-              </Picker>
+                </Picker>
+              </View>
 
               <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
                 <Text style={styles.buttonText}>Submit Feedback</Text>
@@ -364,7 +356,7 @@ const MealPlanScreen = () => {
                     </View>
                   ))}
                   <TouchableOpacity style={styles.trashIcon} onPress={() => setViewState("delete")}>
-                    <FontAwesome name="trash" size={24} color={colors.buttonBlack} />
+                    <FontAwesome name="trash" size={24} color={Colors.buttonBlack} />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.buttonFeedback} onPress={() => setViewState("feedback")}>
                     <Text style={styles.buttonText}>Send Feedback</Text>
@@ -396,14 +388,14 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     justifyContent: "flex-start",
-    backgroundColor: colors.background,
+    backgroundColor: Colors.background,
     paddingVertical: 20,
     paddingLeft: 30,
     paddingRight: 30,
   },
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: Colors.background,
     padding: 0,
     justifyContent: "flex-start",
     alignItems: "center",
@@ -430,7 +422,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   buttonFeedback: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.primary,
     padding: 12,
     borderRadius: 5,
     alignSelf: "center",
@@ -439,7 +431,7 @@ const styles = StyleSheet.create({
     height: 45,
   },
   submitButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.primary,
     padding: 12,
     borderRadius: 5,
     alignSelf: "center",
@@ -454,13 +446,13 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 20,
     width: "70%",
-    backgroundColor: colors.buttonBlack,
+    backgroundColor: Colors.buttonBlack,
     paddingVertical: 10,
     paddingHorizontal: 30,
     marginHorizontal: 5,
   },
   buttonRed: {
-    backgroundColor: colors.buttonRed,
+    backgroundColor: Colors.buttonRed,
     paddingVertical: 10,
     paddingHorizontal: 30,
     alignItems: "center",
@@ -468,14 +460,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   buttonGreen: {
-    backgroundColor: colors.buttonGreen,
+    backgroundColor: Colors.buttonGreen,
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 10,
     marginHorizontal: 5,
   },
   buttonText: {
-    color: colors.buttonText,
+    color: Colors.buttonText,
     fontWeight: "bold",
     fontSize: 16,
     textAlign: "center",
@@ -500,7 +492,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     fontSize: 20,
     fontWeight: "bold",
-    color: colors.textPrimary,
+    color: Colors.textPrimary,
     marginBottom: 30,
   },
   title: {
@@ -511,7 +503,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: colors.textSecondary,
+    color: Colors.textSecondary,
     textAlign: "center",
     marginBottom: 20,
   },
@@ -529,7 +521,7 @@ const styles = StyleSheet.create({
     width: "100%",
     padding: 12,
     borderWidth: 1.5,
-    borderColor: colors.textSecondary,
+    borderColor: Colors.textSecondary,
     borderRadius: 0,
     marginBottom: 10,
   },
@@ -538,7 +530,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   button: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.primary,
     padding: 12,
     borderRadius: 5,
     alignItems: "center",
@@ -548,16 +540,16 @@ const styles = StyleSheet.create({
   mealItem: {
     borderWidth: 1,       // Border thickness
     width: '100%',        // Full width
-    borderColor: colors.buttonBlack,  // Border color (light gray)
+    borderColor: Colors.buttonBlack,  // Border color (light gray)
     borderRadius: 0,     // Rounded corners
     padding: 15,          // Padding inside the box
     marginVertical: 10,   // Spacing between containers
-    backgroundColor: colors.background, // Background color
+    backgroundColor: Colors.background, // Background color
     marginBottom: 10,
   },
   mealTitle: {
     fontSize: 18,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.background,
     top: -28,
     marginBottom: -25,
     paddingLeft: 5,
@@ -568,12 +560,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 10,
-    color: colors.textPrimary,
+    color: Colors.textPrimary,
   },
   mealDescription: {
     fontSize: 16,
     marginBottom: 3,
-    color: colors.textSecondary,
+    color: Colors.textSecondary,
   },
   deleteContainer: {
     position: "absolute",
@@ -582,34 +574,30 @@ const styles = StyleSheet.create({
     transform: [{ translateX: -150 }, { translateY: -100 }],
     width: 300,
     padding: 20,
-    backgroundColor: colors.background,
+    backgroundColor: Colors.background,
     borderRadius: 10,
-    shadowColor: colors.shadowColor,
+    shadowColor: Colors.shadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
     alignSelf: "center",
   },  
-  picker: {
-    height: 50, 
+  picker: { 
     width: '100%', 
-    borderWidth: 2, 
-    borderColor: colors.buttonBlack, 
+    backgroundColor: Colors.background,
+  },
+  pickerContainer: {
+    borderWidth: 1.5,
+    borderColor: Colors.textSecondary,
+    width: '100%', 
     borderRadius: 0,
-    backgroundColor: '#fff',
-    paddingHorizontal: 10,
+    marginBottom: 5,
   },
   pickerBlack: {
-    height: 50, 
     width: '100%', 
-    borderWidth: 2, 
-    borderColor: colors.buttonBlack, 
-    borderRadius: 0,
-    backgroundColor: colors.buttonBlack,
-    paddingHorizontal: 10,
-    marginBottom: 25,
-    color: 'white', // Ensures text color is white
+    backgroundColor: Colors.buttonBlack,
+    color: Colors.offishWhite,
   },
   trashIcon: {
     alignSelf: 'flex-end',
