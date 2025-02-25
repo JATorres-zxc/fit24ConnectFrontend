@@ -1,83 +1,50 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image} from "react-native";
+import React, { useState } from "react";
+import { 
+  View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform 
+} from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import Toast from 'react-native-toast-message';
 import Header from '@/components/MealPlanHeader';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { Colors } from '@/constants/Colors';
 
 const MealPlanScreen = () => {
-  const [isRequestingMeal, setIsRequestingMeal] = useState(false); // Toggle state
-  interface Meal {
-    meal: string;
-    type: string;
-    calories: number;
-    description: string;
-  }
-
-  interface MealPlan {
-    meals: Meal[];
-  }
-
-  useEffect(() => {
-    // DELETE if API AVAILABLE.
-    // Example meal plan for viewing
-    const exampleMealPlan: MealPlan = {
-      meals: [
-        {
-          meal: "Breakfast",
-          type: "Oatmeal",
-          calories: 300,
-          description: "A bowl of oatmeal with fruits and nuts.",
-        },
-        {
-          meal: "Lunch",
-          type: "Grilled Chicken Salad",
-          calories: 450,
-          description: "Grilled chicken breast with mixed greens and vinaigrette.",
-        },
-        {
-          meal: "Dinner",
-          type: "Salmon and Quinoa",
-          calories: 500,
-          description: "Baked salmon with quinoa and steamed vegetables.",
-        },
-      ],
-    };
-
-    setMealPlan(exampleMealPlan);
-  }, []);
-  // Sample until here
-
-  const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State to store meal plan
+  const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
+  const [mealPlan, setMealPlan] = useState<{
+    trainer: string;
+    fitnessGoal: string;
+    weightGoal: string;
+    allergens: string;
+    meals: { meal: string; type: string; calories: number; description: string }[];
+    feedbacks: { id: string; feedback: string; rating: number; createdAt: Date }[];
+  }>({
+    trainer: "Trainer A",
+    fitnessGoal: "Lose Weight",
+    weightGoal: "70",
+    allergens: "Peanuts, Dairy",
+    meals: [
+      {
+        meal: "Breakfast", description: "Oatmeal with fruits",
+        type: "Food",
+        calories: 330,
+      },
+      { meal: "Lunch", description: "Chicken Salad",
+        type: "Food",
+        calories: 440,
+      },
+      { meal: "Dinner", description: "Siya <3",
+        type: "Unknown",
+        calories: 550,
+      },
+    ],
+    feedbacks: [],
+  }); // State to store meal plan
   const [trainer, setTrainer] = useState(""); // State to store selected trainer
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
   const [allergens, setAllergens] = useState(""); // State to store allergens
   const [feedback, setFeedback] = useState(""); // State to store feedback
-  const [isFeedbackFormVisible, setIsFeedbackFormVisible] = useState(false); // Toggle feedback form visibility
-  const [isDeleteAlertVisible, setIsDeleteAlert] = useState(false); // Toggle delete visibility
   const [rating, setRating] = useState(""); // State to store rating
-
-  // Uncomment meal plan fetch if API is available.
-
-  // useEffect(() => {
-  //   // Fetch meal plan from the database if it exists
-  //   const fetchMealPlan = async () => {
-  //     try {
-  //       const response = await fetch('https://api.example.com/getMealPlan');
-  //       const data = await response.json();
-  //       if (response.ok) {
-  //         setMealPlan(data);
-  //       } else {
-  //         setMealPlan(null);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching meal plan:', error);
-  //       setMealPlan(null);
-  //     }
-  //   };
-
-  //   fetchMealPlan();
-  // }, []);
 
   const handleSubmit = async () => {
     if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
@@ -92,7 +59,7 @@ const MealPlanScreen = () => {
     
     try {
       // // Replace with actual API call
-      // const response = await fetch('https://api.example.com/submitMealPlanRequest', {
+      // const response = await fetch('https://api.example.com/submitMealPlan', {
       //   method: 'POST',
       //   headers: {
       //     'Content-Type': 'application/json',
@@ -102,11 +69,16 @@ const MealPlanScreen = () => {
       //     fitnessGoal,
       //     weightGoal,
       //     allergens,
+      //     feedback,
+      //     rating,
       //   }),
       // });
 
+      // const result = await response.json();
+      
+      // Temporary Success Placeholder
       const temp_response = true;
-      // response.ok
+
       if (temp_response) {
         Toast.show({
           type: 'success',
@@ -115,7 +87,8 @@ const MealPlanScreen = () => {
           position: 'bottom'
         });
         setTimeout(() => {
-          setIsRequestingMeal(false);
+          setViewState("plan");
+          // setMealPlan("result"); // Update meal plan with the new data
         }, 2000); // 2-second delay
       } else {
         Toast.show({
@@ -135,7 +108,7 @@ const MealPlanScreen = () => {
     }
   };
 
-  const handleFeedbackSubmit = () => {
+  const handleFeedbackSubmit = async () => {
     if (!feedback || !rating) {
       Toast.show({
         type: 'error',
@@ -146,54 +119,43 @@ const MealPlanScreen = () => {
       return;
     }
 
-    // Placeholder for feedback submission
-    // UNCOMMENT if API is available.
+    const newFeedback = {
+      id: `${mealPlan.meals[0].meal}-${Date.now()}`,
+      feedback,
+      rating: parseInt(rating),
+      createdAt: new Date(),
+    };
 
-    // fetch('https://api.example.com/submitFeedback', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     feedback,
-    //     rating,
-    //   }),
-    // })
-    //   .then(response => response.json())
-    //   .then(data => {
-    //     console.log('Feedback submitted successfully:', data);
-    //     Toast.show({
-    //       type: 'info',
-    //       text1: 'Feedback Sent',
-    //       text2: 'Your feedback has been sent successfully. Please wait a few days for your new meal plan!',
-    //       position: 'bottom'
-    //     });
-    //     setIsFeedbackFormVisible(false);
-    //     setFeedback("");
-    //     setRating("");
-    //   })
-    //   .catch(error => {
-    //     console.error('Error submitting feedback:', error);
-    //     Toast.show({
-    //       type: 'error',
-    //       text1: 'Feedback Failed',
-    //       text2: 'There was an error submitting your feedback.',
-    //       position: 'bottom'
-    //     });
-    //   });
+    const updatedMealPlan = {
+      ...mealPlan,
+      feedbacks: [...(mealPlan.feedbacks || []), newFeedback],
+    };
 
-    // DELETE BELOW if API is available.
+    setMealPlan(updatedMealPlan);
+
     try {
+      // Uncomment and replace with actual API call
+      // const response = await fetch('https://api.example.com/submitFeedback', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     feedback,
+      //     rating,
+      //   }),
+      // });
+
       const temp_response = true;
       // response.ok
       if (temp_response) {
         Toast.show({
           type: 'info',
           text1: 'Feedback Sent',
-          text2: 'Your feedback has been sent!',
+          text2: 'Your feedback has been sent successfully. Please wait a few days for your new meal plan!',
           position: 'bottom'
         });
-        setIsFeedbackFormVisible(false);
+        setViewState("plan");
         setFeedback("");
         setRating("");
       } else {
@@ -235,7 +197,7 @@ const MealPlanScreen = () => {
           text2: 'Your meal plan has been deleted successfully.',
           position: 'bottom'
         });
-        setIsDeleteAlert(false)
+        setViewState("plan");
         // setMealPlan(null); // Clear the meal plan
       } else {
         Toast.show({
@@ -256,151 +218,260 @@ const MealPlanScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Header />
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"} 
+      style={{ flex: 1 }}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.container}>
+          <Header />
 
-      {isRequestingMeal ? (
-      // Request Meal Plan View
-      <View style={styles.formContainer}>
-        <TouchableOpacity onPress={() => setIsRequestingMeal(false)}>
-        <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
+          {viewState === "request" ? (
+            // Request Meal Plan View
+            <View style={styles.formContainer}>
+              <TouchableOpacity onPress={() => setViewState("plan")}>
+                <Text style={styles.backText}>←    Request Meal Plan</Text>
+              </TouchableOpacity>
 
-        <Text style={styles.title}>Request Meal Plan</Text>
+              <Text style={styles.requestHeaders}>Choose Trainer</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={trainer}
+                  onValueChange={(itemValue) => setTrainer(itemValue)}
+                  style={styles.picker}
+                  itemStyle = {{ color: Colors.buttonText }}
+                  prompt="Select trainer"
+                  dropdownIconColor={Colors.buttonBlack}
+                  dropdownIconRippleColor={Colors.buttonBlack}
+                  mode="dropdown" // Optional for Android
+                >
+                  <Picker.Item label="Select Trainer" value="" style={styles.input}/>
+                  <Picker.Item label="Trainer A" value="trainerA" />
+                  <Picker.Item label="Trainer B" value="trainerB" />
+                  <Picker.Item label="Trainer C" value="trainerC" />
+                  
+                </Picker>
+              </View>
 
-        <Picker
-        selectedValue={trainer}
-        onValueChange={(itemValue) => setTrainer(itemValue)}
-        style={styles.input}
-        >
-        <Picker.Item label="Select Trainer" value="" />
-        <Picker.Item label="Trainer A" value="trainerA" />
-        <Picker.Item label="Trainer B" value="trainerB" />
-        <Picker.Item label="Trainer C" value="trainerC" />
-        </Picker>
+              <Text style={styles.requestHeaders}>Fitness Goal</Text>
+              <TextInput
+                placeholder="Enter Your Fitness Goal"
+                style={styles.input}
+                value={fitnessGoal}
+                onChangeText={(text) => setFitnessGoal(text)}
+              />
 
-        <Picker
-        selectedValue={fitnessGoal}
-        onValueChange={(itemValue) => setFitnessGoal(itemValue)}
-        style={styles.input}
-        >
-        <Picker.Item label="Select Fitness Goal" value="" />
-        <Picker.Item label="Lose Weight" value="loseWeight" />
-        <Picker.Item label="Build Muscle" value="buildMuscle" />
-        <Picker.Item label="Maintain Weight" value="maintainWeight" />
-        </Picker>
+              <Text style={styles.requestHeaders}>Weight Goal</Text>
+              <TextInput
+                placeholder="Enter Your Weight Goal"
+                style={styles.input}
+                value={weightGoal}
+                onChangeText={(number) => setWeightGoal(number.replace(/[^0-9]/g, ""))}
+                keyboardType="numeric"
+              />
 
-        <TextInput
-        placeholder="Enter Your Weight Goal (e.g., 70)"
-        style={styles.input}
-        value={weightGoal}
-        onChangeText={(text) => setWeightGoal(text.replace(/[^0-9]/g, ''))}
-        keyboardType="numeric"
-        />
+              <Text style={styles.requestHeaders}>Allergen/s</Text>
+              <TextInput
+                placeholder="Enter Your Allergen/s"
+                style={styles.input}
+                value={allergens}
+                onChangeText={setAllergens}
+              />
 
-        <TextInput
-        placeholder="Enter Your Allergen/s (comma separated)"
-        style={styles.input}
-        value={allergens}
-        onChangeText={setAllergens}
-        />
-
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>Submit Request</Text>
-        </TouchableOpacity>
-      </View>
-      ) : (
-      // Nutritional Meal Plan View
-      <View style={styles.planContainer}>
-        {mealPlan ? (
-        <>
-          <Text style={styles.subtitle}>Your Meal Plan:</Text>
-          {mealPlan.meals.map((meal, index) => (
-          <View key={index} style={styles.mealContainer}>
-            <View style={styles.mealContent}>
-            <Text style={styles.mealTitle}>{meal.meal}</Text>
-            <Text>Type of Food: {meal.type}</Text>
-            <Text>Calories: {meal.calories}</Text>
-            <Text>Description: {meal.description}</Text>
+              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                <Text style={styles.buttonText}>Submit Request</Text>
+              </TouchableOpacity>
             </View>
-          </View>
-          ))}
-          <TouchableOpacity style={styles.button} onPress={() => setIsRequestingMeal(true)}>
-          <Text style={styles.buttonText}>Request New Meal Plan</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => setIsFeedbackFormVisible(true)}>
-          <Text style={styles.buttonText}>Send Feedback</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.deleteButton]} onPress={() => setIsDeleteAlert(true)}>
-          <Text style={styles.buttonText}>Delete Meal Plan</Text>
-          </TouchableOpacity>
-        </>
-        ) : (
-        <>
-          <Text style={styles.subtitle}>You have no existing meal plan.</Text>
-          <TouchableOpacity style={styles.button} onPress={() => setIsRequestingMeal(true)}>
-          <Text style={styles.buttonText}>Request Meal Plan</Text>
-          </TouchableOpacity>
-        </>
-        )}
-      </View>
-      )}
+          ) : viewState === "feedback" ? (
+            <View style={styles.formContainer}>
+              <TouchableOpacity onPress={() => setViewState("plan")}>
+                <Text style={styles.backText}>←   Send Feedback</Text>
+              </TouchableOpacity>
 
-      {isFeedbackFormVisible && (
-      <View style={styles.feedbackContainer}>
-        <Text style={styles.feedbackTitle}>Submit Feedback</Text>
-        <TextInput
-        placeholder="Enter your feedback"
-        style={styles.input}
-        value={feedback}
-        onChangeText={setFeedback}
-        />
-        <Picker
-        selectedValue={rating}
-        onValueChange={(itemValue) => setRating(itemValue)}
-        style={styles.input}
-        >
-        <Picker.Item label="Select Rating" value="" />
-        <Picker.Item label="1 - Poor" value="1" />
-        <Picker.Item label="2 - Fair" value="2" />
-        <Picker.Item label="3 - Good" value="3" />
-        <Picker.Item label="4 - Very Good" value="4" />
-        <Picker.Item label="5 - Excellent" value="5" />
-        </Picker>
-        <TouchableOpacity style={styles.button} onPress={handleFeedbackSubmit}>
-        <Text style={styles.buttonText}>Submit Feedback</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => setIsFeedbackFormVisible(false)}>
-        <Text style={styles.buttonText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
-      )}
+              <Text style={styles.feedbackHeaders}>Feedback</Text>
+              <TextInput
+                placeholder="Enter your feedback here"
+                style={[styles.input, styles.feedbackInput]}
+                value={feedback}
+                onChangeText={setFeedback}
+                multiline
+                numberOfLines={4}
+              />
+              <Text style={styles.requestHeaders}>Overall Rating</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={rating}
+                  onValueChange={(itemValue) => setRating(itemValue)}
+                  style={styles.pickerBlack}
+                  itemStyle={{ color: Colors.buttonText }}
+                  mode="dropdown" // Optional for Android
+                  dropdownIconColor={Colors.buttonText}
+                  dropdownIconRippleColor={Colors.buttonText}
+                  prompt={"Select a Rating:"} // Android only
+                >
+                  <Picker.Item label="Enter Your Rating" value="" />
+                  <Picker.Item label="1 - Poor" value="1" />
+                  <Picker.Item label="2 - Fair" value="2" />
+                  <Picker.Item label="3 - Good" value="3" />
+                  <Picker.Item label="4 - Very Good" value="4" />
+                  <Picker.Item label="5 - Excellent" value="5" />
 
-      {isDeleteAlertVisible && (
-      <View style={styles.feedbackContainer}>
-        <Text style={styles.feedbackTitle}>Are you sure you want to delete this meal plan?</Text>
-        <TouchableOpacity style={styles.buttonRed} onPress={handleDelete}>
-          <Text style={styles.buttonText}>Confirm</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => setIsDeleteAlert(false)}>
-          <Text style={styles.buttonText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
-      )}
+                </Picker>
+              </View>
 
+              <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
+                <Text style={styles.buttonText}>Submit Feedback</Text>
+              </TouchableOpacity>
+            </View>
+          ) : viewState === "delete" ? (
+            <View style={styles.deleteContainer}>
+              <Ionicons name="trash-outline" size={24} color="black" style={styles.icon} />
+              <Text style={styles.alertTitle}>Delete Meal Plan?</Text>
+              <Text style={styles.alertMessage}>
+                You're going to permanently delete your Meal Plan. Are you sure?
+              </Text>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
+                  <Text style={styles.buttonText}>NO</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.buttonGreen} onPress={handleDelete}>
+                  <Text style={styles.buttonText}>YES</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            // Nutritional Meal Plan View
+            <View style={styles.planContainer}>
+              {mealPlan ? (
+                <>
+                  
+                  {mealPlan.meals.map((meal, index) => (
+                    <View key={index} style={styles.mealItem}>
+                      <Text style={styles.mealTitle}>{meal.meal}</Text>
+                      <Text style={styles.mealDescription}>Type of Food:</Text>
+                      <Text style={styles.mealData}>{meal.type}</Text>
+                      <Text style={styles.mealDescription}>Calories:</Text>
+                      <Text style={styles.mealData}>{meal.calories} kcal</Text>
+                      <Text style={styles.mealDescription}>Description:</Text>
+                      <Text style={styles.mealData}>{meal.description}</Text>
+                    </View>
+                  ))}
+                  <TouchableOpacity style={styles.trashIcon} onPress={() => setViewState("delete")}>
+                    <FontAwesome name="trash" size={24} color={Colors.buttonBlack} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.buttonFeedback} onPress={() => setViewState("feedback")}>
+                    <Text style={styles.buttonText}>Send Feedback</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.buttonBlack} onPress={() => setViewState("request")}>
+                    <Text style={styles.buttonText}>Request New Meal Plan</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.subtitle}>You have no existing meal plan.</Text>
+                  <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
+                    <Text style={styles.buttonText}>Request Meal Plan</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          )}
+          
+        </View>
+      </ScrollView>
       <Toast />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 // Styles
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "flex-start",
+    backgroundColor: Colors.background,
+    paddingVertical: 20,
+    paddingLeft: 30,
+    paddingRight: 30,
+  },
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
+    backgroundColor: Colors.background,
+    padding: 0,
     justifyContent: "flex-start",
     alignItems: "center",
+  },
+  icon: {
+    marginBottom: 10,
+    alignSelf: "center",
+  },
+  alertTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+    textAlign: "center",
+  },
+  alertMessage: {
+    textAlign: "center",
+    fontSize: 14,
+    color: "gray",
+    marginBottom: 15,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  buttonFeedback: {
+    backgroundColor: Colors.primary,
+    padding: 12,
+    borderRadius: 5,
+    alignSelf: "center",
+    top: -5,
+    width: "50%",
+    height: 45,
+  },
+  submitButton: {
+    backgroundColor: Colors.primary,
+    padding: 12,
+    borderRadius: 5,
+    alignSelf: "center",
+    top: -5,
+    width: "50%",
+    height: 45,
+    marginTop: 10,
+  },
+  buttonBlack: {
+    padding: 12,
+    borderRadius: 0,
+    alignSelf: "center",
+    marginTop: 20,
+    width: "70%",
+    backgroundColor: Colors.buttonBlack,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    marginHorizontal: 5,
+  },
+  buttonRed: {
+    backgroundColor: Colors.buttonRed,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    alignItems: "center",
+    borderRadius: 10,
+    marginHorizontal: 5,
+  },
+  buttonGreen: {
+    backgroundColor: Colors.buttonGreen,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    marginHorizontal: 5,
+  },
+  buttonText: {
+    color: Colors.buttonText,
+    fontWeight: "bold",
+    fontSize: 16,
+    textAlign: "center",
   },
   logo: {
     width: 100,
@@ -409,99 +480,130 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   planContainer: {
-    alignItems: "center",
+    marginTop: 20,
+    width: "100%",
   },
   formContainer: {
     width: "100%",
+    marginTop: 30,
     alignItems: "flex-start",
+    verticalAlign: 'middle',
   },
   backText: {
     alignSelf: "flex-start",
-    fontSize: 16,
-    color: "#333",
-    marginBottom: 10,
+    fontSize: 20,
+    fontWeight: "bold",
+    color: Colors.textPrimary,
+    marginBottom: 30,
   },
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 10,
-    alignSelf: "center",
+    marginBottom: 20,
+    alignSelf: "baseline",
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
+    color: Colors.textSecondary,
     textAlign: "center",
     marginBottom: 20,
+  },
+  requestHeaders: {
+    fontSize: 18,
+    marginBottom: 5,
+    alignSelf: "flex-start",
+  },
+  feedbackHeaders: {
+    fontSize: 18,
+    marginBottom: 15,
+    alignSelf: "flex-start",
   },
   input: {
     width: "100%",
     padding: 12,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
+    borderWidth: 1.5,
+    borderColor: Colors.textSecondary,
+    borderRadius: 0,
     marginBottom: 10,
   },
+  feedbackInput: {
+    height: 200,
+    textAlignVertical: 'top',
+  },
   button: {
-    backgroundColor: "#D4AF37",
+    backgroundColor: Colors.primary,
     padding: 12,
     borderRadius: 5,
     alignItems: "center",
     marginTop: 20,
     width: "100%",
   },
-  buttonRed: {
-    backgroundColor: "#FF6347",
-    padding: 12,
-    borderRadius: 5,
-    alignItems: "center",
-    marginTop: 20,
-    width: "100%",
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  mealContainer: {
-    marginBottom: 20,
-    alignItems: "flex-start",
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    width: "100%",
-  },
-  mealContent: {
-    backgroundColor: "#fff",
+  mealItem: {
+    borderWidth: 1,       // Border thickness
+    width: '100%',        // Full width
+    borderColor: Colors.buttonBlack,  // Border color (light gray)
+    borderRadius: 0,     // Rounded corners
+    padding: 15,          // Padding inside the box
+    marginVertical: 10,   // Spacing between containers
+    backgroundColor: Colors.background, // Background color
+    marginBottom: 10,
   },
   mealTitle: {
     fontSize: 18,
+    backgroundColor: Colors.background,
+    top: -28,
+    marginBottom: -25,
+    paddingLeft: 5,
+    paddingRight: 5,  // Ensures the background fully wraps the text
+    alignSelf: "flex-start", // Shrinks the background to fit the text
+  },  
+  mealData: {
+    fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 5,
+    marginBottom: 10,
+    color: Colors.textPrimary,
   },
-  deleteButton: {
-    backgroundColor: "#FF6347", // Red color for delete button
+  mealDescription: {
+    fontSize: 16,
+    marginBottom: 3,
+    color: Colors.textSecondary,
   },
-  feedbackContainer: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
+  deleteContainer: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
     transform: [{ translateX: -150 }, { translateY: -100 }],
     width: 300,
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     borderRadius: 10,
-    shadowColor: '#000',
+    shadowColor: Colors.shadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
+    alignSelf: "center",
+  },  
+  picker: { 
+    width: '100%', 
+    backgroundColor: Colors.background,
   },
-  feedbackTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
+  pickerContainer: {
+    borderWidth: 1.5,
+    borderColor: Colors.textSecondary,
+    width: '100%', 
+    borderRadius: 0,
+    marginBottom: 5,
+  },
+  pickerBlack: {
+    width: '100%', 
+    backgroundColor: Colors.buttonBlack,
+    color: Colors.offishWhite,
+  },
+  trashIcon: {
+    alignSelf: 'flex-end',
+    marginTop: 0,
+    flexGrow: 0,
   },
 });
 
