@@ -52,14 +52,31 @@ const MealPlanScreen = () => {
   // useEffect(() => {
   //   const fetchTrainers = async () => {
   //     try {
-  //       const response = await axios.get('YOUR_API_ENDPOINT_HERE');
-  //       setTrainers(response.data);
+  //       const response = await fetch('YOUR_API_ENDPOINT_HERE');
+  //       const data = await response.json();
+  //       setTrainers(data);
   //     } catch (error) {
   //       console.error('Error fetching trainers:', error);
   //     }
   //   };
-
+  
   //   fetchTrainers();
+  // }, []);
+
+  // Fetching Meal Plan from API
+  
+  // useEffect(() => {
+  //   const fetchMealPlan = async () => {
+  //     try {
+  //       const response = await fetch('YOUR_MEAL_PLAN_API_ENDPOINT_HERE');
+  //       const data = await response.json();
+  //       setMealPlan(data);
+  //     } catch (error) {
+  //       console.error('Error fetching meal plan:', error);
+  //     }
+  //   };
+  
+  //   fetchMealPlan();
   // }, []);
 
   const handleSubmit = async () => {
@@ -367,7 +384,6 @@ const MealPlanScreen = () => {
             <View style={styles.planContainer}>
               {mealPlan ? (
                 <>
-                  
                   {mealPlan.meals.map((meal, index) => (
                     <View key={index} style={styles.mealItem}>
                       <Text style={styles.mealTitle}>{meal.meal}</Text>
