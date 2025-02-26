@@ -6,6 +6,7 @@ import { Picker } from "@react-native-picker/picker";
 import Toast from 'react-native-toast-message';
 import Header from '@/components/MealPlanHeader';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
 interface Meal {
@@ -470,12 +471,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 5,
     textAlign: "center",
+    fontFamily: Fonts.bold,
   },
   alertMessage: {
     textAlign: "center",
     fontSize: 14,
     color: "gray",
     marginBottom: 15,
+    fontFamily: Fonts.regular,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -500,6 +503,7 @@ const styles = StyleSheet.create({
     width: "50%",
     height: 45,
     marginTop: 10,
+    fontFamily: Fonts.medium,
   },
   buttonBlack: {
     padding: 12,
@@ -532,6 +536,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
     textAlign: "center",
+    fontFamily: Fonts.semibold,
   },
   logo: {
     width: 100,
@@ -555,23 +560,27 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: Colors.textPrimary,
     marginBottom: 30,
+    fontFamily: Fonts.bold,
   },
   title: {
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 20,
     alignSelf: "baseline",
+    fontFamily: Fonts.bold,
   },
   subtitle: {
     fontSize: 16,
     color: Colors.textSecondary,
     textAlign: "center",
     marginBottom: 20,
+    fontFamily: Fonts.medium,
   },
   subtitle2: {
     fontSize: 16,
     color: Colors.textSecondary,
     textAlign: "center",
+    fontFamily: Fonts.mediumItalic,
   },
   requestHeaders: {
     fontSize: 18,
@@ -582,6 +591,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 15,
     alignSelf: "flex-start",
+    fontFamily: Fonts.semibold,
   },
   input: {
     width: "100%",
@@ -590,10 +600,12 @@ const styles = StyleSheet.create({
     borderColor: Colors.textSecondary,
     borderRadius: 0,
     marginBottom: 10,
+    fontFamily: Fonts.regular,
   },
   feedbackInput: {
     height: 200,
     textAlignVertical: 'top',
+    fontFamily: Fonts.regular,
   },
   button: {
     backgroundColor: Colors.primary,
@@ -602,6 +614,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 20,
     width: "100%",
+    fontFamily: Fonts.medium,
   },
   mealItem: {
     borderWidth: 1,       // Border thickness
@@ -621,17 +634,20 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
     paddingRight: 5,  // Ensures the background fully wraps the text
     alignSelf: "flex-start", // Shrinks the background to fit the text
+    fontFamily: Fonts.semibold,
   },  
   mealData: {
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 10,
     color: Colors.textPrimary,
+    fontFamily: Fonts.semibold,
   },
   mealDescription: {
     fontSize: 16,
     marginBottom: 3,
     color: Colors.textSecondary,
+    fontFamily: Fonts.regular,
   },
   deleteContainer: {
     position: "absolute",
@@ -652,18 +668,20 @@ const styles = StyleSheet.create({
   picker: { 
     width: '100%', 
     backgroundColor: Colors.background,
+    fontFamily: Fonts.regular,
   },
   pickerContainer: {
     borderWidth: 1.5,
     borderColor: Colors.textSecondary,
     width: '100%', 
     borderRadius: 0,
-    marginBottom: 5,
+    marginBottom: 10,
   },
   pickerBlack: {
     width: '100%', 
     backgroundColor: Colors.buttonBlack,
     color: Colors.offishWhite,
+    fontFamily: Fonts.regular,
   },
   trashIcon: {
     alignSelf: 'flex-end',
