@@ -1,6 +1,7 @@
 import { Text, View, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { useState } from "react";
 import { router } from 'expo-router';
+import Toast from 'react-native-toast-message';
 
 import Header from '@/components/EditPasswordHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome'
@@ -16,6 +17,76 @@ export default function EditPasswordScreen() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false); 
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleSavePassword = () => {
+    // Validate inputs
+    if (!currentPassword) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Current password is required',
+      });
+      return;
+    }
+  
+    if (newPassword.length < 8) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'New password must be at least 8 characters',
+      });
+      return;
+    }
+  
+    if (newPassword !== confirmPassword) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Passwords don\'t match',
+      });
+      return;
+    }
+  
+    // Here you would typically call an API to verify current password
+    // and update with the new password
+    // For example:
+    // updatePassword(currentPassword, newPassword)
+    //   .then(() => {
+    //     Toast.show({
+    //       type: 'success',
+    //       text1: 'Success',
+    //       text2: 'Password updated successfully',
+    //     });
+    //     router.push('/profile');
+    //   })
+    //   .catch(error => {
+    //     if (error.message === 'Current password is incorrect') {
+    //       Toast.show({
+    //         type: 'error',
+    //         text1: 'Error',
+    //         text2: 'Current password is incorrect',
+    //       });
+    //     } else {
+    //       Toast.show({
+    //         type: 'error',
+    //         text1: 'Error',
+    //         text2: 'Unable to update password. Please try again later',
+    //       });
+    //     }
+    //   });
+  
+    // For demo purposes, show success toast and navigate
+    Toast.show({
+      type: 'success',
+      text1: 'Password Updated',
+      text2: 'Your password has been saved successfully',
+    });
+    
+    // Short delay before navigation to allow toast to be seen
+    setTimeout(() => {
+      router.push('/profile');
+    }, 1500);
+  };
   
 
   return (
@@ -102,13 +173,13 @@ export default function EditPasswordScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.save} onPress={() => router.push('/profile')}>
+        <TouchableOpacity style={styles.save} onPress={handleSavePassword}>
           <Text style={styles.buttonText}>
             Save Password
           </Text>
         </TouchableOpacity>
       </View>
-
+      <Toast />
     </View>
   );
 }
