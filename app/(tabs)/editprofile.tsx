@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Text, View, StyleSheet, Image, TextInput, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, Image, TextInput, TouchableOpacity, Platform } from 'react-native';
 import { router } from 'expo-router';
+import Toast from 'react-native-toast-message';
 
 import Header from '@/components/EditProfileHeader';
 import { Fonts } from '@/constants/Fonts';
@@ -35,9 +36,40 @@ export default function EditProfileScreen() {
     }));
   };
 
+  const showToast = (message: string) => {
+    Toast.show({
+      type: 'error',
+      text1: 'Missing Details',
+      text2: message,
+      position: 'top',
+      visibilityTime: 4000,
+      topOffset: 100,
+    });
+  };
+
+  const handleSave = () => {
+    if (!profile.fullName || !profile.email || !profile.address || !profile.phoneNo) {
+      showToast('Please fill out all details before saving.');
+      return;
+    }
+    // Show success toast
+    Toast.show({
+      type: 'success',
+      text1: 'Profile Updated',
+      text2: 'Your changes have been saved successfully.',
+      position: 'top',
+      topOffset: 100,
+    });
+
+    // Navigate back to the Profile screen after a short delay
+    setTimeout(() => {
+      router.replace('/profile'); // or use router.replace('/profile') if needed
+    }, 1500);
+  };
+
   return (
     <View style={styles.container}>
-      <Header />
+      <Header onSave={handleSave} />
 
       <View style={styles.profileContainer}>
         <View style={styles.imageContainer}>
@@ -70,7 +102,7 @@ export default function EditProfileScreen() {
             value={profile.email}
             onChangeText={text => handleInputChange('email', text)}
             keyboardType="email-address"
-            placeholder=""
+            placeholder={profile.email}
           />
         </View>
 
@@ -80,7 +112,7 @@ export default function EditProfileScreen() {
             style={styles.input}
             value={profile.address}
             onChangeText={text => handleInputChange('address', text)}
-            placeholder=""
+            placeholder={profile.address}
           />
         </View>
 
@@ -91,18 +123,19 @@ export default function EditProfileScreen() {
             value={profile.phoneNo}
             onChangeText={text => handleInputChange('phoneNo', text)}
             keyboardType="phone-pad"
-            placeholder=""
+            placeholder={profile.phoneNo}
           />
         </View>
       </View>
 
       <View>
-        <TouchableOpacity style={styles.button} onPress={() => router.push('/editpassword')}>
+        <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>
             Edit Password
           </Text>
         </TouchableOpacity>
       </View>
+      <Toast />
     </View>
   );
 }

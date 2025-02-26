@@ -5,7 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AntDesign from '@expo/vector-icons/AntDesign'
 import { Fonts } from '@/constants/Fonts';
 
-export default function Header() {
+interface HeaderProps {
+  onSave: () => void;
+}
+
+export default function Header({ onSave }: HeaderProps) {
   return (
     <SafeAreaView>
       <View style={styles.header}>
@@ -23,7 +27,7 @@ export default function Header() {
         </View>
 
         <View style={styles.rightSection}>
-          <Text style={styles.save} onPress={() => router.push('/profile')}>Save</Text>
+          <Text style={styles.save} onPress={onSave}>Save</Text>
         </View>
       </View>
     </SafeAreaView>
