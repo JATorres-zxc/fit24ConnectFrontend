@@ -25,6 +25,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'Current password is required',
+        topOffset: 100,
       });
       return;
     }
@@ -34,6 +35,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'New password must be at least 8 characters',
+        topOffset: 100,
       });
       return;
     }
@@ -43,6 +45,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'Passwords don\'t match',
+        topOffset: 100,
       });
       return;
     }
@@ -80,6 +83,7 @@ export default function EditPasswordScreen() {
       type: 'success',
       text1: 'Password Updated',
       text2: 'Your password has been saved successfully',
+      topOffset: 100,
     });
     
     // Short delay before navigation to allow toast to be seen
