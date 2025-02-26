@@ -8,34 +8,40 @@ import Header from '@/components/MealPlanHeader';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 
+interface Meal {
+  meal: string;
+  type: string;
+  calories: number;
+  description: string;
+}
+
+interface Feedback {
+  id: string;
+  feedback: string;
+  rating: number;
+  createdAt: Date;
+}
+
+interface MealPlan {
+  trainer: string;
+  fitnessGoal: string;
+  weightGoal: string;
+  allergens: string;
+  meals: Meal[];
+  feedbacks: Feedback[];
+}
+
 const MealPlanScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
-  const [mealPlan, setMealPlan] = useState<{
-    trainer: string;
-    fitnessGoal: string;
-    weightGoal: string;
-    allergens: string;
-    meals: { meal: string; type: string; calories: number; description: string }[];
-    feedbacks: { id: string; feedback: string; rating: number; createdAt: Date }[];
-  }>({
+  const [mealPlan, setMealPlan] = useState<MealPlan | null>({
     trainer: "Trainer A",
     fitnessGoal: "Lose Weight",
     weightGoal: "70",
     allergens: "Peanuts, Dairy",
     meals: [
-      {
-        meal: "Breakfast", description: "Oatmeal with fruits",
-        type: "Food",
-        calories: 330,
-      },
-      { meal: "Lunch", description: "Chicken Salad",
-        type: "Food",
-        calories: 440,
-      },
-      { meal: "Dinner", description: "Siya <3",
-        type: "Unknown",
-        calories: 550,
-      },
+      { meal: "Breakfast", description: "Oatmeal with fruits", type: "Food", calories: 330 },
+      { meal: "Lunch", description: "Chicken Salad", type: "Food", calories: 440 },
+      { meal: "Dinner", description: "Siya <3", type: "Unknown", calories: 550 },
     ],
     feedbacks: [],
   }); // State to store meal plan
@@ -152,19 +158,24 @@ const MealPlanScreen = () => {
       return;
     }
 
-    const newFeedback = {
-      id: `${mealPlan.meals[0].meal}-${Date.now()}`,
-      feedback,
-      rating: parseInt(rating),
-      createdAt: new Date(),
-    };
+    if (mealPlan) {
+      const newFeedback = {
+        id: `${mealPlan.meals[0].meal}-${Date.now()}`,
+        feedback,
+        rating: parseInt(rating),
+        createdAt: new Date(),
+      };
 
-    const updatedMealPlan = {
-      ...mealPlan,
-      feedbacks: [...(mealPlan.feedbacks || []), newFeedback],
-    };
+      const updatedMealPlan = {
+        ...mealPlan,
+        feedbacks: [...mealPlan.feedbacks, newFeedback],
+      };
 
-    setMealPlan(updatedMealPlan);
+      setMealPlan(updatedMealPlan);
+    } else {
+      // Handle the case where mealPlan is null
+      console.error("No meal plan available to add feedback.");
+    }
 
     try {
       // Uncomment and replace with actual API call
@@ -230,8 +241,11 @@ const MealPlanScreen = () => {
           text2: 'Your meal plan has been deleted successfully.',
           position: 'bottom'
         });
+
+        // TEMPORARY: DELETE SNIPPET WHEN API IS AVAILABLE.
+        setMealPlan(null); // Clear the meal plan by resetting to initial structure
+
         setViewState("plan");
-        // setMealPlan(null); // Clear the meal plan
       } else {
         Toast.show({
           type: 'error',
@@ -381,9 +395,9 @@ const MealPlanScreen = () => {
             </View>
           ) : (
             // Nutritional Meal Plan View
-            <View style={styles.planContainer}>
+            <>
               {mealPlan ? (
-                <>
+                <View style={styles.planContainer}>
                   {mealPlan.meals.map((meal, index) => (
                     <View key={index} style={styles.mealItem}>
                       <Text style={styles.mealTitle}>{meal.meal}</Text>
@@ -404,16 +418,16 @@ const MealPlanScreen = () => {
                   <TouchableOpacity style={styles.buttonBlack} onPress={() => setViewState("request")}>
                     <Text style={styles.buttonText}>Request New Meal Plan</Text>
                   </TouchableOpacity>
-                </>
+                </View>
               ) : (
-                <>
-                  <Text style={styles.subtitle}>You have no existing meal plan.</Text>
+                <View style={styles.centerContainer}>
+                  <Text style={styles.subtitle2}>You have no existing meal plan.</Text>
                   <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
                     <Text style={styles.buttonText}>Request Meal Plan</Text>
                   </TouchableOpacity>
-                </>
+                </View>
               )}
-            </View>
+            </>
           )}
           
         </View>
@@ -438,6 +452,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     padding: 0,
     justifyContent: "flex-start",
+    alignItems: "center",
+  },
+  centerContainer: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    padding: 0,
+    justifyContent: "center",
     alignItems: "center",
   },
   icon: {
@@ -546,6 +567,11 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: "center",
     marginBottom: 20,
+  },
+  subtitle2: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    textAlign: "center",
   },
   requestHeaders: {
     fontSize: 18,
