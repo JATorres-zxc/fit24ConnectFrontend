@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
  } from 'react-native';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { Camera, CameraView } from 'expo-camera';
 import { router } from 'expo-router';
 
@@ -22,6 +23,7 @@ export default function ScanScreen() {
   const [showPopup, setShowPopup] = useState(false);
   const [accessStatus, setAccessStatus] = useState<'granted' | 'denied' | null>(null);
   const [scanData, setScanData] = useState<{ type: string; data: string } | null>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
 
   useEffect(() => {
     const getCameraPermissions = async () => {
@@ -32,8 +34,16 @@ export default function ScanScreen() {
     getCameraPermissions();
   }, []);
 
-  const handleBarcodeScanned = ({ type, data }) => {
-    setScanned(true);
+  useFocusEffect(
+    useCallback(() => {
+      setIsCameraActive(true); // Activate camera when screen is focused
+      return () => setIsCameraActive(false); // Deactivate camera when leaving
+    }, [])
+  );
+
+  const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
+    if (isLoading) return;
+
     setScanData({ type, data });
     setIsLoading(true);
 
@@ -50,6 +60,7 @@ export default function ScanScreen() {
 
       setTimeout(() => {
         setShowPopup(false)
+        setScanData(null)
         router.push('/(tabs)/home');
       }, 2000);
     }, 1500);
@@ -71,13 +82,13 @@ export default function ScanScreen() {
 
       <View style={styles.contentContainer}>
         <View style={styles.scannercontainer}>
-          <CameraView
-            onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
-            barcodeScannerSettings={{
-              barcodeTypes: ["qr", "pdf417"],
-            }}
-            style={{ width: '100%', height: '100%' }}
-          />
+          {isCameraActive && ( // Render camera only when active
+            <CameraView
+              onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+              barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+              style={{ width: '100%', height: '100%' }}
+            />
+          )}
           {scanned && (
             <View style={styles.scannedOverlay}>
               {isLoading && <ActivityIndicator size="large" color="#fff" />}
@@ -104,12 +115,11 @@ export default function ScanScreen() {
           ]}>
             <View style={[
               styles.statusIconContainer,
-              { backgroundColor: accessStatus === 'granted' ? Colors.green : Colors.red }
             ]}>
               <FontAwesome
                 name={accessStatus === 'granted' ? 'check' : 'times'}
                 size={40}
-                color='white'
+                color={accessStatus === 'granted' ? Colors.green : Colors.red }
               />
             </View>
             
@@ -191,6 +201,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    backgroundColor: '#fff',
   },
   statusTitle: {
     fontFamily: Fonts.semibold,
