@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
+import { Colors } from '@/constants/Colors';
 
 export default function Header() {
   return (
@@ -33,11 +34,12 @@ export default function Header() {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Colors.background,
+    marginBottom: 30,
   },
   header: {
     width: '85%',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Colors.background,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between'

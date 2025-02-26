@@ -5,6 +5,8 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import Toast from 'react-native-toast-message';
 import Header from '@/components/MealPlanHeader';
+import RequestMealPlanHeaderMP from '@/components/RequestMealPlanHeaderMP';
+import SendFeedbackHeaderMP from '@/components/SendFeedbackHeaderMP';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
@@ -272,15 +274,10 @@ const MealPlanScreen = () => {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
-          <Header />
-
           {viewState === "request" ? (
             // Request Meal Plan View
             <View style={styles.formContainer}>
-              <TouchableOpacity onPress={() => setViewState("plan")}>
-                <Text style={styles.backText}>←    Request Meal Plan</Text>
-              </TouchableOpacity>
-
+              <RequestMealPlanHeaderMP setViewState={setViewState}/>
               <Text style={styles.requestHeaders}>Choose Trainer</Text>
               <View style={styles.pickerContainer}>
                 <Picker
@@ -339,10 +336,7 @@ const MealPlanScreen = () => {
             </View>
           ) : viewState === "feedback" ? (
             <View style={styles.formContainer}>
-              <TouchableOpacity onPress={() => setViewState("plan")}>
-                <Text style={styles.backText}>←   Send Feedback</Text>
-              </TouchableOpacity>
-
+              <SendFeedbackHeaderMP setViewState={setViewState}/>
               <Text style={styles.feedbackHeaders}>Feedback</Text>
               <TextInput
                 placeholder="Enter your feedback here"
@@ -364,12 +358,12 @@ const MealPlanScreen = () => {
                   dropdownIconRippleColor={Colors.buttonText}
                   prompt={"Select a Rating:"} // Android only
                 >
-                  <Picker.Item label="Enter Your Rating" value="" />
-                  <Picker.Item label="1 - Poor" value="1" />
-                  <Picker.Item label="2 - Fair" value="2" />
-                  <Picker.Item label="3 - Good" value="3" />
-                  <Picker.Item label="4 - Very Good" value="4" />
-                  <Picker.Item label="5 - Excellent" value="5" />
+                  <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="1 - Poor" value="1" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="2 - Fair" value="2" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="3 - Good" value="3" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="4 - Very Good" value="4" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="5 - Excellent" value="5" fontFamily="Fonts.regular"/>
 
                 </Picker>
               </View>
@@ -399,6 +393,7 @@ const MealPlanScreen = () => {
             <>
               {mealPlan ? (
                 <View style={styles.planContainer}>
+                  <Header />
                   {mealPlan.meals.map((meal, index) => (
                     <View key={index} style={styles.mealItem}>
                       <Text style={styles.mealTitle}>{meal.meal}</Text>
@@ -422,6 +417,7 @@ const MealPlanScreen = () => {
                 </View>
               ) : (
                 <View style={styles.centerContainer}>
+                  <Header />
                   <Text style={styles.subtitle2}>You have no existing meal plan.</Text>
                   <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
                     <Text style={styles.buttonText}>Request Meal Plan</Text>
@@ -468,7 +464,6 @@ const styles = StyleSheet.create({
   },
   alertTitle: {
     fontSize: 18,
-    fontWeight: "bold",
     marginBottom: 5,
     textAlign: "center",
     fontFamily: Fonts.bold,
@@ -533,7 +528,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: Colors.buttonText,
-    fontWeight: "bold",
     fontSize: 16,
     textAlign: "center",
     fontFamily: Fonts.semibold,
@@ -545,26 +539,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   planContainer: {
-    marginTop: 20,
     width: "100%",
   },
   formContainer: {
     width: "100%",
-    marginTop: 30,
     alignItems: "flex-start",
     verticalAlign: 'middle',
   },
-  backText: {
-    alignSelf: "flex-start",
-    fontSize: 20,
-    fontWeight: "bold",
-    color: Colors.textPrimary,
-    marginBottom: 30,
-    fontFamily: Fonts.bold,
-  },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
     marginBottom: 20,
     alignSelf: "baseline",
     fontFamily: Fonts.bold,
@@ -586,6 +569,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 5,
     alignSelf: "flex-start",
+    fontFamily: Fonts.semibold,
   },
   feedbackHeaders: {
     fontSize: 18,
@@ -638,7 +622,6 @@ const styles = StyleSheet.create({
   },  
   mealData: {
     fontSize: 16,
-    fontWeight: "bold",
     marginBottom: 10,
     color: Colors.textPrimary,
     fontFamily: Fonts.semibold,
