@@ -131,7 +131,7 @@ export default function EditProfileScreen() {
 
       <View>
         <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>
+          <Text style={styles.buttonText} onPress={() => router.push('/editpassword')}>
             Edit Password
           </Text>
         </TouchableOpacity>
@@ -144,7 +144,7 @@ export default function EditProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.gold,
+    backgroundColor: Colors.bg,
     alignItems: 'center',
   },
   imageContainer: {
@@ -205,6 +205,8 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
+    fontSize: 14,
+    fontFamily: Fonts.regular,
   },
   buttonText: {
     fontFamily: Fonts.regular,
