@@ -1,14 +1,14 @@
-import { TouchableOpacity, Text, StyleSheet, SafeAreaView, View } from 'react-native';
+import { Text, StyleSheet, SafeAreaView, View } from 'react-native';
 import { router } from 'expo-router';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 type RequestMealPlanButtonProps = {
   setViewState: (view: string) => void;
 };
 
 export default function RequestMealPlanButton({ setViewState }: RequestMealPlanButtonProps) {
-
   const handlePress = () => {
     router.push('/(tabs)/mealplan');
     setViewState("plan");
@@ -17,9 +17,13 @@ export default function RequestMealPlanButton({ setViewState }: RequestMealPlanB
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={handlePress}>
-          <Text style={styles.backText}>← Request Meal Plan</Text>
-        </TouchableOpacity>
+        <AntDesign 
+            name='arrowleft' 
+            color={'black'} 
+            size={24} 
+            onPress={handlePress}
+        />
+        <Text style={styles.backText}>  Request Meal Plan</Text>
       </View>
     </SafeAreaView>
   );
