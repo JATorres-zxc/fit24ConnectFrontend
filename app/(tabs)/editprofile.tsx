@@ -5,6 +5,7 @@ import Toast from 'react-native-toast-message';
 
 import Header from '@/components/EditProfileHeader';
 import { Fonts } from '@/constants/Fonts';
+import { Colors } from '@/constants/Colors';
 
 interface Profile {
   image: any,
@@ -143,7 +144,7 @@ export default function EditProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Colors.gold,
     alignItems: 'center',
   },
   imageContainer: {
@@ -169,7 +170,7 @@ const styles = StyleSheet.create({
   },
   usernameLabel: {
     fontFamily: Fonts.regular,
-    color: '#474747'
+    color: Colors.textgray
   },
   detailsContainer: {
     width: '85%',
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -10,
     left: 15, 
-    backgroundColor: '#f9f9f9', 
+    backgroundColor: Colors.bg, 
     paddingHorizontal: 5,
     fontFamily: Fonts.regular,
     fontSize: 14,
@@ -196,11 +197,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     height: 50,
-    color: '#474747'
+    color: Colors.textgray,
   },
   button: {
     width: "30%",
-    backgroundColor: "#d7be69",
+    backgroundColor: Colors.gold,
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
@@ -208,6 +209,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontFamily: Fonts.regular,
     fontSize: 14,
-    color: "#ffffff"
+    color: "#fff"
   },
 });
