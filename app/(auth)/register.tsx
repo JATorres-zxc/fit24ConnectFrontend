@@ -7,11 +7,17 @@ import {
     TouchableOpacity,
     Image,
     StyleSheet,
+    KeyboardAvoidingView,
     Platform,
+    ScrollView,
 } from "react-native";
 import Toast from 'react-native-toast-message';
 import { NavigationProp } from '@react-navigation/native';
 import { Fonts } from '@/constants/Fonts';
+import { Colors } from '@/constants/Colors';
+import { Dimensions } from 'react-native'
+
+const screenHeight = Dimensions.get('window').height;
 
 const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const router = useRouter();
@@ -25,7 +31,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
         return input.replace(/[^a-zA-Z0-9@.]/g, '');
     };
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
         // Sanitize inputs
         const sanitizedEmail = sanitizeInput(email);
         const sanitizedPassword = sanitizeInput(password);
@@ -34,116 +40,149 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
         // Validate input fields
         if (!sanitizedEmail) {
             Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Email is required'
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Email is required',
+                position: 'bottom'
             });
             return;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(sanitizedEmail)) {
             Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Invalid email format'
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Invalid email format',
+                position: 'bottom'
             });
             return;
         }
         if (!sanitizedPassword) {
             Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Password is required'
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Password is required',
+                position: 'bottom'
             });
             return;
         }
         if (sanitizedPassword.length < 6) {
             Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Password must be at least 6 characters'
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Password must be at least 6 characters',
+                position: 'bottom'
             });
             return;
         }
         if (sanitizedPassword !== sanitizedConfirmPassword) {
             Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Passwords do not match'
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Passwords do not match',
+                position: 'bottom'
             });
             return;
         }
 
-        // Placeholder for registration success condition
-        const isSuccess = true; // Replace with actual registration success condition
+        try {
+            // Commented out API call for testing
+            // const response = await fetch('http://127.0.0.1:8000/api/account/register/', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({
+            //         email: sanitizedEmail,
+            //         password: sanitizedPassword,
+            //     }),
+            // });
 
-        if (isSuccess) {
-            Toast.show({
-                type: 'success',
-                text1: 'Registration Successful',
-                text2: 'You have successfully registered.'
-            });
-            setTimeout(() => {
-                router.push('/(auth)/login');
-            }, 2000); // 2-second delay
-        } else {
+            // const result = await response.json();
+
+            // Temporary Success Placeholder
+            const temp_response = true;
+
+            if (temp_response) {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Registration Successful',
+                    text2: 'You have successfully registered.',
+                    position: 'bottom'
+                });
+                setTimeout(() => {
+                    router.push('/(auth)/login');
+                }, 2000); // 2-second delay
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Registration Failed',
+                    text2: 'There was an error with your registration.',
+                    position: 'bottom'
+                });
+            }
+        } catch (error) {
             Toast.show({
                 type: 'error',
                 text1: 'Registration Failed',
-                text2: 'There was an error with your registration.'
+                text2: 'An error occurred. Please try again.',
+                position: 'bottom'
             });
         }
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.headerText}>REGISTER</Text>
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <View style={styles.logoContainer}>
+                    <Image source={require("./assets/images/icon.png")} style={styles.logo} />
+                </View>
 
-            <View style={styles.logoContainer}>
-                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
-            </View>
+                <View style={styles.formContainer}>
+                    <TextInput
+                        placeholder="Email"
+                        style={styles.input}
+                        value={email}
+                        onChangeText={setEmail}
+                    />
+                    <TextInput
+                        placeholder="Password"
+                        style={styles.input}
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword}
+                    />
+                    <TextInput
+                        placeholder="Confirm Password"
+                        style={styles.input}
+                        secureTextEntry
+                        value={confirmPassword}
+                        onChangeText={setConfirmationPassword}
+                    />
 
-            <View style={styles.formContainer}>
-                <TextInput
-                    placeholder="Email"
-                    style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
-                />
-                <TextInput
-                    placeholder="Password"
-                    style={styles.input}
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword}
-                />
-                <TextInput
-                    placeholder="Confirm Password"
-                    style={styles.input}
-                    secureTextEntry
-                    value={confirmPassword}
-                    onChangeText={setConfirmationPassword}
-                />
+                    <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                        <Text style={styles.buttonText}>
+                            Register
+                        </Text>
+                    </TouchableOpacity>
+                    {error && <Text style={styles.errorText}>{error}</Text>}
 
-                <TouchableOpacity style={styles.button} onPress={() => router.push('/home')}>
-                    <Text style={styles.buttonText}>
-                        Register
+                    <Text style={styles.bottomText}>
+                        Already have an account?{" "}
+                        <Text
+                            style={styles.linkText}
+                            onPress={() => router.push('/(auth)/login')}
+                        >
+                            Log In
+                        </Text>
                     </Text>
-                </TouchableOpacity>
-                {error && <Text style={styles.errorText}>{error}</Text>}
-
-                <Text style={styles.bottomText}>
-                    Already have an account?{" "}
-                    <Text
-                        style={styles.linkText}
-                        onPress={() => router.push('/(auth)/login')}
-                    >
-                        Log In
-                    </Text>
-                </Text>
-            </View>
+                </View>
+            </ScrollView>
             <Toast />
-        </View>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -152,45 +191,37 @@ export default RegisterScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#000",
-        alignItems: "center",
-        paddingTop: 60,
+        backgroundColor: Colors.buttonBlack, // Black background
     },
-    headerText: {
-        color: "#fff",
-        fontSize: 24,
-        fontFamily: Fonts.semibold,
-    },
-    logoContainer: {
-        marginTop: 20,
-        backgroundColor: "#fff",
-        width: 200,
-        height: 200,
-        borderRadius: 100,
+    scrollContainer: {
+        flexGrow: 1,
+        paddingTop: screenHeight * 0.1 + 50,
         justifyContent: "center",
         alignItems: "center",
-        paddingTop: 15
+    },
+    logoContainer: {
+        marginBottom: 20,
+        justifyContent: "center",
+        alignItems: "center",
     },
     logo: {
-        width: 180,
-        height: 180,
+        width: 200,
+        height: 200,
         resizeMode: "contain",
     },
     formContainer: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: "#f9f9f9",
+        width: "100%",
+        flexGrow: 1,
+        backgroundColor: Colors.background,
         borderTopLeftRadius: 35,
         borderTopRightRadius: 35,
-        height: 450,
         paddingTop: 50,
+        paddingHorizontal: 20,
         alignItems: "center",
     },
     input: {
-        width: "80%", 
-        borderColor: "#ccc",
+        width: "100%",
+        borderColor: Colors.border,
         borderWidth: 1,
         borderRadius: 8,
         paddingHorizontal: 12,
@@ -200,15 +231,15 @@ const styles = StyleSheet.create({
     },
     button: {
         width: "30%",
-        backgroundColor: "#d7be69",
+        backgroundColor: Colors.background2,
         padding: 12,
         borderRadius: 8,
         alignItems: "center",
-        marginTop: 50,
+        marginTop: 20,
     },
     buttonText: {
         fontFamily: Fonts.semibold,
-        color: "#fffefe"
+        color: Colors.offishWhite,
     },
     errorText: {
         color: "red",
@@ -217,12 +248,12 @@ const styles = StyleSheet.create({
     bottomText: {
         textAlign: "center",
         marginTop: 10,
-        color: "#8f8f8f",
+        color: Colors.linkText,
         fontFamily: Fonts.italic,
         fontSize: 12,
     },
     linkText: {
-        color: "#8f8f8f",
+        color: Colors.linkText,
         fontFamily: Fonts.semiboldItalic,
     },
 });
