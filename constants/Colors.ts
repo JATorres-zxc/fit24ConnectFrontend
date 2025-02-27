@@ -4,7 +4,6 @@ export const Colors = {
     textgray: '#474747',
     icongray: 'dfdfdf',
     green: '#59a957',
-    red: '#ed2222',
 
     // Mealplan colors
     background: '#f9f9f9',

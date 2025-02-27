@@ -4,6 +4,7 @@ import { Camera, CameraView } from 'expo-camera';
 
 import Header from '@/components/ScanHeader';
 import { Fonts } from '@/constants/Fonts';
+import { Colors } from '@/constants/Colors';
 
 export default function ScanScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -58,7 +59,7 @@ export default function ScanScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Colors.bg,
     alignItems: 'center',
   },
   headerContainer: {
