@@ -1,50 +1,92 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform 
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import Toast from 'react-native-toast-message';
 import Header from '@/components/MealPlanHeader';
+import RequestMealPlanHeaderMP from '@/components/RequestMealPlanHeaderMP';
+import SendFeedbackHeaderMP from '@/components/SendFeedbackHeaderMP';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+
+interface Meal {
+  meal: string;
+  type: string;
+  calories: number;
+  description: string;
+}
+
+interface Feedback {
+  id: string;
+  feedback: string;
+  rating: number;
+  createdAt: Date;
+}
+
+interface MealPlan {
+  trainer: string;
+  fitnessGoal: string;
+  weightGoal: string;
+  allergens: string;
+  meals: Meal[];
+  feedbacks: Feedback[];
+}
 
 const MealPlanScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
-  const [mealPlan, setMealPlan] = useState<{
-    trainer: string;
-    fitnessGoal: string;
-    weightGoal: string;
-    allergens: string;
-    meals: { meal: string; type: string; calories: number; description: string }[];
-    feedbacks: { id: string; feedback: string; rating: number; createdAt: Date }[];
-  }>({
+  const [mealPlan, setMealPlan] = useState<MealPlan | null>({
     trainer: "Trainer A",
     fitnessGoal: "Lose Weight",
     weightGoal: "70",
     allergens: "Peanuts, Dairy",
     meals: [
-      {
-        meal: "Breakfast", description: "Oatmeal with fruits",
-        type: "Food",
-        calories: 330,
-      },
-      { meal: "Lunch", description: "Chicken Salad",
-        type: "Food",
-        calories: 440,
-      },
-      { meal: "Dinner", description: "Siya <3",
-        type: "Unknown",
-        calories: 550,
-      },
+      { meal: "Breakfast", description: "Oatmeal with fruits", type: "Food", calories: 330 },
+      { meal: "Lunch", description: "Chicken Salad", type: "Food", calories: 440 },
+      { meal: "Dinner", description: "Siya <3", type: "Unknown", calories: 550 },
     ],
     feedbacks: [],
   }); // State to store meal plan
   const [trainer, setTrainer] = useState(""); // State to store selected trainer
+  const [trainers, setTrainers] = useState([]);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
   const [allergens, setAllergens] = useState(""); // State to store allergens
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState(""); // State to store rating
+
+  // Fetching trainers from API
+
+  // useEffect(() => {
+  //   const fetchTrainers = async () => {
+  //     try {
+  //       const response = await fetch('YOUR_API_ENDPOINT_HERE');
+  //       const data = await response.json();
+  //       setTrainers(data);
+  //     } catch (error) {
+  //       console.error('Error fetching trainers:', error);
+  //     }
+  //   };
+  
+  //   fetchTrainers();
+  // }, []);
+
+  // Fetching Meal Plan from API
+  
+  // useEffect(() => {
+  //   const fetchMealPlan = async () => {
+  //     try {
+  //       const response = await fetch('YOUR_MEAL_PLAN_API_ENDPOINT_HERE');
+  //       const data = await response.json();
+  //       setMealPlan(data);
+  //     } catch (error) {
+  //       console.error('Error fetching meal plan:', error);
+  //     }
+  //   };
+  
+  //   fetchMealPlan();
+  // }, []);
 
   const handleSubmit = async () => {
     if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
@@ -119,19 +161,24 @@ const MealPlanScreen = () => {
       return;
     }
 
-    const newFeedback = {
-      id: `${mealPlan.meals[0].meal}-${Date.now()}`,
-      feedback,
-      rating: parseInt(rating),
-      createdAt: new Date(),
-    };
+    if (mealPlan) {
+      const newFeedback = {
+        id: `${mealPlan.meals[0].meal}-${Date.now()}`,
+        feedback,
+        rating: parseInt(rating),
+        createdAt: new Date(),
+      };
 
-    const updatedMealPlan = {
-      ...mealPlan,
-      feedbacks: [...(mealPlan.feedbacks || []), newFeedback],
-    };
+      const updatedMealPlan = {
+        ...mealPlan,
+        feedbacks: [...mealPlan.feedbacks, newFeedback],
+      };
 
-    setMealPlan(updatedMealPlan);
+      setMealPlan(updatedMealPlan);
+    } else {
+      // Handle the case where mealPlan is null
+      console.error("No meal plan available to add feedback.");
+    }
 
     try {
       // Uncomment and replace with actual API call
@@ -197,8 +244,11 @@ const MealPlanScreen = () => {
           text2: 'Your meal plan has been deleted successfully.',
           position: 'bottom'
         });
+
+        // TEMPORARY: DELETE SNIPPET WHEN API IS AVAILABLE.
+        setMealPlan(null); // Clear the meal plan by resetting to initial structure
+
         setViewState("plan");
-        // setMealPlan(null); // Clear the meal plan
       } else {
         Toast.show({
           type: 'error',
@@ -224,15 +274,10 @@ const MealPlanScreen = () => {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
-          <Header />
-
           {viewState === "request" ? (
             // Request Meal Plan View
             <View style={styles.formContainer}>
-              <TouchableOpacity onPress={() => setViewState("plan")}>
-                <Text style={styles.backText}>←    Request Meal Plan</Text>
-              </TouchableOpacity>
-
+              <RequestMealPlanHeaderMP setViewState={setViewState}/>
               <Text style={styles.requestHeaders}>Choose Trainer</Text>
               <View style={styles.pickerContainer}>
                 <Picker
@@ -249,6 +294,13 @@ const MealPlanScreen = () => {
                   <Picker.Item label="Trainer A" value="trainerA" />
                   <Picker.Item label="Trainer B" value="trainerB" />
                   <Picker.Item label="Trainer C" value="trainerC" />
+
+                  {/* Dynamic Picker Item from API */}
+
+                  {/* <Picker.Item label="Select Trainer" value="" />
+                  {trainers.map((trainer) => (
+                    <Picker.Item key={trainer.id} label={trainer.name} value={trainer.id} />
+                  ))} */}
                   
                 </Picker>
               </View>
@@ -284,10 +336,7 @@ const MealPlanScreen = () => {
             </View>
           ) : viewState === "feedback" ? (
             <View style={styles.formContainer}>
-              <TouchableOpacity onPress={() => setViewState("plan")}>
-                <Text style={styles.backText}>←   Send Feedback</Text>
-              </TouchableOpacity>
-
+              <SendFeedbackHeaderMP setViewState={setViewState}/>
               <Text style={styles.feedbackHeaders}>Feedback</Text>
               <TextInput
                 placeholder="Enter your feedback here"
@@ -309,12 +358,12 @@ const MealPlanScreen = () => {
                   dropdownIconRippleColor={Colors.buttonText}
                   prompt={"Select a Rating:"} // Android only
                 >
-                  <Picker.Item label="Enter Your Rating" value="" />
-                  <Picker.Item label="1 - Poor" value="1" />
-                  <Picker.Item label="2 - Fair" value="2" />
-                  <Picker.Item label="3 - Good" value="3" />
-                  <Picker.Item label="4 - Very Good" value="4" />
-                  <Picker.Item label="5 - Excellent" value="5" />
+                  <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="1 - Poor" value="1" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="2 - Fair" value="2" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="3 - Good" value="3" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="4 - Very Good" value="4" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="5 - Excellent" value="5" fontFamily="Fonts.regular"/>
 
                 </Picker>
               </View>
@@ -341,10 +390,10 @@ const MealPlanScreen = () => {
             </View>
           ) : (
             // Nutritional Meal Plan View
-            <View style={styles.planContainer}>
+            <>
               {mealPlan ? (
-                <>
-                  
+                <View style={styles.planContainer}>
+                  <Header />
                   {mealPlan.meals.map((meal, index) => (
                     <View key={index} style={styles.mealItem}>
                       <Text style={styles.mealTitle}>{meal.meal}</Text>
@@ -365,16 +414,17 @@ const MealPlanScreen = () => {
                   <TouchableOpacity style={styles.buttonBlack} onPress={() => setViewState("request")}>
                     <Text style={styles.buttonText}>Request New Meal Plan</Text>
                   </TouchableOpacity>
-                </>
+                </View>
               ) : (
-                <>
-                  <Text style={styles.subtitle}>You have no existing meal plan.</Text>
+                <View style={styles.centerContainer}>
+                  <Header />
+                  <Text style={styles.subtitle2}>You have no existing meal plan.</Text>
                   <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
                     <Text style={styles.buttonText}>Request Meal Plan</Text>
                   </TouchableOpacity>
-                </>
+                </View>
               )}
-            </View>
+            </>
           )}
           
         </View>
@@ -401,21 +451,29 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "center",
   },
+  centerContainer: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    padding: 0,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   icon: {
     marginBottom: 10,
     alignSelf: "center",
   },
   alertTitle: {
     fontSize: 18,
-    fontWeight: "bold",
     marginBottom: 5,
     textAlign: "center",
+    fontFamily: Fonts.bold,
   },
   alertMessage: {
     textAlign: "center",
     fontSize: 14,
     color: "gray",
     marginBottom: 15,
+    fontFamily: Fonts.regular,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -440,6 +498,7 @@ const styles = StyleSheet.create({
     width: "50%",
     height: 45,
     marginTop: 10,
+    fontFamily: Fonts.medium,
   },
   buttonBlack: {
     padding: 12,
@@ -469,9 +528,9 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: Colors.buttonText,
-    fontWeight: "bold",
     fontSize: 16,
     textAlign: "center",
+    fontFamily: Fonts.semibold,
   },
   logo: {
     width: 100,
@@ -480,43 +539,43 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   planContainer: {
-    marginTop: 20,
     width: "100%",
   },
   formContainer: {
     width: "100%",
-    marginTop: 30,
     alignItems: "flex-start",
     verticalAlign: 'middle',
   },
-  backText: {
-    alignSelf: "flex-start",
-    fontSize: 20,
-    fontWeight: "bold",
-    color: Colors.textPrimary,
-    marginBottom: 30,
-  },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
     marginBottom: 20,
     alignSelf: "baseline",
+    fontFamily: Fonts.bold,
   },
   subtitle: {
     fontSize: 16,
     color: Colors.textSecondary,
     textAlign: "center",
     marginBottom: 20,
+    fontFamily: Fonts.medium,
+  },
+  subtitle2: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    textAlign: "center",
+    fontFamily: Fonts.mediumItalic,
   },
   requestHeaders: {
     fontSize: 18,
     marginBottom: 5,
     alignSelf: "flex-start",
+    fontFamily: Fonts.semibold,
   },
   feedbackHeaders: {
     fontSize: 18,
     marginBottom: 15,
     alignSelf: "flex-start",
+    fontFamily: Fonts.semibold,
   },
   input: {
     width: "100%",
@@ -525,10 +584,12 @@ const styles = StyleSheet.create({
     borderColor: Colors.textSecondary,
     borderRadius: 0,
     marginBottom: 10,
+    fontFamily: Fonts.regular,
   },
   feedbackInput: {
     height: 200,
     textAlignVertical: 'top',
+    fontFamily: Fonts.regular,
   },
   button: {
     backgroundColor: Colors.primary,
@@ -537,6 +598,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 20,
     width: "100%",
+    fontFamily: Fonts.medium,
   },
   mealItem: {
     borderWidth: 1,       // Border thickness
@@ -556,17 +618,19 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
     paddingRight: 5,  // Ensures the background fully wraps the text
     alignSelf: "flex-start", // Shrinks the background to fit the text
+    fontFamily: Fonts.semibold,
   },  
   mealData: {
     fontSize: 16,
-    fontWeight: "bold",
     marginBottom: 10,
     color: Colors.textPrimary,
+    fontFamily: Fonts.semibold,
   },
   mealDescription: {
     fontSize: 16,
     marginBottom: 3,
     color: Colors.textSecondary,
+    fontFamily: Fonts.regular,
   },
   deleteContainer: {
     position: "absolute",
@@ -587,18 +651,20 @@ const styles = StyleSheet.create({
   picker: { 
     width: '100%', 
     backgroundColor: Colors.background,
+    fontFamily: Fonts.regular,
   },
   pickerContainer: {
     borderWidth: 1.5,
     borderColor: Colors.textSecondary,
     width: '100%', 
     borderRadius: 0,
-    marginBottom: 5,
+    marginBottom: 10,
   },
   pickerBlack: {
     width: '100%', 
     backgroundColor: Colors.buttonBlack,
     color: Colors.offishWhite,
+    fontFamily: Fonts.regular,
   },
   trashIcon: {
     alignSelf: 'flex-end',
