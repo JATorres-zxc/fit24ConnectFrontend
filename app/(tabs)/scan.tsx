@@ -152,7 +152,7 @@ export default function ScanScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Colors.bg,
     alignItems: 'center',
   },
   headerContainer: {
