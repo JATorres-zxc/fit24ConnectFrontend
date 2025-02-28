@@ -97,7 +97,7 @@ export default function EditPasswordScreen() {
     <View style={styles.container}>
       <Header />
 
-      <View>
+      <View style={styles.top}>
         <Text style={styles.title}>
             Create new password
         </Text>
@@ -193,6 +193,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.bg,
     alignItems: 'center',
+  },
+  top: {
+    width: '85%',
   },
   title: {
     fontFamily: Fonts.bold,
