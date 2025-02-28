@@ -78,9 +78,12 @@ export default function EditProfileScreen() {
   }, []);
   
   useEffect(() => {
-    const isDifferent = JSON.stringify(formValues) !== JSON.stringify(originalProfile);
-    setHasUnsavedChanges(isDifferent);
+    if (originalProfile) {
+      const isDifferent = JSON.stringify(formValues) !== JSON.stringify(originalProfile);
+      setHasUnsavedChanges(isDifferent);
+    }
   }, [formValues, originalProfile]);
+  
 
   const handleInputChange = (field: keyof Profile, value: string) => {
     setFormValues(prevValues => ({
@@ -101,15 +104,20 @@ export default function EditProfileScreen() {
   };
 
   const handleSave = async () => {
+    if (!hasUnsavedChanges) {
+      return; // Do nothing if no changes were made
+    }
+    
     if (!formValues.fullName || !formValues.email || !formValues.address || !formValues.phoneNo) {
       showToast('Please fill out all details before saving.');
       return;
     }
+  
     try {
       await AsyncStorage.setItem('profile', JSON.stringify(formValues));
-      setOriginalProfile(formValues); // Update original profile after saving
-      setHasUnsavedChanges(false);
-      
+      setOriginalProfile({ ...formValues }); // Ensure originalProfile is fully updated
+      setHasUnsavedChanges(false); // Reset changes flag
+  
       Toast.show({
         type: 'success',
         text1: 'Profile Updated',
@@ -117,14 +125,14 @@ export default function EditProfileScreen() {
         position: 'top',
         topOffset: 100,
       });
-
+  
       setTimeout(() => {
         router.replace('/profile');
       }, 1500);
     } catch (error) {
       console.error('Error saving profile:', error);
     }
-  };
+  };  
 
   return (
     <View style={styles.container}>
