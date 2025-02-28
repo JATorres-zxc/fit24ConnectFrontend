@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { Text, View, StyleSheet, Image, TextInput, TouchableOpacity, Platform } from 'react-native';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 
 import Header from '@/components/EditProfileHeader';
@@ -19,7 +21,7 @@ interface Profile {
 }
 
 export default function EditProfileScreen() {
-  const [profile, setProfile] = useState<Profile>({
+  const [originalProfile, setOriginalProfile] = useState<Profile>({
     image: require("@/assets/images/icon.png"),
     username: 'John',
     membershipType: 'Student',
@@ -30,9 +32,59 @@ export default function EditProfileScreen() {
     phoneNo: '0999 999 9999',
   });
 
+  const [formValues, setFormValues] = useState<Profile>(originalProfile);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadProfile = async () => {
+        try {
+          const storedProfile = await AsyncStorage.getItem('profile');
+          if (storedProfile) {
+            const parsed = JSON.parse(storedProfile);
+            setOriginalProfile(parsed);
+            setFormValues(parsed); // Reset form values to stored values
+            setHasUnsavedChanges(false);
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error);
+        }
+      };
+      
+      loadProfile();
+      
+      // Optional: Return a cleanup function if needed
+      return () => {
+        // Any cleanup code here
+      };
+    }, []) // Empty dependency array means this runs on every focus
+  );
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const storedProfile = await AsyncStorage.getItem('profile');
+        if (storedProfile) {
+          const parsed = JSON.parse(storedProfile);
+          setOriginalProfile(parsed);
+          setFormValues(parsed); // Initialize form with loaded values
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    };
+
+    loadProfile();
+  }, []);
+  
+  useEffect(() => {
+    const isDifferent = JSON.stringify(formValues) !== JSON.stringify(originalProfile);
+    setHasUnsavedChanges(isDifferent);
+  }, [formValues, originalProfile]);
+
   const handleInputChange = (field: keyof Profile, value: string) => {
-    setProfile(prevProfile => ({
-      ...prevProfile,
+    setFormValues(prevValues => ({
+      ...prevValues,
       [field]: value,
     }));
   };
@@ -48,37 +100,43 @@ export default function EditProfileScreen() {
     });
   };
 
-  const handleSave = () => {
-    if (!profile.fullName || !profile.email || !profile.address || !profile.phoneNo) {
+  const handleSave = async () => {
+    if (!formValues.fullName || !formValues.email || !formValues.address || !formValues.phoneNo) {
       showToast('Please fill out all details before saving.');
       return;
     }
-    // Show success toast
-    Toast.show({
-      type: 'success',
-      text1: 'Profile Updated',
-      text2: 'Your changes have been saved successfully.',
-      position: 'top',
-      topOffset: 100,
-    });
+    try {
+      await AsyncStorage.setItem('profile', JSON.stringify(formValues));
+      setOriginalProfile(formValues); // Update original profile after saving
+      setHasUnsavedChanges(false);
+      
+      Toast.show({
+        type: 'success',
+        text1: 'Profile Updated',
+        text2: 'Your changes have been saved successfully.',
+        position: 'top',
+        topOffset: 100,
+      });
 
-    // Navigate back to the Profile screen after a short delay
-    setTimeout(() => {
-      router.replace('/profile'); // or use router.replace('/profile') if needed
-    }, 1500);
+      setTimeout(() => {
+        router.replace('/profile');
+      }, 1500);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Header onSave={handleSave} />
+      <Header onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
 
       <View style={styles.profileContainer}>
         <View style={styles.imageContainer}>
-          <Image source={profile.image} style={styles.profileImage} />
+          <Image source={formValues.image} style={styles.profileImage} />
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.username}>{profile.username}</Text>
+          <Text style={styles.username}>{formValues.username}</Text>
           <Text style={styles.usernameLabel}>
             Your Username
           </Text>
@@ -90,9 +148,9 @@ export default function EditProfileScreen() {
           <Text style={styles.label}>Full Name</Text>
           <TextInput
             style={styles.input}
-            value={profile.fullName}
+            value={formValues.fullName}
             onChangeText={text => handleInputChange('fullName', text)}
-            placeholder={profile.fullName}
+            placeholder={formValues.fullName}
           />
         </View>
 
@@ -100,10 +158,10 @@ export default function EditProfileScreen() {
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
-            value={profile.email}
+            value={formValues.email}
             onChangeText={text => handleInputChange('email', text)}
             keyboardType="email-address"
-            placeholder={profile.email}
+            placeholder={formValues.email}
           />
         </View>
 
@@ -111,9 +169,9 @@ export default function EditProfileScreen() {
           <Text style={styles.label}>Address</Text>
           <TextInput
             style={styles.input}
-            value={profile.address}
+            value={formValues.address}
             onChangeText={text => handleInputChange('address', text)}
-            placeholder={profile.address}
+            placeholder={formValues.address}
           />
         </View>
 
@@ -121,17 +179,17 @@ export default function EditProfileScreen() {
           <Text style={styles.label}>Phone Number</Text>
           <TextInput
             style={styles.input}
-            value={profile.phoneNo}
+            value={formValues.phoneNo}
             onChangeText={text => handleInputChange('phoneNo', text)}
             keyboardType="phone-pad"
-            placeholder={profile.phoneNo}
+            placeholder={formValues.phoneNo}
           />
         </View>
       </View>
 
       <View>
         <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText} onPress={() => router.push('/editpassword')}>
+          <Text style={styles.buttonText}>
             Edit Password
           </Text>
         </TouchableOpacity>
@@ -205,8 +263,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
-    fontSize: 14,
-    fontFamily: Fonts.regular,
   },
   buttonText: {
     fontFamily: Fonts.regular,
