@@ -3,12 +3,15 @@ import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, 
   TextInput
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import Header from '@/components/WorkoutHeader';
 import Toast from 'react-native-toast-message';
 import ProgramHeader from '@/components/ProgramHeaderWO';
 import { Ionicons } from '@expo/vector-icons';
 import WorkoutsContainer from '@/components/WorkoutsContainer';
 import ExerciseContainer from '@/components/ExerciseContainer';
+import RequestWorkoutHeader from '@/components/RequestHeaderWO';
+import SendFeedbackHeader from '@/components/SendFeedbackHeaderWO';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
@@ -25,9 +28,11 @@ interface Feedback {
 }
 
 interface Workout {
+  id: string;
   title: string;
   fitnessGoal: string;
   intensityLevel: string;
+  trainer: string;
   exercises: Exercise[];
   visibleTo: "everyone" | "userEmail" | string;
   feedbacks: Feedback[];
@@ -35,13 +40,54 @@ interface Workout {
 
 const WorkoutScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
+  const [trainer, setTrainer] = useState(""); // State to store selected trainer
+  const [trainers, setTrainers] = useState([]);
+  const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
+  const [intensityLevel, setIntensityLevel] = useState(""); // State to store intensity level
+  const [feedback, setFeedback] = useState(""); // State to store feedback
+  const [rating, setRating] = useState(""); // State to store rating
+  const [workoutToDelete, setWorkoutToDelete] = useState<Workout | null>(null);
   const [workout, setWorkout] = useState<Workout | null>(null);
 
-  const workouts: Workout[] = [
+  // Fetching trainers from API
+
+  // useEffect(() => {
+  //   const fetchTrainers = async () => {
+  //     try {
+  //       const response = await fetch('YOUR_API_ENDPOINT_HERE');
+  //       const data = await response.json();
+  //       setTrainers(data);
+  //     } catch (error) {
+  //       console.error('Error fetching trainers:', error);
+  //     }
+  //   };
+  
+  //   fetchTrainers();
+  // }, []);
+
+  // Fetching Workout from API
+  
+  // useEffect(() => {
+  //   const fetchWorkout = async () => {
+  //     try {
+  //       const response = await fetch('YOUR_WORKOUT_API_ENDPOINT_HERE');
+  //       const data = await response.json();
+  //       setWorkout(data);
+  //     } catch (error) {
+  //       console.error('Error fetching workout:', error);
+  //     }
+  //   };
+
+  //   fetchWorkout();
+  // }, []);
+
+  const [workouts, setWorkouts] = useState<Workout[]>([
     {
+      id: "WO1",
       title: "Full Body Workout",
       fitnessGoal: "Strength and Conditioning",
       intensityLevel: "High",
+      trainer: "Trainer A",
       exercises: [
         { name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: "https://example.com/pushups.jpg" },
         { name: "Squats", description: "Perform squats to work on lower body strength.", image: "https://example.com/squats.jpg" },
@@ -52,9 +98,11 @@ const WorkoutScreen = () => {
       ],
     },
     {
+      id: "WO2",
       title: "Cardio Blast",
       fitnessGoal: "Cardiovascular Health",
       intensityLevel: "Medium",
+      trainer: "Trainer B",
       exercises: [
         { name: "Jumping Jacks", description: "Perform jumping jacks to get your heart rate up.", image: "https://example.com/jumpingjacks.jpg" },
         { name: "Burpees", description: "Perform burpees to improve endurance.", image: "https://example.com/burpees.jpg" },
@@ -64,56 +112,37 @@ const WorkoutScreen = () => {
         { id: "feedback2", feedback: "Intense but effective!", rating: 4, createdAt: new Date() },
       ],
     },
-  ];
+  ]);
 
-  const handleWorkoutPress = (selectedWorkout: Workout) => {
-    setWorkout(selectedWorkout);
-    setViewState("exercises");
-  };
+  const handleDelete = async (workout: Workout) => {
+    try {
+      // Uncomment and replace with actual API call
+      // const response = await fetch(`https://api.example.com/deleteWorkout/${workout.title}`, {
+      //   method: 'DELETE',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      // });
+      
+      const temp_response = true;
 
-  const handleTrashPress = () => {
-    setViewState("delete");
-  };
+      // response.ok
 
-  const handleUpdate = (updatedWorkout: Workout) => {
-    setWorkout(updatedWorkout);
-  };
+      if (temp_response) {
+        Toast.show({
+          type: 'success',
+          text1: 'Workout Deleted',
+          text2: 'Your workout has been deleted successfully.',
+          position: 'bottom'
+        });
 
-  const handleDelete = async () => {
-      try {
-        // // Replace with actual API call
-        // const response = await fetch('https://api.example.com/deleteMealPlan', {
-        //   method: 'DELETE',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        // });
-        
-        const temp_response = true;
-  
-        // response.ok
-  
-        if (temp_response) {
-          Toast.show({
-            type: 'success',
-            text1: 'Workout Deleted',
-            text2: 'Your workout has been deleted successfully.',
-            position: 'bottom'
-          });
-          
-          // TEMPORARY: DELETE SNIPPET WHEN API IS AVAILABLE.
-          setWorkout(null); // Clear the workout plan by resetting to initial structure
+        // TEMPORARY: DELETE SNIPPET WHEN API IS AVAILABLE.
+        setWorkouts((prevWorkouts) => prevWorkouts.filter(w => w.id !== workout.id)); // Remove the workout from the list
+        setWorkoutToDelete(null); // Set workoutToDelete to null
+        setWorkout(null); // Set workout to null
 
-          setViewState("plan");
-        } else {
-          Toast.show({
-            type: 'error',
-            text1: 'Delete Failed',
-            text2: 'There was an error deleting your workout.',
-            position: 'bottom'
-          });
-        }
-      } catch (error) {
+        setViewState("plan");
+      } else {
         Toast.show({
           type: 'error',
           text1: 'Delete Failed',
@@ -121,7 +150,145 @@ const WorkoutScreen = () => {
           position: 'bottom'
         });
       }
-    };
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Delete Failed',
+        text2: 'There was an error deleting your workout.',
+        position: 'bottom'
+      });
+    }
+  };
+
+  const handleWorkoutPress = (selectedWorkout: Workout) => {
+    setWorkout(selectedWorkout);
+    setViewState("exercises");
+  };
+
+  const handleTrashPress = (workout: Workout) => {
+    setWorkoutToDelete(workout);
+    setWorkout(workout);
+    setViewState("delete");
+  };
+
+  const handleFeedbackSubmit = async () => {
+    if (!feedback || !rating) {
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Fields',
+        text2: 'Please fill out all fields before submitting feedback.',
+        position: 'bottom'
+      });
+      return;
+    }
+
+    if (workout) {
+      const newFeedback: Feedback = {
+        id: `${workout.fitnessGoal}-${Date.now()}`,
+        feedback,
+        rating: parseInt(rating),
+        createdAt: new Date(),
+      };
+
+      const updatedWorkout: Workout = {
+        ...workout,
+        feedbacks: [...workout.feedbacks, newFeedback],
+      };
+
+      setWorkout(updatedWorkout);
+    } else {
+      console.error("No workout available to add feedback.");
+    }
+
+    try {
+      const temp_response = true;
+
+      if (temp_response) {
+        Toast.show({
+          type: 'info',
+          text1: 'Feedback Sent',
+          text2: 'Your feedback has been sent successfully.',
+          position: 'bottom'
+        });
+        setViewState("plan");
+        setFeedback("");
+        setRating("");
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Feedback Failed',
+          text2: 'There was an error submitting your feedback.',
+          position: 'bottom'
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Feedback Failed',
+        text2: 'There was an error submitting your feedback.',
+        position: 'bottom'
+      });
+    }
+  };
+
+  const handleRequestSubmit = async () => {
+    if (!fitnessGoal || !intensityLevel || !trainer) {
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Fields',
+        text2: 'Please fill out all fields before submitting.',
+        position: 'bottom'
+      });
+      return;
+    }
+
+    try {
+      // Replace with actual API call
+      // const response = await fetch('https://api.example.com/submitWorkout', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     trainer,
+      //     fitnessGoal,
+      //     intensityLevel,
+      //   }),
+      // });
+
+      // const result = await response.json();
+
+      // Temporary Success Placeholder
+      const temp_response = true;
+
+      if (temp_response) {
+        Toast.show({
+          type: 'success',
+          text1: 'Request Submitted',
+          text2: 'Your workout request has been submitted successfully.',
+          position: 'bottom'
+        });
+        setTimeout(() => {
+          setViewState("plan");
+          // setWorkout(result); // Update workout with the new data
+        }, 2000); // 2-second delay
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Request Failed',
+          text2: 'There was an error with your workout request.',
+          position: 'bottom'
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Request Failed',
+        text2: 'There was an error with your workout request.',
+        position: 'bottom'
+      });
+    }
+  };
 
   return (
     <KeyboardAvoidingView 
@@ -130,7 +297,94 @@ const WorkoutScreen = () => {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
-          { viewState === "exercises" ? (
+          { viewState === "request" ? (
+            <View style={styles.formContainer}>
+              <RequestWorkoutHeader setViewState={setViewState}/>
+              <Text style={styles.requestHeaders}>Choose Trainer</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={trainer}
+                  onValueChange={(itemValue) => setTrainer(itemValue)}
+                  style={styles.picker}
+                  itemStyle={{ color: Colors.buttonText }}
+                  prompt="Select trainer"
+                  dropdownIconColor={Colors.buttonBlack}
+                  dropdownIconRippleColor={Colors.buttonBlack}
+                  mode="dropdown"
+                >
+                  <Picker.Item label="Select Trainer" value="" style={styles.input}/>
+                  <Picker.Item label="Trainer A" value="trainerA" />
+                  <Picker.Item label="Trainer B" value="trainerB" />
+                  <Picker.Item label="Trainer C" value="trainerC" />
+
+                  {/* Dynamic Picker Item from API */}
+
+                  {/* <Picker.Item label="Select Trainer" value="" />
+                  {trainers.map((trainer) => (
+                    <Picker.Item key={trainer.id} label={trainer.name} value={trainer.id} />
+                  ))} */}
+
+                </Picker>
+              </View>
+
+              <Text style={styles.requestHeaders}>Fitness Goal</Text>
+              <TextInput
+                placeholder="Enter Your Fitness Goal"
+                style={styles.input}
+                value={fitnessGoal}
+                onChangeText={(text) => setFitnessGoal(text)}
+              />
+
+              <Text style={styles.requestHeaders}>Intensity Level</Text>
+              <TextInput
+                placeholder="Enter Your Intensity Level"
+                style={styles.input}
+                value={intensityLevel}
+                onChangeText={(text) => setIntensityLevel(text)}
+              />
+
+              <TouchableOpacity style={styles.submitButton} onPress={handleRequestSubmit}>
+                <Text style={styles.buttonText}>Submit Request</Text>
+              </TouchableOpacity>
+            </View>
+          ) : viewState === "feedback" ? (
+            <View style={styles.formContainer}>
+              <SendFeedbackHeader setViewState={setViewState}/>
+              <Text style={styles.feedbackHeaders}>Feedback</Text>
+              <TextInput
+                placeholder="Enter your feedback here"
+                style={[styles.input, styles.feedbackInput]}
+                value={feedback}
+                onChangeText={setFeedback}
+                multiline
+                numberOfLines={4}
+              />
+              <Text style={styles.requestHeaders}>Overall Rating</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={rating}
+                  onValueChange={(itemValue) => setRating(itemValue)}
+                  style={styles.pickerBlack}
+                  itemStyle={{ color: Colors.buttonText }}
+                  mode="dropdown"
+                  dropdownIconColor={Colors.buttonText}
+                  dropdownIconRippleColor={Colors.buttonText}
+                  prompt="Select a Rating:"
+                >
+                  <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="1 - Poor" value="1" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="2 - Fair" value="2" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="3 - Good" value="3" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="4 - Very Good" value="4" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="5 - Excellent" value="5" fontFamily="Fonts.regular"/>
+                </Picker>
+              </View>
+
+              <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
+                <Text style={styles.buttonText}>Submit Feedback</Text>
+              </TouchableOpacity>
+            </View>
+          ) : viewState === "exercises" ? (
             <View style={styles.planContainer}>
               <ProgramHeader setViewState={setViewState} title={workout?.title || "Workout Program"} />
               <ExerciseContainer exercises={workout!.exercises} />
@@ -149,20 +403,21 @@ const WorkoutScreen = () => {
                 <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
                   <Text style={styles.buttonText}>NO</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonGreen} onPress={handleDelete}>
+                <TouchableOpacity style={styles.buttonGreen} onPress={() => workoutToDelete && handleDelete(workoutToDelete)}> 
+                  {/* short-circuited potential null workout */}
                   <Text style={styles.buttonText}>YES</Text>
                 </TouchableOpacity>
               </View>
             </View>
           ) : (
-            workout ? (
+            <>
+            { workouts.length > 0 ? (
               <View style={styles.planContainer}>
                 <Header />
                 <WorkoutsContainer
                   workouts={workouts}
                   onWorkoutPress={handleWorkoutPress}
                   onTrashPress={handleTrashPress}
-                  onUpdateWorkout={handleUpdate} // Pass the onUpdateWorkout function here
                 />
                 <TouchableOpacity style={styles.buttonFeedback} onPress={() => setViewState("feedback")}>
                   <Text style={styles.buttonText}>Send Feedback</Text>
@@ -172,14 +427,17 @@ const WorkoutScreen = () => {
                 </TouchableOpacity>
               </View>
             ) : (
-              <View style={styles.centerContainer}>
+              <View>
                 <Header />
-                <Text style={styles.subtitle2}>You have no existing workout plan.</Text>
-                <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
-                  <Text style={styles.buttonText}>Request Workout Plan</Text>
-                </TouchableOpacity>
+                <View style={styles.centerContainer}>
+                  <Text style={styles.subtitle2}>You have no existing workout plan.</Text>
+                  <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
+                    <Text style={styles.buttonText}>Request Workout Plan</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            )
+            )}
+            </>
           )}
         </View>
       </ScrollView>
@@ -204,6 +462,11 @@ const styles = StyleSheet.create({
     padding: 0,
     justifyContent: "flex-start",
     alignItems: "center",
+  },
+  formContainer: {
+    width: "100%",
+    alignItems: "flex-start",
+    verticalAlign: 'middle',
   },
   centerContainer: {
     flex: 1,
@@ -364,6 +627,62 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginTop: 0,
     flexGrow: 0,
+  },
+  requestHeaders: {
+    fontSize: 18,
+    marginBottom: 5,
+    alignSelf: "flex-start",
+    fontFamily: Fonts.semibold,
+  },
+  feedbackHeaders: {
+    fontSize: 18,
+    marginBottom: 15,
+    alignSelf: "flex-start",
+    fontFamily: Fonts.semibold,
+  },
+  input: {
+    width: "100%",
+    padding: 12,
+    borderWidth: 1.5,
+    borderColor: Colors.textSecondary,
+    borderRadius: 0,
+    marginBottom: 10,
+    fontFamily: Fonts.regular,
+  },
+  feedbackInput: {
+    height: 200,
+    textAlignVertical: 'top',
+    fontFamily: Fonts.regular,
+  },
+  picker: { 
+    width: '100%', 
+    backgroundColor: Colors.background,
+    fontFamily: Fonts.regular,
+  },
+  pickerContainer: {
+    borderWidth: 1.5,
+    borderColor: Colors.textSecondary,
+    width: '100%', 
+    borderRadius: 0,
+    marginBottom: 10,
+    fontFamily: Fonts.regular,
+  },
+  pickerBlack: {
+    width: '100%', 
+    backgroundColor: Colors.buttonBlack,
+    color: Colors.offishWhite,
+    fontFamily: Fonts.regular,
+  },
+  submitButton: {
+    backgroundColor: Colors.primary,
+    padding: 12,
+    borderRadius: 5,
+    alignSelf: "center",
+    top: -5,
+    width: "50%",
+    height: 45,
+    marginTop: 10,
+    fontFamily: Fonts.medium,
   },
 });
 
