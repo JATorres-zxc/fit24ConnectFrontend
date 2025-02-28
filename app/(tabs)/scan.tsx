@@ -37,12 +37,15 @@ export default function ScanScreen() {
   useFocusEffect(
     useCallback(() => {
       setIsCameraActive(true); // Activate camera when screen is focused
+      setAccessStatus(null); // Reset access status when returning to the scan page
+      setScanned(false);
+      setScanData(null);
       return () => setIsCameraActive(false); // Deactivate camera when leaving
     }, [])
   );
 
   const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
-    if (isLoading) return;
+    if (isLoading || scanned) return;
 
     setScanData({ type, data });
     setIsLoading(true);
@@ -60,8 +63,15 @@ export default function ScanScreen() {
 
       setTimeout(() => {
         setShowPopup(false)
+        setScanned(false)
         setScanData(null)
-        router.push('/(tabs)/home');
+        
+        if(hasAccess) {
+          router.replace('/(tabs)/home');
+        }
+        else{
+          router.replace('/(tabs)/scan');
+        }
       }, 2000);
     }, 1500);
   };
