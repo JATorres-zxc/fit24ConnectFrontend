@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AntDesign from '@expo/vector-icons/AntDesign'
@@ -7,9 +7,35 @@ import { Fonts } from '@/constants/Fonts';
 
 interface HeaderProps {
   onSave: () => void;
+  hasUnsavedChanges?: boolean;
 }
 
-export default function Header({ onSave }: HeaderProps) {
+export default function Header({ onSave, hasUnsavedChanges = false }: HeaderProps) {
+  const handleBackNavigation = () => {
+    if (hasUnsavedChanges) {
+      Alert.alert(
+        "Unsaved Changes",
+        "You have unsaved changes. Would you like to save before leaving?",
+        [
+          {
+            text: "Discard",
+            onPress: () => router.replace('/profile'),
+            style: "cancel"
+          },
+          { 
+            text: "Save", 
+            onPress: () => {
+              onSave();
+              // Navigation will happen in onSave via setTimeout
+            } 
+          }
+        ]
+      );
+    } else {
+      router.replace('/profile');
+    }
+  };
+
   return (
     <SafeAreaView>
       <View style={styles.header}>
@@ -19,7 +45,7 @@ export default function Header({ onSave }: HeaderProps) {
             name='arrowleft' 
             color={'black'} 
             size={24} 
-            onPress={() => router.push('/profile')} 
+            onPress={handleBackNavigation} 
           />
           <Text style={styles.headerText}>
             Edit Profile

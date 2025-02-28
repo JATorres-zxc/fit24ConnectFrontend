@@ -1,6 +1,6 @@
 import { Text, View, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
-import { useState } from "react";
-import { router } from 'expo-router';
+import { useState, useEffect } from "react";
+import { router, useNavigation } from 'expo-router';
 import Toast from 'react-native-toast-message';
 
 import Header from '@/components/EditPasswordHeader';
@@ -18,6 +18,29 @@ export default function EditPasswordScreen() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const navigation = useNavigation();
+
+  // Clear form fields when the component mounts
+  useEffect(() => {
+    const resetForm = () => {
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowCurrentPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
+    };
+
+    // Reset form when the screen comes into focus
+    const unsubscribe = navigation.addListener('focus', resetForm);
+
+    // Reset form when component mounts
+    resetForm();
+
+    // Clean up the listener when component unmounts
+    return unsubscribe;
+  }, [navigation]);
+
   const handleSavePassword = () => {
     // Validate inputs
     if (!currentPassword) {
@@ -25,6 +48,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'Current password is required',
+        topOffset: 100,
       });
       return;
     }
@@ -34,6 +58,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'New password must be at least 8 characters',
+        topOffset: 100,
       });
       return;
     }
@@ -43,6 +68,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'Passwords don\'t match',
+        topOffset: 100,
       });
       return;
     }
@@ -80,6 +106,7 @@ export default function EditPasswordScreen() {
       type: 'success',
       text1: 'Password Updated',
       text2: 'Your password has been saved successfully',
+      topOffset: 100,
     });
     
     // Short delay before navigation to allow toast to be seen
@@ -87,13 +114,22 @@ export default function EditPasswordScreen() {
       router.push('/profile');
     }, 1500);
   };
+
+  // Handle cancel action
+  const handleCancel = () => {
+    // Clear form fields before navigating away
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    router.push('/profile');
+  };
   
 
   return (
     <View style={styles.container}>
       <Header />
 
-      <View>
+      <View style={styles.top}>
         <Text style={styles.title}>
             Create new password
         </Text>
@@ -167,7 +203,7 @@ export default function EditPasswordScreen() {
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.cancel} onPress={() => router.push('/profile')}>
+        <TouchableOpacity style={styles.cancel} onPress={handleCancel}>
           <Text style={styles.buttonText}>
             Cancel
           </Text>
@@ -189,6 +225,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.bg,
     alignItems: 'center',
+  },
+  top: {
+    width: '85%',
   },
   title: {
     fontFamily: Fonts.bold,
