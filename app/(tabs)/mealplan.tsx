@@ -416,12 +416,14 @@ const MealPlanScreen = () => {
                   </TouchableOpacity>
                 </View>
               ) : (
-                <View style={styles.centerContainer}>
+                <View>
                   <Header />
-                  <Text style={styles.subtitle2}>You have no existing meal plan.</Text>
-                  <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
-                    <Text style={styles.buttonText}>Request Meal Plan</Text>
-                  </TouchableOpacity>
+                  <View style={styles.centerContainer}>
+                    <Text style={styles.subtitle2}>You have no existing meal plan.</Text>
+                    <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
+                      <Text style={styles.buttonText}>Request Meal Plan</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
             </>
