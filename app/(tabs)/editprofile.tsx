@@ -83,7 +83,6 @@ export default function EditProfileScreen() {
       setHasUnsavedChanges(isDifferent);
     }
   }, [formValues, originalProfile]);
-  
 
   const handleInputChange = (field: keyof Profile, value: string) => {
     setFormValues(prevValues => ({
@@ -117,7 +116,7 @@ export default function EditProfileScreen() {
       await AsyncStorage.setItem('profile', JSON.stringify(formValues));
       setOriginalProfile({ ...formValues }); // Ensure originalProfile is fully updated
       setHasUnsavedChanges(false); // Reset changes flag
-  
+
       Toast.show({
         type: 'success',
         text1: 'Profile Updated',
@@ -125,14 +124,14 @@ export default function EditProfileScreen() {
         position: 'top',
         topOffset: 100,
       });
-  
+
       setTimeout(() => {
         router.replace('/profile');
       }, 1500);
     } catch (error) {
       console.error('Error saving profile:', error);
     }
-  };  
+  };
 
   return (
     <View style={styles.container}>
@@ -202,7 +201,7 @@ export default function EditProfileScreen() {
 
       <View>
         <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>
+          <Text style={styles.buttonText} onPress={() => router.push('/editpassword')}>
             Edit Password
           </Text>
         </TouchableOpacity>
