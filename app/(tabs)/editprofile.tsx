@@ -144,7 +144,12 @@ export default function EditProfileScreen() {
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.username}>{formValues.username}</Text>
+          <TextInput
+            style={styles.usernameInput}
+            value={formValues.username}
+            onChangeText={text => handleInputChange('username', text)}
+            placeholder={formValues.username}
+          />
           <Text style={styles.usernameLabel}>
             Your Username
           </Text>
@@ -230,13 +235,13 @@ const styles = StyleSheet.create({
   textContainer: {
     alignItems: 'center',
   },
-  username: {
-    fontFamily: Fonts.regular,
-    fontSize: 20,
-  },
   usernameLabel: {
     fontFamily: Fonts.regular,
     color: Colors.textgray
+  },
+  usernameInput: {
+    fontFamily: Fonts.regular,
+    fontSize: 20,
   },
   detailsContainer: {
     width: '85%',
