@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '@/components/ProfileHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Fonts } from '@/constants/Fonts';
+import { Colors } from '@/constants/Colors';
 
 interface Profile {
   image: any,
@@ -138,7 +139,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Colors.bg,
     alignItems: 'center',
   },
   imageContainer: {
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
     bottom: 5,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#dfdfdf'
+    backgroundColor: Colors.icongray,
   },
   textContainer: {
     alignItems: 'center',
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
   membership: {
     fontFamily: Fonts.regular,
     fontSize: 14,
-    color: '#d7be69',
+    color: Colors.gold,
   },
   detailsContainer: {
     flex: 1,
