@@ -6,6 +6,7 @@ import Toast from "react-native-toast-message";
 import Button from "@/components/CreateAnnouncementButton";
 import Header from "@/components/HomeHeader";
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
+import { Colors } from '@/constants/Colors';
 
 const announcements = [
   { id: "1", title: "New Gym Equipment Arrived!", content: "We've added new treadmills and weights to the gym.", date: "Feb 10, 2025", admin: "Jane" },
