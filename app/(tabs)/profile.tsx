@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Text, View, StyleSheet, Image } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Header from '@/components/ProfileHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
@@ -28,6 +29,39 @@ export default function ProfileScreen() {
     address: 'Cebu City',
     phoneNo: '0999 999 9999',
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadProfile = async () => {
+        try {
+          const storedProfile = await AsyncStorage.getItem('profile');
+          if (storedProfile) {
+            const parsed = JSON.parse(storedProfile);
+            setProfile(parsed);
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error);
+        }
+      };
+      loadProfile();
+    }, [])
+  );
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const storedProfile = await AsyncStorage.getItem('profile');
+        if (storedProfile) {
+          const parsed = JSON.parse(storedProfile);
+          setProfile(parsed);
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    };
+
+    loadProfile();
+  }, []);
 
   return (
     <View style={styles.container}>
