@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { Text, View, StyleSheet, Image, TextInput, TouchableOpacity, Platform } from 'react-native';
+import { 
+  Text, View, StyleSheet, Image, 
+  TextInput, TouchableOpacity, Platform, 
+  ScrollView, KeyboardAvoidingView, TouchableWithoutFeedback, 
+  Keyboard} from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
@@ -134,80 +138,90 @@ export default function EditProfileScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Header onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
+        <Header onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
 
-      <View style={styles.profileContainer}>
-        <View style={styles.imageContainer}>
-          <Image source={formValues.image} style={styles.profileImage} />
-        </View>
+        <ScrollView style={styles.scrollViewCont}>
+          <View style={styles.profileContainer}>
+            <View style={styles.imageContainer}>
+              <Image source={formValues.image} style={styles.profileImage} />
+            </View>
 
-        <View style={styles.textContainer}>
-          <TextInput
-            style={styles.usernameInput}
-            value={formValues.username}
-            onChangeText={text => handleInputChange('username', text)}
-            placeholder={formValues.username}
-          />
-          <Text style={styles.usernameLabel}>
-            Your Username
-          </Text>
-        </View>
-      </View>
+            <View style={styles.textContainer}>
+              <TextInput
+                style={styles.usernameInput}
+                value={formValues.username}
+                onChangeText={text => handleInputChange('username', text)}
+                placeholder={formValues.username}
+              />
+              <Text style={styles.usernameLabel}>
+                Your Username
+              </Text>
+            </View>
+          </View>
+        
+          <View style={styles.detailsContainer}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Full Name</Text>
+              <TextInput
+                style={styles.input}
+                value={formValues.fullName}
+                onChangeText={text => handleInputChange('fullName', text)}
+                placeholder={formValues.fullName}
+              />
+            </View>
 
-      <View style={styles.detailsContainer}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Full Name</Text>
-          <TextInput
-            style={styles.input}
-            value={formValues.fullName}
-            onChangeText={text => handleInputChange('fullName', text)}
-            placeholder={formValues.fullName}
-          />
-        </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                value={formValues.email}
+                onChangeText={text => handleInputChange('email', text)}
+                keyboardType="email-address"
+                placeholder={formValues.email}
+              />
+            </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            value={formValues.email}
-            onChangeText={text => handleInputChange('email', text)}
-            keyboardType="email-address"
-            placeholder={formValues.email}
-          />
-        </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Address</Text>
+              <TextInput
+                style={styles.input}
+                value={formValues.address}
+                onChangeText={text => handleInputChange('address', text)}
+                placeholder={formValues.address}
+              />
+            </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Address</Text>
-          <TextInput
-            style={styles.input}
-            value={formValues.address}
-            onChangeText={text => handleInputChange('address', text)}
-            placeholder={formValues.address}
-          />
-        </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Phone Number</Text>
+              <TextInput
+                style={styles.input}
+                value={formValues.phoneNo}
+                onChangeText={text => handleInputChange('phoneNo', text)}
+                keyboardType="phone-pad"
+                placeholder={formValues.phoneNo}
+              />
+            </View>
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Phone Number</Text>
-          <TextInput
-            style={styles.input}
-            value={formValues.phoneNo}
-            onChangeText={text => handleInputChange('phoneNo', text)}
-            keyboardType="phone-pad"
-            placeholder={formValues.phoneNo}
-          />
-        </View>
-      </View>
-
-      <View>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText} onPress={() => router.push('/editpassword')}>
-            Edit Password
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <Toast />
-    </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={() => router.push('/editpassword')}>
+              <Text style={styles.buttonText}>
+                Edit Password
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+          
+        <Toast />
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
+    
   );
 }
 
@@ -242,8 +256,12 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     fontSize: 20,
   },
-  detailsContainer: {
+  scrollViewCont: {
     width: '85%',
+  },
+  detailsContainer: {
+    flex: 1,
+    padding: 10,
   },
   inputGroup: {
     position: 'relative',
@@ -269,12 +287,16 @@ const styles = StyleSheet.create({
     height: 50,
     color: Colors.textgray,
   },
+  buttonContainer: {
+    alignItems: 'center',
+  },
   button: {
-    width: "30%",
+    width: '40%',
     backgroundColor: Colors.gold,
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
+    marginBottom: 20,
   },
   buttonText: {
     fontFamily: Fonts.regular,

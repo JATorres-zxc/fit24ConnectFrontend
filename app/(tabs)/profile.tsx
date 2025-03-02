@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Text, View, StyleSheet, Image } from 'react-native';
+import { Text, View, StyleSheet, Image, ScrollView } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -86,52 +86,54 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      <ScrollView style={styles.scrollViewCont}>
       <View style={styles.detailsContainer}>
-        {/* Full Name Details*/}
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Full Name
-          </Text>
+          {/* Full Name Details*/}
+          <View style={styles.field}>
+            <Text style={styles.label}>
+              Full Name
+            </Text>
 
-          <Text style={styles.value}>
-            {profile.fullName}
-          </Text>
+            <Text style={styles.value}>
+              {profile.fullName}
+            </Text>
+          </View>
+
+          {/* Email Details*/}
+          <View style={styles.field}>
+            <Text style={styles.label}>
+              Email
+            </Text>
+
+            <Text style={styles.value}>
+              {profile.email}
+            </Text>
+          </View>
+
+          {/* Address Details*/}
+          <View style={styles.field}>
+            <Text style={styles.label}>
+              Address
+            </Text>
+
+            <Text style={styles.value}>
+              {profile.address}
+            </Text>
+          </View>
+
+          {/* Phone Number Details*/}
+          <View style={styles.field}>
+            <Text style={styles.label}>
+              Phone Number
+            </Text>
+
+            <Text style={styles.value}>
+              {profile.phoneNo}
+            </Text>
+          </View>
         </View>
+      </ScrollView>
 
-        {/* Email Details*/}
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Email
-          </Text>
-
-          <Text style={styles.value}>
-            {profile.email}
-          </Text>
-        </View>
-
-        {/* Address Details*/}
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Address
-          </Text>
-
-          <Text style={styles.value}>
-            {profile.address}
-          </Text>
-        </View>
-
-        {/* Phone Number Details*/}
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Phone Number
-          </Text>
-
-          <Text style={styles.value}>
-            {profile.phoneNo}
-          </Text>
-        </View>
-
-      </View>
     </View>
   );
 }
@@ -179,9 +181,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.gold,
   },
-  detailsContainer: {
+  scrollViewCont: {
     flex: 1,
     width: '85%',
+  },
+  detailsContainer: {
+    flex: 1,
   },
   field: {
     padding: 10,
