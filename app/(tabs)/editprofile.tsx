@@ -291,12 +291,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    width: '40%',
     backgroundColor: Colors.gold,
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
-    marginBottom: 20,
   },
   buttonText: {
     fontFamily: Fonts.regular,
