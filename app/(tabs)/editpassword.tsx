@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { useState, useEffect } from "react";
 import { router, useNavigation } from 'expo-router';
 import Toast from 'react-native-toast-message';
@@ -129,92 +129,93 @@ export default function EditPasswordScreen() {
     <View style={styles.container}>
       <Header />
 
-      <View style={styles.top}>
+      <ScrollView style={styles.scrollViewCont}>
         <Text style={styles.title}>
             Create new password
         </Text>
         <Text style={styles.description}>
-            Your new password must be different from your current password.
+            Your new password must be different from your current password.          
         </Text>
-      </View>
 
-      <View style={styles.formContainer}>
-        <View style={styles.form}>
-          <Text style={styles.label}>
-            Current Password
-          </Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter current password"
-              secureTextEntry={!showCurrentPassword}
-              value={currentPassword}
-              onChangeText={setCurrentPassword}
-            />
+        <View style={styles.formContainer}>
+          <View style={styles.form}>
+            <Text style={styles.label}>
+              Current Password
+            </Text>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter current password"
+                secureTextEntry={!showCurrentPassword}
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+              />
 
-            <TouchableOpacity onPress={() => setShowCurrentPassword(prev => !prev)} style={styles.icon}>
-              <FontAwesome name={showCurrentPassword ? "eye" : "eye-slash"} size={20} color="#aaa" />
-            </TouchableOpacity>
-          </View>  
-        </View>
-
-        <View style={styles.form}>
-          <Text style={styles.label}>
-            New Password
-          </Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter new password"
-              secureTextEntry={!showNewPassword}
-              value={newPassword}
-              onChangeText={setNewPassword}
-            />
-            <TouchableOpacity onPress={() => setShowNewPassword(prev => !prev)} style={styles.icon}>
-              <FontAwesome name={showNewPassword ? "eye" : "eye-slash"} size={20} color="#aaa" />
-            </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowCurrentPassword(prev => !prev)} style={styles.icon}>
+                <FontAwesome name={showCurrentPassword ? "eye" : "eye-slash"} size={20} color="#aaa" />
+              </TouchableOpacity>
+            </View>  
           </View>
-          <Text style={styles.reminder}>
-            Must be at least 8 characters.
-          </Text>
-        </View>
 
-        <View style={styles.form}>
-          <Text style={styles.label}>
-            Confirm Password
-          </Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Confirm new password"
-              secureTextEntry={!showConfirmPassword}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-            />
-            <TouchableOpacity onPress={() => setShowConfirmPassword(prev => !prev)} style={styles.icon}>
-              <FontAwesome name={showConfirmPassword ? "eye" : "eye-slash"} size={20} color="#aaa" />
-            </TouchableOpacity>
+          <View style={styles.form}>
+            <Text style={styles.label}>
+              New Password
+            </Text>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter new password"
+                secureTextEntry={!showNewPassword}
+                value={newPassword}
+                onChangeText={setNewPassword}
+              />
+              <TouchableOpacity onPress={() => setShowNewPassword(prev => !prev)} style={styles.icon}>
+                <FontAwesome name={showNewPassword ? "eye" : "eye-slash"} size={20} color="#aaa" />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.reminder}>
+              Must be at least 8 characters.
+            </Text>
           </View>
-          <Text style={styles.reminder}>
-            Both passwords must match.
-          </Text>
+
+          <View style={styles.form}>
+            <Text style={styles.label}>
+              Confirm Password
+            </Text>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Confirm new password"
+                secureTextEntry={!showConfirmPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
+              <TouchableOpacity onPress={() => setShowConfirmPassword(prev => !prev)} style={styles.icon}>
+                <FontAwesome name={showConfirmPassword ? "eye" : "eye-slash"} size={20} color="#aaa" />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.reminder}>
+              Both passwords must match.
+            </Text>
+          </View>
+
         </View>
 
-      </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.cancel} onPress={handleCancel}>
+            <Text style={styles.buttonText}>
+              Cancel
+            </Text>
+          </TouchableOpacity>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.cancel} onPress={handleCancel}>
-          <Text style={styles.buttonText}>
-            Cancel
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.save} onPress={handleSavePassword}>
-          <Text style={styles.buttonText}>
-            Save Password
-          </Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity style={styles.save} onPress={handleSavePassword}>
+            <Text style={styles.buttonText}>
+              Save Password
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+      
       <Toast />
     </View>
   );
@@ -226,7 +227,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bg,
     alignItems: 'center',
   },
-  top: {
+  scrollViewCont: {
     width: '85%',
   },
   title: {
@@ -241,7 +242,6 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     marginVertical: 10,
-    width: '85%',
   },
   form: {
     marginBottom: 30,
@@ -278,6 +278,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
+    justifyContent: 'center',
     marginTop: 20,
     gap: 20,
   },
