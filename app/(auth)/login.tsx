@@ -73,20 +73,16 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             const temp_response = true;
 
             if (temp_response) {
-                Toast.show({
-                    type: 'success',
-                    text1: 'Login Successful',
-                    text2: 'You have successfully logged in.',
-                    position: 'bottom'
+                router.push({
+                    pathname: '/(tabs)/home',
+                    params: { showToast: 'true' }  // Pass parameter to home screen
                 });
-                setTimeout(() => {
-                    router.push('/(tabs)/home');
-                }, 2000); // 2-second delay
             } else {
                 Toast.show({
                     type: 'error',
                     text1: 'Login Failed',
                     text2: 'Invalid username or password.',
+                    visibilityTime: 1500,
                     position: 'bottom'
                 });
                 setError('Invalid username or password.');
