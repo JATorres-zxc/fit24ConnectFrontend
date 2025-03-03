@@ -11,7 +11,7 @@ type RequestMealPlanButtonProps = {
 export default function RequestMealPlanButton({ setViewState }: RequestMealPlanButtonProps) {
   const handlePress = () => {
     router.push('/(tabs)/workout');
-    setViewState("plan");
+    setViewState("exercises");
   };
 
   return (

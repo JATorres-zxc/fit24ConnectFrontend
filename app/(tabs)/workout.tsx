@@ -388,8 +388,12 @@ const WorkoutScreen = () => {
             <View style={styles.planContainer}>
               <ProgramHeader setViewState={setViewState} title={workout?.title || "Workout Program"} />
               <ExerciseContainer exercises={workout!.exercises} />
-              <TouchableOpacity style={styles.buttonBlack} onPress={() => setViewState("plan")}>
-                <Text style={styles.buttonText}>Back to Plan</Text>
+              
+              <TouchableOpacity style={styles.buttonFeedback} onPress={() => setViewState("feedback")}>
+                <Text style={styles.buttonText}>Send Feedback</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.buttonBlack} onPress={() => setViewState("request")}>
+                <Text style={styles.buttonText}>Request New Workout</Text>
               </TouchableOpacity>
             </View> 
           ) : viewState === "delete" ? (
@@ -419,12 +423,6 @@ const WorkoutScreen = () => {
                   onWorkoutPress={handleWorkoutPress}
                   onTrashPress={handleTrashPress}
                 />
-                <TouchableOpacity style={styles.buttonFeedback} onPress={() => setViewState("feedback")}>
-                  <Text style={styles.buttonText}>Send Feedback</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonBlack} onPress={() => setViewState("request")}>
-                  <Text style={styles.buttonText}>Request New Workout</Text>
-                </TouchableOpacity>
               </View>
             ) : (
               <View>

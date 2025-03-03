@@ -12,7 +12,7 @@ export default function RequestMealPlanButton({ setViewState }: SendFeedbackButt
 
   const handlePress = () => {
     router.push('/(tabs)/workout');
-    setViewState("plan");
+    setViewState("exercises");
   };
 
   return (
