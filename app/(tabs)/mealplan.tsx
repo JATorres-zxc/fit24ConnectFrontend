@@ -284,12 +284,13 @@ const MealPlanScreen = () => {
             // Request Meal Plan View
             <View style={styles.formContainer}>
               <RequestMealPlanHeaderMP setViewState={setViewState}/>
+              
+              <Text style={styles.requestHeaders}>Choose Trainer</Text>
               <TouchableOpacity onPress={togglePicker} style={styles.pickerBlack}>
                 <Text style={styles.requestHeaders}>
                   {trainer ? `Selected: ${trainer}` : 'Select Trainer'}
                 </Text>
               </TouchableOpacity>
-              <Text style={styles.requestHeaders}>Choose Trainer</Text>
               {showPicker && (
                 <View style={styles.pickerContainer}>
                   <PickerIOS
