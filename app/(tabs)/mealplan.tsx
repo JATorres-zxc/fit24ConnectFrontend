@@ -485,11 +485,10 @@ const styles = StyleSheet.create({
   buttonFeedback: {
     backgroundColor: Colors.primary,
     padding: 12,
-    borderRadius: 5,
+    borderRadius: 10,
     alignSelf: "center",
     top: -5,
-    width: "50%",
-    height: 45,
+    width: "70%",
   },
   submitButton: {
     backgroundColor: Colors.primary,
@@ -504,13 +503,11 @@ const styles = StyleSheet.create({
   },
   buttonBlack: {
     padding: 12,
-    borderRadius: 0,
+    borderRadius: 10,
     alignSelf: "center",
-    marginTop: 20,
+    marginTop: 10,
     width: "70%",
     backgroundColor: Colors.buttonBlack,
-    paddingVertical: 10,
-    paddingHorizontal: 30,
     marginHorizontal: 5,
   },
   buttonRed: {
@@ -661,7 +658,6 @@ const styles = StyleSheet.create({
     width: '100%', 
     borderRadius: 0,
     marginBottom: 10,
-    fontFamily: Fonts.regular,
   },
   pickerBlack: {
     width: '100%', 
