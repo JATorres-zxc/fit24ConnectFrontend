@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AntDesign from '@expo/vector-icons/AntDesign'
 import { Fonts } from '@/constants/Fonts';
+import { Colors } from '@/constants/Colors';
 
 interface HeaderProps {
   onSave: () => void;
@@ -53,7 +54,12 @@ export default function Header({ onSave, hasUnsavedChanges = false }: HeaderProp
         </View>
 
         <View style={styles.rightSection}>
-          <Text style={styles.save} onPress={onSave}>Save</Text>
+        <Text 
+          style={[styles.save, !hasUnsavedChanges && styles.disabledSave]} 
+          onPress={hasUnsavedChanges ? onSave : undefined}
+        >
+          Save
+        </Text>
         </View>
       </View>
     </SafeAreaView>
@@ -81,6 +87,10 @@ const styles = StyleSheet.create({
   },
   save: {
     fontSize: 16,
-    color: '#d7be69',
+    color: Colors.gold,
+    fontFamily: Fonts.regular,
   },
+  disabledSave: {
+    color: Colors.textgray,
+  }
 });
