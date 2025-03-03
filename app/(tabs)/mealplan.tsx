@@ -464,12 +464,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   icon: {
-    marginBottom: 10,
+    marginBottom: 15,
     alignSelf: "center",
   },
   alertTitle: {
-    fontSize: 18,
-    marginBottom: 5,
+    fontSize: 20,
+    marginBottom: 10,
     textAlign: "center",
     fontFamily: Fonts.bold,
   },
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 14,
     color: "gray",
-    marginBottom: 15,
+    marginBottom: 25,
     fontFamily: Fonts.regular,
   },
   buttonContainer: {
@@ -648,7 +648,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
-    alignSelf: "center",
   },  
   picker: { 
     width: '100%', 
