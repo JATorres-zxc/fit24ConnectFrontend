@@ -103,11 +103,10 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             style={styles.container}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
+            <View style={styles.logoContainer}>
+                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
+            </View>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <View style={styles.logoContainer}>
-                    <Image source={require("./assets/images/icon.png")} style={styles.logo} />
-                </View>
-
                 <View style={styles.formContainer}>
                     <TextInput
                         placeholder="Username/Email"
@@ -159,12 +158,12 @@ const styles = StyleSheet.create({
     },
     scrollContainer: {
         flexGrow: 1,
-        paddingTop: screenHeight * 0.1 + 50,
+        paddingTop: screenHeight * 0.1,
         justifyContent: "center",
         alignItems: "center",
     },
     logoContainer: {
-        marginBottom: 20,
+        marginTop: 150,
         justifyContent: "center",
         alignItems: "center",
     },

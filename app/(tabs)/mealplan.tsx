@@ -287,25 +287,22 @@ const MealPlanScreen = () => {
                   { label: 'Trainer A', value: 'trainerA' },
                   { label: 'Trainer B', value: 'trainerB' },
                   { label: 'Trainer C', value: 'trainerC' },
-                  // Dynamic Picker Items from API
-                  // ...trainers.map(trainer => ({ label: trainer.name, value: trainer.id }))
+                  // Dynamic Picker Item from API
+                  // {trainers.map((trainer) => (
+                  //   { label: trainer.name, value: trainer.id }
+                  // ))}
                 ]}
-                placeholder={{ label: 'Select trainer', value: null }}
                 style={{
-                  inputIOS: styles.picker,
-                  inputAndroid: styles.picker,
-                  iconContainer: {
-                    top: 10,
-                    right: 12,
+                  inputIOS: {
+                    ...styles.pickerBlack,
+                    fontFamily: 'Fonts.regular'
                   },
-                  placeholder: {
-                    color: Colors.buttonText,
-                    fontFamily: Fonts.regular,
+                  inputAndroid: {
+                    ...styles.pickerBlack,
+                    fontFamily: 'Fonts.regular'
                   },
                 }}
-                Icon={() => {
-                  return <View style={styles.icon} />;
-                }}
+                placeholder={{ label: 'Select Trainer', value: '' }}
               />
               </View>
 
@@ -355,29 +352,24 @@ const MealPlanScreen = () => {
               <RNPickerSelect
                 onValueChange={(value) => setRating(value)}
                 items={[
-                  { label: 'Enter Your Rating', value: ''},
-                  { label: '1 - Poor', value: '1'},
-                  { label: '2 - Fair', value: '2'},
-                  { label: '3 - Good', value: '3'},
-                  { label: '4 - Very Good', value: '4'},
-                  { label: '5 - Excellent', value: '5'},
+                  { label: 'Enter Your Rating', value: '' },
+                  { label: '1 - Poor', value: '1' },
+                  { label: '2 - Fair', value: '2' },
+                  { label: '3 - Good', value: '3' },
+                  { label: '4 - Very Good', value: '4' },
+                  { label: '5 - Excellent', value: '5' }
                 ]}
-                placeholder={{ label: 'Select a Rating:', value: null }}
                 style={{
-                  inputIOS: styles.pickerBlack,
-                  inputAndroid: styles.pickerBlack,
-                  iconContainer: {
-                    top: 10,
-                    right: 12,
+                  inputIOS: {
+                    ...styles.pickerBlack,
+                    fontFamily: 'Fonts.regular'
                   },
-                  placeholder: {
-                    color: Colors.buttonText,
-                    fontFamily: Fonts.regular,
+                  inputAndroid: {
+                    ...styles.pickerBlack,
+                    fontFamily: 'Fonts.regular'
                   },
                 }}
-                Icon={() => {
-                  return <View style={styles.icon} />;
-                }}
+                placeholder={{ label: 'Select a Rating:', value: '' }}
               />
               </View>
 
