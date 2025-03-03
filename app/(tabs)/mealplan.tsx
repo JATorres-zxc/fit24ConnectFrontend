@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { 
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform 
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 import Header from '@/components/MealPlanHeader';
 import RequestMealPlanHeaderMP from '@/components/RequestMealPlanHeaderMP';
@@ -280,29 +280,33 @@ const MealPlanScreen = () => {
               <RequestMealPlanHeaderMP setViewState={setViewState}/>
               <Text style={styles.requestHeaders}>Choose Trainer</Text>
               <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={trainer}
-                  onValueChange={(itemValue) => setTrainer(itemValue)}
-                  style={styles.picker}
-                  itemStyle = {{ color: Colors.buttonText }}
-                  prompt="Select trainer"
-                  dropdownIconColor={Colors.buttonBlack}
-                  dropdownIconRippleColor={Colors.buttonBlack}
-                  mode="dropdown" // Optional for Android
-                >
-                  <Picker.Item label="Select Trainer" value="" style={styles.input}/>
-                  <Picker.Item label="Trainer A" value="trainerA" />
-                  <Picker.Item label="Trainer B" value="trainerB" />
-                  <Picker.Item label="Trainer C" value="trainerC" />
-
-                  {/* Dynamic Picker Item from API */}
-
-                  {/* <Picker.Item label="Select Trainer" value="" />
-                  {trainers.map((trainer) => (
-                    <Picker.Item key={trainer.id} label={trainer.name} value={trainer.id} />
-                  ))} */}
-                  
-                </Picker>
+              <RNPickerSelect
+                onValueChange={(value) => setTrainer(value)}
+                items={[
+                  { label: 'Select Trainer', value: '' },
+                  { label: 'Trainer A', value: 'trainerA' },
+                  { label: 'Trainer B', value: 'trainerB' },
+                  { label: 'Trainer C', value: 'trainerC' },
+                  // Dynamic Picker Items from API
+                  // ...trainers.map(trainer => ({ label: trainer.name, value: trainer.id }))
+                ]}
+                placeholder={{ label: 'Select trainer', value: null }}
+                style={{
+                  inputIOS: styles.picker,
+                  inputAndroid: styles.picker,
+                  iconContainer: {
+                    top: 10,
+                    right: 12,
+                  },
+                  placeholder: {
+                    color: Colors.buttonText,
+                    fontFamily: Fonts.regular,
+                  },
+                }}
+                Icon={() => {
+                  return <View style={styles.icon} />;
+                }}
+              />
               </View>
 
               <Text style={styles.requestHeaders}>Fitness Goal</Text>
@@ -348,24 +352,33 @@ const MealPlanScreen = () => {
               />
               <Text style={styles.requestHeaders}>Overall Rating</Text>
               <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={rating}
-                  onValueChange={(itemValue) => setRating(itemValue)}
-                  style={styles.pickerBlack}
-                  itemStyle={{ color: Colors.buttonText }}
-                  mode="dropdown" // Optional for Android
-                  dropdownIconColor={Colors.buttonText}
-                  dropdownIconRippleColor={Colors.buttonText}
-                  prompt={"Select a Rating:"} // Android only
-                >
-                  <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="1 - Poor" value="1" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="2 - Fair" value="2" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="3 - Good" value="3" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="4 - Very Good" value="4" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="5 - Excellent" value="5" fontFamily="Fonts.regular"/>
-
-                </Picker>
+              <RNPickerSelect
+                onValueChange={(value) => setRating(value)}
+                items={[
+                  { label: 'Enter Your Rating', value: ''},
+                  { label: '1 - Poor', value: '1'},
+                  { label: '2 - Fair', value: '2'},
+                  { label: '3 - Good', value: '3'},
+                  { label: '4 - Very Good', value: '4'},
+                  { label: '5 - Excellent', value: '5'},
+                ]}
+                placeholder={{ label: 'Select a Rating:', value: null }}
+                style={{
+                  inputIOS: styles.pickerBlack,
+                  inputAndroid: styles.pickerBlack,
+                  iconContainer: {
+                    top: 10,
+                    right: 12,
+                  },
+                  placeholder: {
+                    color: Colors.buttonText,
+                    fontFamily: Fonts.regular,
+                  },
+                }}
+                Icon={() => {
+                  return <View style={styles.icon} />;
+                }}
+              />
               </View>
 
               <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
@@ -483,11 +496,10 @@ const styles = StyleSheet.create({
   buttonFeedback: {
     backgroundColor: Colors.primary,
     padding: 12,
-    borderRadius: 5,
+    borderRadius: 10,
     alignSelf: "center",
     top: -5,
-    width: "50%",
-    height: 45,
+    width: "70%",
   },
   submitButton: {
     backgroundColor: Colors.primary,
@@ -502,13 +514,11 @@ const styles = StyleSheet.create({
   },
   buttonBlack: {
     padding: 12,
-    borderRadius: 0,
+    borderRadius: 10,
     alignSelf: "center",
-    marginTop: 20,
+    marginTop: 10,
     width: "70%",
     backgroundColor: Colors.buttonBlack,
-    paddingVertical: 10,
-    paddingHorizontal: 30,
     marginHorizontal: 5,
   },
   buttonRed: {

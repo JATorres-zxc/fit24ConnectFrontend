@@ -134,8 +134,6 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     </TouchableOpacity>
                     {error && <Text style={styles.errorText}>{error}</Text>}
 
-                    <Text style={styles.orText}>OR</Text>
-
                     <Text style={styles.bottomText}>
                         Don&apos;t have an account?{" "}
                         <Text
@@ -187,7 +185,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     input: {
-        width: "100%",
+        width: "85%",
+        marginBottom: 10,
         borderColor: Colors.border,
         borderWidth: 1,
         borderRadius: 8,

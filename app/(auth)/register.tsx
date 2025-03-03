@@ -220,7 +220,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     input: {
-        width: "100%",
+        width: "85%",
+        marginBottom: 10,
         borderColor: Colors.border,
         borderWidth: 1,
         borderRadius: 8,

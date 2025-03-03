@@ -8,7 +8,7 @@ import { Colors } from '@/constants/Colors';
 
 export default function Header() {
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView>
       <View style={styles.header}>
 
         <View style={styles.leftSection}>
@@ -33,13 +33,8 @@ export default function Header() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: Colors.background,
-    marginBottom: 30,
-  },
   header: {
-    width: '85%',
-    backgroundColor: Colors.background,
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between'
