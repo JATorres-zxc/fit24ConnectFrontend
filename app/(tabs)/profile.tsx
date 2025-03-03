@@ -4,7 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Header from '@/components/ProfileHeader';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
@@ -31,6 +31,7 @@ export default function ProfileScreen() {
     phoneNo: '0999 999 9999',
   });
 
+  /** 🔹 Load profile data when screen is focused */
   useFocusEffect(
     useCallback(() => {
       const loadProfile = async () => {
@@ -38,7 +39,13 @@ export default function ProfileScreen() {
           const storedProfile = await AsyncStorage.getItem('profile');
           if (storedProfile) {
             const parsed = JSON.parse(storedProfile);
-            setProfile(parsed);
+            setProfile({
+              ...parsed,
+              image:
+                parsed.image && typeof parsed.image === "string"
+                  ? { uri: parsed.image }
+                  : require("@/assets/images/icon.png"),
+            });
           }
         } catch (error) {
           console.error('Error loading profile:', error);
@@ -48,21 +55,49 @@ export default function ProfileScreen() {
     }, [])
   );
 
+  /** 🔹 Load profile on component mount */
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const storedProfile = await AsyncStorage.getItem('profile');
+        const storedProfile = await AsyncStorage.getItem("profile");
+        console.log("Stored Profile:", storedProfile);
+  
         if (storedProfile) {
           const parsed = JSON.parse(storedProfile);
-          setProfile(parsed);
+          setProfile({
+            ...parsed,
+            image:
+              parsed.image && typeof parsed.image === "string"
+                ? { uri: parsed.image } // If stored as a string, set as `uri`
+                : require("@/assets/images/icon.png"), // Fallback to local image
+          });
         }
       } catch (error) {
-        console.error('Error loading profile:', error);
+        console.error("Error loading profile:", error);
       }
     };
-
     loadProfile();
   }, []);
+  
+
+  /** 🔹 Save profile properly */
+  const saveProfile = async (updatedProfile: Profile) => {
+    try {
+      const profileToSave = {
+        ...updatedProfile,
+        image:
+          updatedProfile.image?.uri || // If image is a URI (remote)
+          (typeof updatedProfile.image === "string" ? updatedProfile.image : null) || // If image is already a string
+          null, // Default to null if it's an invalid number
+      };
+  
+      await AsyncStorage.setItem("profile", JSON.stringify(profileToSave));
+      console.log("Profile saved successfully:", profileToSave);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+    }
+  };
+  
 
   return (
     <View style={styles.container}>
@@ -70,7 +105,10 @@ export default function ProfileScreen() {
 
       <View style={styles.profileContainer}>
         <View style={styles.imageContainer}>
-          <Image source={profile.image} style={styles.profileImage} />
+          <Image 
+            source={typeof profile.image === 'string' ? { uri: profile.image } : profile.image} 
+            style={styles.profileImage} 
+          />
 
           <View style={styles.editProfile}>
             <MaterialCommunityIcons name={'pencil'} color={'black'} size={24} onPress={() => router.push('/editprofile')} />
@@ -87,49 +125,29 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView style={styles.scrollViewCont}>
-      <View style={styles.detailsContainer}>
+        <View style={styles.detailsContainer}>
           {/* Full Name Details*/}
           <View style={styles.field}>
-            <Text style={styles.label}>
-              Full Name
-            </Text>
-
-            <Text style={styles.value}>
-              {profile.fullName}
-            </Text>
+            <Text style={styles.label}>Full Name</Text>
+            <Text style={styles.value}>{profile.fullName}</Text>
           </View>
 
           {/* Email Details*/}
           <View style={styles.field}>
-            <Text style={styles.label}>
-              Email
-            </Text>
-
-            <Text style={styles.value}>
-              {profile.email}
-            </Text>
+            <Text style={styles.label}>Email</Text>
+            <Text style={styles.value}>{profile.email}</Text>
           </View>
 
           {/* Address Details*/}
           <View style={styles.field}>
-            <Text style={styles.label}>
-              Address
-            </Text>
-
-            <Text style={styles.value}>
-              {profile.address}
-            </Text>
+            <Text style={styles.label}>Address</Text>
+            <Text style={styles.value}>{profile.address}</Text>
           </View>
 
           {/* Phone Number Details*/}
           <View style={styles.field}>
-            <Text style={styles.label}>
-              Phone Number
-            </Text>
-
-            <Text style={styles.value}>
-              {profile.phoneNo}
-            </Text>
+            <Text style={styles.label}>Phone Number</Text>
+            <Text style={styles.value}>{profile.phoneNo}</Text>
           </View>
         </View>
       </ScrollView>
