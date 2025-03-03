@@ -46,7 +46,7 @@ const WorkoutScreen = () => {
   const [intensityLevel, setIntensityLevel] = useState(""); // State to store intensity level
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState(""); // State to store rating
-  const [workoutToDelete, setWorkoutToDelete] = useState<Workout | null>(null);
+  const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [workout, setWorkout] = useState<Workout | null>(null);
 
   // Fetching trainers from API
@@ -138,7 +138,7 @@ const WorkoutScreen = () => {
 
         // TEMPORARY: DELETE SNIPPET WHEN API IS AVAILABLE.
         setWorkouts((prevWorkouts) => prevWorkouts.filter(w => w.id !== workout.id)); // Remove the workout from the list
-        setWorkoutToDelete(null); // Set workoutToDelete to null
+        setSelectedWorkout(null); // Set workoutToDelete to null
         setWorkout(null); // Set workout to null
 
         setViewState("plan");
@@ -166,12 +166,12 @@ const WorkoutScreen = () => {
   };
 
   const handleTrashPress = (workout: Workout) => {
-    setWorkoutToDelete(workout);
+    setSelectedWorkout(workout);
     setWorkout(workout);
     setViewState("delete");
   };
 
-  const handleFeedbackSubmit = async () => {
+  const handleFeedbackSubmit = async (selectedWorkout: Workout) => {
     if (!feedback || !rating) {
       Toast.show({
         type: 'error',
@@ -182,19 +182,20 @@ const WorkoutScreen = () => {
       return;
     }
 
-    if (workout) {
+    if (selectedWorkout) {
       const newFeedback: Feedback = {
-        id: `${workout.fitnessGoal}-${Date.now()}`,
+        id: `${selectedWorkout.fitnessGoal}-${Date.now()}`,
         feedback,
         rating: parseInt(rating),
         createdAt: new Date(),
       };
 
       const updatedWorkout: Workout = {
-        ...workout,
-        feedbacks: [...workout.feedbacks, newFeedback],
+        ...selectedWorkout,
+        feedbacks: [...selectedWorkout.feedbacks, newFeedback],
       };
-
+      
+      setSelectedWorkout(updatedWorkout);
       setWorkout(updatedWorkout);
     } else {
       console.error("No workout available to add feedback.");
@@ -380,7 +381,7 @@ const WorkoutScreen = () => {
                 </Picker>
               </View>
 
-              <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
+              <TouchableOpacity style={styles.submitButton} onPress={() => selectedWorkout && handleFeedbackSubmit(selectedWorkout)}>
                 <Text style={styles.buttonText}>Submit Feedback</Text>
               </TouchableOpacity>
             </View>
@@ -388,7 +389,7 @@ const WorkoutScreen = () => {
             <View style={styles.planContainer}>
               <ProgramHeader setViewState={setViewState} title={workout?.title || "Workout Program"} />
               <ExerciseContainer exercises={workout!.exercises} />
-              
+
               <TouchableOpacity style={styles.buttonFeedback} onPress={() => setViewState("feedback")}>
                 <Text style={styles.buttonText}>Send Feedback</Text>
               </TouchableOpacity>
@@ -407,7 +408,7 @@ const WorkoutScreen = () => {
                 <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
                   <Text style={styles.buttonText}>NO</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonGreen} onPress={() => workoutToDelete && handleDelete(workoutToDelete)}> 
+                <TouchableOpacity style={styles.buttonGreen} onPress={() => selectedWorkout && handleDelete(selectedWorkout)}> 
                   {/* short-circuited potential null workout */}
                   <Text style={styles.buttonText}>YES</Text>
                 </TouchableOpacity>
