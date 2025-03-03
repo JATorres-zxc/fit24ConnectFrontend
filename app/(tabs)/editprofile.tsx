@@ -47,21 +47,21 @@ export default function EditProfileScreen() {
           if (storedProfile) {
             const parsed = JSON.parse(storedProfile);
             setOriginalProfile(parsed);
-            setFormValues(parsed); // Reset form values to stored values
+            setFormValues({
+              ...parsed,
+              image: parsed.image && typeof parsed.image === 'string'
+                ? { uri: parsed.image }
+                : require("@/assets/images/icon.png"),
+            });
             setHasUnsavedChanges(false);
           }
         } catch (error) {
           console.error('Error loading profile:', error);
         }
       };
-      
+
       loadProfile();
-      
-      // Optional: Return a cleanup function if needed
-      return () => {
-        // Any cleanup code here
-      };
-    }, []) // Empty dependency array means this runs on every focus
+    }, [])
   );
 
   useEffect(() => {
@@ -71,7 +71,12 @@ export default function EditProfileScreen() {
         if (storedProfile) {
           const parsed = JSON.parse(storedProfile);
           setOriginalProfile(parsed);
-          setFormValues(parsed); // Initialize form with loaded values
+          setFormValues({
+            ...parsed,
+            image: parsed.image && typeof parsed.image === 'string'
+              ? { uri: parsed.image }
+              : require("@/assets/images/icon.png"),
+          });
         }
       } catch (error) {
         console.error('Error loading profile:', error);
@@ -117,6 +122,15 @@ export default function EditProfileScreen() {
     }
   
     try {
+
+      const profileToSave = {
+        ...formValues,
+        image:
+          formValues.image?.uri || 
+          (typeof formValues.image === "string" ? formValues.image : null) || 
+          null,
+      };
+      
       await AsyncStorage.setItem('profile', JSON.stringify(formValues));
       setOriginalProfile({ ...formValues }); // Ensure originalProfile is fully updated
       setHasUnsavedChanges(false); // Reset changes flag
@@ -149,7 +163,10 @@ export default function EditProfileScreen() {
         <ScrollView style={styles.scrollViewCont}>
           <View style={styles.profileContainer}>
             <View style={styles.imageContainer}>
-              <Image source={formValues.image} style={styles.profileImage} />
+            <Image 
+              source={typeof formValues.image === "string" ? { uri: formValues.image } : formValues.image} 
+              style={styles.profileImage} 
+            />
             </View>
 
             <View style={styles.textContainer}>
