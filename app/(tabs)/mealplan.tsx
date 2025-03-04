@@ -48,13 +48,18 @@ const MealPlanScreen = () => {
     ],
     feedbacks: [],
   }); // State to store meal plan
-  const [trainer, setTrainer] = useState(""); // State to store selected trainer
+  const [trainer, setTrainer] = useState<string | number | undefined>('');
   const [trainers, setTrainers] = useState([]);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
   const [allergens, setAllergens] = useState(""); // State to store allergens
   const [feedback, setFeedback] = useState(""); // State to store feedback
-  const [rating, setRating] = useState(""); // State to store rating
+  const [rating, setRating] = useState<string | number | undefined>('');
+
+  const [showPicker, setShowPicker] = useState<boolean>(false);
+  const togglePicker = () => {
+    setShowPicker(!showPicker);
+  };
 
   // Fetching trainers from API
 
@@ -165,9 +170,9 @@ const MealPlanScreen = () => {
       const newFeedback = {
         id: `${mealPlan.meals[0].meal}-${Date.now()}`,
         feedback,
-        rating: parseInt(rating),
+        rating: parseInt(rating.toString()),
         createdAt: new Date(),
-      };
+      };      
 
       const updatedMealPlan = {
         ...mealPlan,
@@ -278,33 +283,40 @@ const MealPlanScreen = () => {
             // Request Meal Plan View
             <View style={styles.formContainer}>
               <RequestMealPlanHeaderMP setViewState={setViewState}/>
+              
               <Text style={styles.requestHeaders}>Choose Trainer</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={trainer}
-                  onValueChange={(itemValue) => setTrainer(itemValue)}
-                  style={styles.picker}
-                  itemStyle = {{ color: Colors.buttonText }}
-                  prompt="Select trainer"
-                  dropdownIconColor={Colors.buttonBlack}
-                  dropdownIconRippleColor={Colors.buttonBlack}
-                  mode="dropdown" // Optional for Android
-                >
-                  <Picker.Item label="Select Trainer" value="" style={styles.input}/>
-                  <Picker.Item label="Trainer A" value="trainerA" />
-                  <Picker.Item label="Trainer B" value="trainerB" />
-                  <Picker.Item label="Trainer C" value="trainerC" />
+              <TouchableOpacity onPress={togglePicker} style={styles.pickerBlack}>
+                <Text style={styles.requestHeaders}>
+                  {trainer ? `Selected: ${trainer}` : 'Select Trainer'}
+                </Text>
+              </TouchableOpacity>
+              {showPicker && (
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={trainer}
+                    onValueChange={(itemValue) => setTrainer(itemValue)}
+                    style={styles.picker}
+                    itemStyle = {{ color: Colors.buttonText }}
+                    prompt="Select trainer"
+                    dropdownIconColor={Colors.buttonBlack}
+                    dropdownIconRippleColor={Colors.buttonBlack}
+                    mode="dropdown" // Optional for Android
+                  >
+                    <Picker.Item label="Select Trainer" value="" style={styles.input}/>
+                    <Picker.Item label="Trainer A" value="trainerA" />
+                    <Picker.Item label="Trainer B" value="trainerB" />
+                    <Picker.Item label="Trainer C" value="trainerC" />
 
-                  {/* Dynamic Picker Item from API */}
+                    {/* Dynamic Picker Item from API */}
 
-                  {/* <Picker.Item label="Select Trainer" value="" />
-                  {trainers.map((trainer) => (
-                    <Picker.Item key={trainer.id} label={trainer.name} value={trainer.id} />
-                  ))} */}
-                  
-                </Picker>
-              </View>
-
+                    {/* <Picker.Item label="Select Trainer" value="" />
+                    {trainers.map((trainer) => (
+                      <Picker.Item key={trainer.id} label={trainer.name} value={trainer.id} />
+                    ))} */}
+                    
+                  </Picker>
+                </View>
+              )}
               <Text style={styles.requestHeaders}>Fitness Goal</Text>
               <TextInput
                 placeholder="Enter Your Fitness Goal"
@@ -347,26 +359,34 @@ const MealPlanScreen = () => {
                 numberOfLines={4}
               />
               <Text style={styles.requestHeaders}>Overall Rating</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={rating}
-                  onValueChange={(itemValue) => setRating(itemValue)}
-                  style={styles.pickerBlack}
-                  itemStyle={{ color: Colors.buttonText }}
-                  mode="dropdown" // Optional for Android
-                  dropdownIconColor={Colors.buttonText}
-                  dropdownIconRippleColor={Colors.buttonText}
-                  prompt={"Select a Rating:"} // Android only
-                >
-                  <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="1 - Poor" value="1" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="2 - Fair" value="2" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="3 - Good" value="3" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="4 - Very Good" value="4" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="5 - Excellent" value="5" fontFamily="Fonts.regular"/>
+              <TouchableOpacity onPress={togglePicker} style={styles.pickerBlack}>
+                <Text style={styles.requestHeaders}>
+                  {rating ? `Selected: ${rating}` : 'Enter Your Rating'}
+                </Text>
+              </TouchableOpacity>
 
-                </Picker>
-              </View>
+              {showPicker && (
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={rating}
+                    onValueChange={(itemValue) => setRating(itemValue)}
+                    style={styles.pickerBlack}
+                    itemStyle={{ color: Colors.buttonText }}
+                    mode="dropdown" // Optional for Android
+                    dropdownIconColor={Colors.buttonText}
+                    dropdownIconRippleColor={Colors.buttonText}
+                    prompt={"Select a Rating:"} // Android only
+                  >
+                    <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
+                    <Picker.Item label="1 - Poor" value="1" fontFamily="Fonts.regular"/>
+                    <Picker.Item label="2 - Fair" value="2" fontFamily="Fonts.regular"/>
+                    <Picker.Item label="3 - Good" value="3" fontFamily="Fonts.regular"/>
+                    <Picker.Item label="4 - Very Good" value="4" fontFamily="Fonts.regular"/>
+                    <Picker.Item label="5 - Excellent" value="5" fontFamily="Fonts.regular"/>
+
+                  </Picker>
+                </View>
+              )}
 
               <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
                 <Text style={styles.buttonText}>Submit Feedback</Text>
@@ -461,12 +481,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   icon: {
-    marginBottom: 10,
+    marginBottom: 15,
     alignSelf: "center",
   },
   alertTitle: {
-    fontSize: 18,
-    marginBottom: 5,
+    fontSize: 20,
+    marginBottom: 10,
     textAlign: "center",
     fontFamily: Fonts.bold,
   },
@@ -474,7 +494,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 14,
     color: "gray",
-    marginBottom: 15,
+    marginBottom: 25,
     fontFamily: Fonts.regular,
   },
   buttonContainer: {
@@ -645,7 +665,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
-    alignSelf: "center",
   },  
   picker: { 
     width: '100%', 

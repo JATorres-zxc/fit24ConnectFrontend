@@ -1,10 +1,12 @@
 import { Stack, SplashScreen } from "expo-router";
 import { useEffect } from "react";
+import Toast from "react-native-toast-message";
 
 import { useFonts, 
   Montserrat_400Regular,
   Montserrat_400Regular_Italic,
   Montserrat_500Medium,
+  Montserrat_500Medium_Italic,
   Montserrat_600SemiBold,
   Montserrat_600SemiBold_Italic,
   Montserrat_700Bold,
@@ -15,6 +17,7 @@ export default function RootLayout() {
     Montserrat_400Regular,
     Montserrat_400Regular_Italic,
     Montserrat_500Medium,
+    Montserrat_500Medium_Italic,
     Montserrat_600SemiBold,
     Montserrat_600SemiBold_Italic,
     Montserrat_700Bold,
@@ -33,15 +36,20 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack>
-      <Stack.Screen 
-        name="(auth)" 
-        options={{ headerShown: false }} // Disable header for all auth routes
-      />
-      <Stack.Screen 
-        name="(tabs)" 
-        options={{ headerShown: false }}  // Keep header for your main app screens (if desired)
-      />
-    </Stack>
+    <>
+      <Stack>
+        <Stack.Screen 
+          name="(auth)" 
+          options={{ headerShown: false }} // Disable header for all auth routes
+        />
+        <Stack.Screen 
+          name="(tabs)" 
+          options={{ headerShown: false }}  // Keep header for your main app screens (if desired)
+        />
+      </Stack>
+
+      <Toast />
+    </>
+      
   );
 }
