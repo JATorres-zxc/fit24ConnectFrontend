@@ -320,6 +320,7 @@ const MealPlanScreen = () => {
               <Text style={styles.requestHeaders}>Fitness Goal</Text>
               <TextInput
                 placeholder="Enter Your Fitness Goal"
+                placeholderTextColor={Colors.textSecondary}
                 style={styles.input}
                 value={fitnessGoal}
                 onChangeText={(text) => setFitnessGoal(text)}
@@ -328,6 +329,7 @@ const MealPlanScreen = () => {
               <Text style={styles.requestHeaders}>Weight Goal</Text>
               <TextInput
                 placeholder="Enter Your Weight Goal"
+                placeholderTextColor={Colors.textSecondary}
                 style={styles.input}
                 value={weightGoal}
                 onChangeText={(number) => setWeightGoal(number.replace(/[^0-9]/g, ""))}
@@ -337,6 +339,7 @@ const MealPlanScreen = () => {
               <Text style={styles.requestHeaders}>Allergen/s</Text>
               <TextInput
                 placeholder="Enter Your Allergen/s"
+                placeholderTextColor={Colors.textSecondary}
                 style={styles.input}
                 value={allergens}
                 onChangeText={setAllergens}
@@ -352,6 +355,7 @@ const MealPlanScreen = () => {
               <Text style={styles.feedbackHeaders}>Feedback</Text>
               <TextInput
                 placeholder="Enter your feedback here"
+                placeholderTextColor={Colors.textSecondary}
                 style={[styles.input, styles.feedbackInput]}
                 value={feedback}
                 onChangeText={setFeedback}
@@ -547,7 +551,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: Colors.white,
-    fontSize: 16,
+    fontSize: 15,
     textAlign: "center",
     fontFamily: Fonts.semibold,
   },
@@ -563,7 +567,6 @@ const styles = StyleSheet.create({
   formContainer: {
     width: "100%",
     alignItems: "flex-start",
-    verticalAlign: 'middle',
   },
   title: {
     fontSize: 20,
@@ -585,13 +588,13 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mediumItalic,
   },
   requestHeaders: {
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 5,
     alignSelf: "flex-start",
     fontFamily: Fonts.semibold,
   },
   feedbackHeaders: {
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 15,
     alignSelf: "flex-start",
     fontFamily: Fonts.semibold,
@@ -599,16 +602,18 @@ const styles = StyleSheet.create({
   input: {
     width: "100%",
     padding: 12,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: Colors.textSecondary,
-    borderRadius: 0,
+    borderRadius: 10,
     marginBottom: 10,
     fontFamily: Fonts.regular,
+    fontSize: 14,
   },
   feedbackInput: {
     height: 200,
     textAlignVertical: 'top',
     fontFamily: Fonts.regular,
+    fontSize: 14,
   },
   button: {
     backgroundColor: Colors.gold,
