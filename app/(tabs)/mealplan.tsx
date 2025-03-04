@@ -5,7 +5,7 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import Toast from 'react-native-toast-message';
 import Header from '@/components/MealPlanHeader';
-import RequestMealPlanHeaderMP from '@/components/RequestMealPlanHeaderMP';
+import RequestMealPlanHeaderMP from '@/components/RequestHeaderMP';
 import SendFeedbackHeaderMP from '@/components/SendFeedbackHeaderMP';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
