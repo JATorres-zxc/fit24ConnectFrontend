@@ -3,7 +3,9 @@ import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform 
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
+
 import Header from '@/components/MealPlanHeader';
 import RequestMealPlanHeaderMP from '@/components/RequestMealPlanHeaderMP';
 import SendFeedbackHeaderMP from '@/components/SendFeedbackHeaderMP';
@@ -204,7 +206,7 @@ const MealPlanScreen = () => {
         Toast.show({
           type: 'info',
           text1: 'Feedback Sent',
-          text2: 'Your feedback has been sent successfully. Please wait a few days for your new meal plan!',
+          text2: 'Your feedback has been sent successfully.',
           position: 'bottom'
         });
         setViewState("plan");
@@ -284,112 +286,105 @@ const MealPlanScreen = () => {
             <View style={styles.formContainer}>
               <RequestMealPlanHeaderMP setViewState={setViewState}/>
               
-              <Text style={styles.requestHeaders}>Choose Trainer</Text>
-              <TouchableOpacity onPress={togglePicker} style={styles.pickerTrainer}>
-                <Text style={styles.selectTrainerHeader}>
-                  {trainer ? trainer.toString() : 'Select Trainer'}
-                </Text>
-              </TouchableOpacity>
-              {showPicker && (
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    style={styles.trainerPicker}
-                    selectedValue={trainer}
-                    onValueChange={(itemValue) => setTrainer(itemValue)}
-                    itemStyle = {{ fontSize: 14, fontFamily: Fonts.regular, color: Colors.textSecondary }}
-                  >
-                    <Picker.Item label="Select Trainer" value="" style={styles.input}/>
-                    <Picker.Item label="Trainer A" value="trainerA" />
-                    <Picker.Item label="Trainer B" value="trainerB" />
-                    <Picker.Item label="Trainer C" value="trainerC" />
-
-                    {/* Dynamic Picker Item from API */}
-
-                    {/* <Picker.Item label="Select Trainer" value="" />
-                    {trainers.map((trainer) => (
-                      <Picker.Item key={trainer.id} label={trainer.name} value={trainer.id} />
-                    ))} */}
-                    
-                  </Picker>
+              <View style={styles.requestMPContainer}>
+                {/* Trainer Picker */}
+                <Text style={styles.requestHeaders}>Choose Trainer</Text>
+                <View style={styles.pickerTrainer}>
+                  <RNPickerSelect
+                    onValueChange={(value) => setTrainer(value)}
+                    items={[
+                      { label: 'Trainer A', value: 'trainerA' },
+                      { label: 'Trainer B', value: 'trainerB' },
+                      { label: 'Trainer C', value: 'trainerC' },
+                    ]}
+                    style={trainerpickerSelectStyles}
+                    value={trainer}
+                    placeholder={{ label: 'Select Trainer', value: null }}
+                    useNativeAndroidPickerStyle={false}
+                    Icon={() =>
+                      Platform.OS === "ios" ? (
+                        <Ionicons name="chevron-down" size={20} color="gray" />
+                      ) : null
+                    }
+                  />
                 </View>
-              )}
-              <Text style={styles.requestHeaders}>Fitness Goal</Text>
-              <TextInput
-                placeholder="Enter Your Fitness Goal"
-                placeholderTextColor={Colors.textSecondary}
-                style={styles.input}
-                value={fitnessGoal}
-                onChangeText={(text) => setFitnessGoal(text)}
-              />
 
-              <Text style={styles.requestHeaders}>Weight Goal</Text>
-              <TextInput
-                placeholder="Enter Your Weight Goal"
-                placeholderTextColor={Colors.textSecondary}
-                style={styles.input}
-                value={weightGoal}
-                onChangeText={(number) => setWeightGoal(number.replace(/[^0-9]/g, ""))}
-                keyboardType="numeric"
-              />
+                <Text style={styles.requestHeaders}>Fitness Goal</Text>
+                <TextInput
+                  placeholder="Enter Your Fitness Goal"
+                  placeholderTextColor={Colors.textSecondary}
+                  style={styles.input}
+                  value={fitnessGoal}
+                  onChangeText={(text) => setFitnessGoal(text)}
+                />
 
-              <Text style={styles.requestHeaders}>Allergen/s</Text>
-              <TextInput
-                placeholder="Enter Your Allergen/s"
-                placeholderTextColor={Colors.textSecondary}
-                style={styles.input}
-                value={allergens}
-                onChangeText={setAllergens}
-              />
+                <Text style={styles.requestHeaders}>Weight Goal</Text>
+                <TextInput
+                  placeholder="Enter Your Weight Goal"
+                  placeholderTextColor={Colors.textSecondary}
+                  style={styles.input}
+                  value={weightGoal}
+                  onChangeText={(number) => setWeightGoal(number.replace(/[^0-9]/g, ""))}
+                  keyboardType="numeric"
+                />
 
-              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Submit Request</Text>
-              </TouchableOpacity>
+                <Text style={styles.requestHeaders}>Allergen/s</Text>
+                <TextInput
+                  placeholder="Enter Your Allergen/s"
+                  placeholderTextColor={Colors.textSecondary}
+                  style={styles.input}
+                  value={allergens}
+                  onChangeText={setAllergens}
+                />
+
+                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                  <Text style={styles.buttonText}>Submit Request</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : viewState === "feedback" ? (
             <View style={styles.formContainer}>
               <SendFeedbackHeaderMP setViewState={setViewState}/>
-              <Text style={styles.feedbackHeaders}>Feedback</Text>
-              <TextInput
-                placeholder="Enter your feedback here"
-                placeholderTextColor={Colors.textSecondary}
-                style={[styles.input, styles.feedbackInput]}
-                value={feedback}
-                onChangeText={setFeedback}
-                multiline
-                numberOfLines={4}
-              />
-              <Text style={styles.requestHeaders}>Overall Rating</Text>
-              <TouchableOpacity onPress={togglePicker} style={styles.pickerBlack}>
-                <Text style={styles.ratingHeader}>
-                  {rating ? `Your Rating: ${rating.toString()}` : 'Enter Your Rating'}
-                </Text>
-              </TouchableOpacity>
 
-              {showPicker && (
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    style={styles.ratingPicker}
-                    selectedValue={rating}
-                    onValueChange={(itemValue) => {
-                      setRating(itemValue);
-                      setShowPicker(false);
-                    }}
-                    itemStyle={{ fontSize: 14, fontFamily: Fonts.regular, color: Colors.white }}
-                  >
-                    <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="1 - Poor" value="1" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="2 - Fair" value="2" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="3 - Good" value="3" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="4 - Very Good" value="4" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="5 - Excellent" value="5" fontFamily="Fonts.regular"/>
+              <View style={styles.sendFBContainer}>
+                <Text style={styles.feedbackHeaders}>Feedback</Text>
+                <TextInput
+                  placeholder="Enter your feedback here"
+                  placeholderTextColor={Colors.textSecondary}
+                  style={[styles.input, styles.feedbackInput]}
+                  value={feedback}
+                  onChangeText={setFeedback}
+                  multiline
+                  numberOfLines={4}
+                />
 
-                  </Picker>
+                <Text style={styles.requestHeaders}>Overall Rating</Text>
+                <View style={styles.pickerRating}>
+                  <RNPickerSelect
+                    onValueChange={(value) => setRating(value)}
+                    items={[
+                      { label: '1 - Poor', value: '1' },
+                      { label: '2 - Fair', value: '2' },
+                      { label: '3 - Good', value: '3' },
+                      { label: '4 - Very Good', value: '4' },
+                      { label: '5 - Excellent', value: '5' },
+                    ]}
+                    style={ratingpickerSelectStyles}
+                    value={rating}
+                    placeholder={{ label: 'Enter Your Rating', value: null }}
+                    useNativeAndroidPickerStyle={false}
+                    Icon={() =>
+                      Platform.OS === "ios" ? (
+                        <Ionicons name="chevron-down" size={20} color="gray" />
+                      ) : null
+                    }
+                  />
                 </View>
-              )}
 
-              <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
-                <Text style={styles.buttonText}>Submit Feedback</Text>
-              </TouchableOpacity>
+                <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
+                  <Text style={styles.buttonText}>Submit Feedback</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : viewState === "delete" ? (
             <View style={styles.deleteContainer}>
@@ -562,6 +557,7 @@ const styles = StyleSheet.create({
   formContainer: {
     width: "100%",
     alignItems: "flex-start",
+    flex: 1,
   },
   title: {
     fontSize: 20,
@@ -665,18 +661,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
-  },  
-  picker: { 
-    width: '100%', 
-    backgroundColor: Colors.bg,
-    fontFamily: Fonts.regular,
   },
-  pickerContainer: {
-    borderWidth: 1.5,
-    borderColor: Colors.textSecondary,
+  sendFBContainer: {
+    width: "100%",
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+  },
+  pickerRating: {
     width: '100%', 
-    borderRadius: 0,
+    backgroundColor: Colors.black,
+    borderWidth: 1,
+    borderRadius: 10,
     marginBottom: 10,
+  },
+  requestMPContainer: {
+    width: "100%",
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center',
   },
   pickerTrainer: {
     width: '100%',
@@ -720,5 +723,47 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+
+const trainerpickerSelectStyles = {
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    color: Colors.textSecondary,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    color: Colors.textSecondary,
+  },
+  iconContainer: {
+    top: 10,
+    right: 12,
+  },
+};
+
+const ratingpickerSelectStyles = {
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    color: Colors.white,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    color: Colors.textSecondary,
+  },
+  iconContainer: {
+    top: 10,
+    right: 12,
+  },
+};
 
 export default MealPlanScreen;
