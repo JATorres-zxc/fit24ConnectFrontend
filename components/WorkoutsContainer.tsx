@@ -5,6 +5,7 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
 interface Exercise {
+  id: string;
   name: string;
   description: string;
   image: string;

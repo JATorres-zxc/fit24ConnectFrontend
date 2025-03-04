@@ -16,6 +16,7 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
 interface Exercise {
+  id: string;
   name: string;
   description: string;
   image: string;
@@ -89,8 +90,8 @@ const WorkoutScreen = () => {
       intensityLevel: "High",
       trainer: "Trainer A",
       exercises: [
-        { name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: "https://example.com/pushups.jpg" },
-        { name: "Squats", description: "Perform squats to work on lower body strength.", image: "https://example.com/squats.jpg" },
+        { id: "EX1", name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: "https://example.com/pushups.jpg" },
+        { id: "EX2", name: "Squats", description: "Perform squats to work on lower body strength.", image: "https://example.com/squats.jpg" },
       ],
       visibleTo: "everyone",
       feedbacks: [
@@ -104,8 +105,8 @@ const WorkoutScreen = () => {
       intensityLevel: "Medium",
       trainer: "Trainer B",
       exercises: [
-        { name: "Jumping Jacks", description: "Perform jumping jacks to get your heart rate up.", image: "https://example.com/jumpingjacks.jpg" },
-        { name: "Burpees", description: "Perform burpees to improve endurance.", image: "https://example.com/burpees.jpg" },
+        { id: "EX3", name: "Jumping Jacks", description: "Perform jumping jacks to get your heart rate up.", image: "https://example.com/jumpingjacks.jpg" },
+        { id: "EX4", name: "Burpees", description: "Perform burpees to improve endurance.", image: "https://example.com/burpees.jpg" },
       ],
       visibleTo: "userEmail",
       feedbacks: [
