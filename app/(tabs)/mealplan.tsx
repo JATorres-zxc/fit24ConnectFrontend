@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { 
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform 
 } from "react-native";
-import RNPickerSelect from 'react-native-picker-select';
+import { Picker } from "@react-native-picker/picker";
 import Toast from 'react-native-toast-message';
 import Header from '@/components/MealPlanHeader';
 import RequestMealPlanHeaderMP from '@/components/RequestMealPlanHeaderMP';
@@ -48,13 +48,18 @@ const MealPlanScreen = () => {
     ],
     feedbacks: [],
   }); // State to store meal plan
-  const [trainer, setTrainer] = useState(""); // State to store selected trainer
+  const [trainer, setTrainer] = useState<string | number | undefined>('');
   const [trainers, setTrainers] = useState([]);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
   const [allergens, setAllergens] = useState(""); // State to store allergens
   const [feedback, setFeedback] = useState(""); // State to store feedback
-  const [rating, setRating] = useState(""); // State to store rating
+  const [rating, setRating] = useState<string | number | undefined>('');
+
+  const [showPicker, setShowPicker] = useState<boolean>(false);
+  const togglePicker = () => {
+    setShowPicker(!showPicker);
+  };
 
   // Fetching trainers from API
 
@@ -165,9 +170,9 @@ const MealPlanScreen = () => {
       const newFeedback = {
         id: `${mealPlan.meals[0].meal}-${Date.now()}`,
         feedback,
-        rating: parseInt(rating),
+        rating: parseInt(rating.toString()),
         createdAt: new Date(),
-      };
+      };      
 
       const updatedMealPlan = {
         ...mealPlan,
@@ -278,34 +283,40 @@ const MealPlanScreen = () => {
             // Request Meal Plan View
             <View style={styles.formContainer}>
               <RequestMealPlanHeaderMP setViewState={setViewState}/>
+              
               <Text style={styles.requestHeaders}>Choose Trainer</Text>
-              <View style={styles.pickerContainer}>
-              <RNPickerSelect
-                onValueChange={(value) => setTrainer(value)}
-                items={[
-                  { label: 'Select Trainer', value: '' },
-                  { label: 'Trainer A', value: 'trainerA' },
-                  { label: 'Trainer B', value: 'trainerB' },
-                  { label: 'Trainer C', value: 'trainerC' },
-                  // Dynamic Picker Item from API
-                  // {trainers.map((trainer) => (
-                  //   { label: trainer.name, value: trainer.id }
-                  // ))}
-                ]}
-                style={{
-                  inputIOS: {
-                    ...styles.pickerBlack,
-                    fontFamily: 'Fonts.regular'
-                  },
-                  inputAndroid: {
-                    ...styles.pickerBlack,
-                    fontFamily: 'Fonts.regular'
-                  },
-                }}
-                placeholder={{ label: 'Select Trainer', value: '' }}
-              />
-              </View>
+              <TouchableOpacity onPress={togglePicker} style={styles.pickerBlack}>
+                <Text style={styles.requestHeaders}>
+                  {trainer ? `Selected: ${trainer}` : 'Select Trainer'}
+                </Text>
+              </TouchableOpacity>
+              {showPicker && (
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={trainer}
+                    onValueChange={(itemValue) => setTrainer(itemValue)}
+                    style={styles.picker}
+                    itemStyle = {{ color: Colors.buttonText }}
+                    prompt="Select trainer"
+                    dropdownIconColor={Colors.buttonBlack}
+                    dropdownIconRippleColor={Colors.buttonBlack}
+                    mode="dropdown" // Optional for Android
+                  >
+                    <Picker.Item label="Select Trainer" value="" style={styles.input}/>
+                    <Picker.Item label="Trainer A" value="trainerA" />
+                    <Picker.Item label="Trainer B" value="trainerB" />
+                    <Picker.Item label="Trainer C" value="trainerC" />
 
+                    {/* Dynamic Picker Item from API */}
+
+                    {/* <Picker.Item label="Select Trainer" value="" />
+                    {trainers.map((trainer) => (
+                      <Picker.Item key={trainer.id} label={trainer.name} value={trainer.id} />
+                    ))} */}
+                    
+                  </Picker>
+                </View>
+              )}
               <Text style={styles.requestHeaders}>Fitness Goal</Text>
               <TextInput
                 placeholder="Enter Your Fitness Goal"
@@ -348,30 +359,34 @@ const MealPlanScreen = () => {
                 numberOfLines={4}
               />
               <Text style={styles.requestHeaders}>Overall Rating</Text>
-              <View style={styles.pickerContainer}>
-              <RNPickerSelect
-                onValueChange={(value) => setRating(value)}
-                items={[
-                  { label: 'Enter Your Rating', value: '' },
-                  { label: '1 - Poor', value: '1' },
-                  { label: '2 - Fair', value: '2' },
-                  { label: '3 - Good', value: '3' },
-                  { label: '4 - Very Good', value: '4' },
-                  { label: '5 - Excellent', value: '5' }
-                ]}
-                style={{
-                  inputIOS: {
-                    ...styles.pickerBlack,
-                    fontFamily: 'Fonts.regular'
-                  },
-                  inputAndroid: {
-                    ...styles.pickerBlack,
-                    fontFamily: 'Fonts.regular'
-                  },
-                }}
-                placeholder={{ label: 'Select a Rating:', value: '' }}
-              />
-              </View>
+              <TouchableOpacity onPress={togglePicker} style={styles.pickerBlack}>
+                <Text style={styles.requestHeaders}>
+                  {rating ? `Selected: ${rating}` : 'Enter Your Rating'}
+                </Text>
+              </TouchableOpacity>
+
+              {showPicker && (
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={rating}
+                    onValueChange={(itemValue) => setRating(itemValue)}
+                    style={styles.pickerBlack}
+                    itemStyle={{ color: Colors.buttonText }}
+                    mode="dropdown" // Optional for Android
+                    dropdownIconColor={Colors.buttonText}
+                    dropdownIconRippleColor={Colors.buttonText}
+                    prompt={"Select a Rating:"} // Android only
+                  >
+                    <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
+                    <Picker.Item label="1 - Poor" value="1" fontFamily="Fonts.regular"/>
+                    <Picker.Item label="2 - Fair" value="2" fontFamily="Fonts.regular"/>
+                    <Picker.Item label="3 - Good" value="3" fontFamily="Fonts.regular"/>
+                    <Picker.Item label="4 - Very Good" value="4" fontFamily="Fonts.regular"/>
+                    <Picker.Item label="5 - Excellent" value="5" fontFamily="Fonts.regular"/>
+
+                  </Picker>
+                </View>
+              )}
 
               <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
                 <Text style={styles.buttonText}>Submit Feedback</Text>
@@ -421,12 +436,14 @@ const MealPlanScreen = () => {
                   </TouchableOpacity>
                 </View>
               ) : (
-                <View style={styles.centerContainer}>
+                <View>
                   <Header />
-                  <Text style={styles.subtitle2}>You have no existing meal plan.</Text>
-                  <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
-                    <Text style={styles.buttonText}>Request Meal Plan</Text>
-                  </TouchableOpacity>
+                  <View style={styles.centerContainer}>
+                    <Text style={styles.subtitle2}>You have no existing meal plan.</Text>
+                    <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
+                      <Text style={styles.buttonText}>Request Meal Plan</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
             </>
