@@ -33,7 +33,7 @@ export default function Header({ setViewState, title }: HeaderProps) {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     marginBottom: 30,
   },
   header: {

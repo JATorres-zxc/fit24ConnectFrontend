@@ -308,13 +308,13 @@ const WorkoutScreen = () => {
                   selectedValue={trainer}
                   onValueChange={(itemValue) => setTrainer(itemValue)}
                   style={styles.picker}
-                  itemStyle={{ color: Colors.buttonText }}
-                  prompt="Select trainer"
-                  dropdownIconColor={Colors.buttonBlack}
-                  dropdownIconRippleColor={Colors.buttonBlack}
-                  mode="dropdown"
+                  itemStyle={{ color: Colors.white }}
+                  prompt="Select Trainer:"
+                  dropdownIconColor={Colors.black}
+                  dropdownIconRippleColor={Colors.black}
+                  mode="dialog"
                 >
-                  <Picker.Item label="Select Trainer" value="" style={styles.input}/>
+                  <Picker.Item label="Select Trainer:" value="" style={styles.input}/>
                   <Picker.Item label="Trainer A" value="trainerA" />
                   <Picker.Item label="Trainer B" value="trainerB" />
                   <Picker.Item label="Trainer C" value="trainerC" />
@@ -367,10 +367,10 @@ const WorkoutScreen = () => {
                   selectedValue={rating}
                   onValueChange={(itemValue) => setRating(itemValue)}
                   style={styles.pickerBlack}
-                  itemStyle={{ color: Colors.buttonText }}
-                  mode="dropdown"
-                  dropdownIconColor={Colors.buttonText}
-                  dropdownIconRippleColor={Colors.buttonText}
+                  itemStyle={{ color: Colors.white }}
+                  mode="dialog"
+                  dropdownIconColor={Colors.white}
+                  dropdownIconRippleColor={Colors.white}
                   prompt="Select a Rating:"
                 >
                   <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
@@ -451,14 +451,14 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     justifyContent: "flex-start",
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     paddingVertical: 20,
     paddingLeft: 30,
     paddingRight: 30,
   },
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     padding: 0,
     justifyContent: "flex-start",
     alignItems: "center",
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   },
   centerContainer: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     padding: 0,
     justifyContent: "center",
     alignItems: "center",
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   buttonFeedback: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.gold,
     padding: 12,
     borderRadius: 10,
     alignSelf: "center",
@@ -511,11 +511,11 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 10,
     width: "70%",
-    backgroundColor: Colors.buttonBlack,
+    backgroundColor: Colors.black,
     marginHorizontal: 5,
   },
   buttonRed: {
-    backgroundColor: Colors.buttonRed,
+    backgroundColor: Colors.red,
     paddingVertical: 10,
     paddingHorizontal: 30,
     alignItems: "center",
@@ -523,14 +523,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   buttonGreen: {
-    backgroundColor: Colors.buttonGreen,
+    backgroundColor: Colors.green,
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 10,
     marginHorizontal: 5,
   },
   buttonText: {
-    color: Colors.buttonText,
+    color: Colors.white,
     fontSize: 16,
     textAlign: "center",
     fontFamily: Fonts.semibold,
@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mediumItalic,
   },
   button: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.gold,
     padding: 12,
     borderRadius: 5,
     alignItems: "center",
@@ -575,16 +575,16 @@ const styles = StyleSheet.create({
   mealItem: {
     borderWidth: 1,       // Border thickness
     width: '100%',        // Full width
-    borderColor: Colors.buttonBlack,  // Border color (light gray)
+    borderColor: Colors.black,  // Border color (light gray)
     borderRadius: 0,     // Rounded corners
     padding: 15,          // Padding inside the box
     marginVertical: 10,   // Spacing between containers
-    backgroundColor: Colors.background, // Background color
+    backgroundColor: Colors.bg, // Background color
     marginBottom: 10,
   },
   mealTitle: {
     fontSize: 18,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     top: -28,
     marginBottom: -25,
     paddingLeft: 5,
@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
     transform: [{ translateX: -150 }, { translateY: -100 }],
     width: 300,
     padding: 20,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     borderRadius: 10,
     shadowColor: Colors.shadowColor,
     shadowOffset: { width: 0, height: 2 },
@@ -653,7 +653,8 @@ const styles = StyleSheet.create({
   },
   picker: { 
     width: '100%', 
-    backgroundColor: Colors.background,
+    height: 50,
+    backgroundColor: Colors.bg,
     fontFamily: Fonts.regular,
   },
   pickerContainer: {
@@ -662,16 +663,16 @@ const styles = StyleSheet.create({
     width: '100%', 
     borderRadius: 0,
     marginBottom: 10,
-    fontFamily: Fonts.regular,
   },
   pickerBlack: {
-    width: '100%', 
-    backgroundColor: Colors.buttonBlack,
+    width: '100%',
+    height: 50,
+    backgroundColor: Colors.black,
     color: Colors.offishWhite,
     fontFamily: Fonts.regular,
   },
   submitButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.gold,
     padding: 12,
     borderRadius: 5,
     alignSelf: "center",

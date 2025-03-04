@@ -56,11 +56,6 @@ const MealPlanScreen = () => {
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
 
-  const [showPicker, setShowPicker] = useState<boolean>(false);
-  const togglePicker = () => {
-    setShowPicker(!showPicker);
-  };
-
   // Fetching trainers from API
 
   // useEffect(() => {
@@ -285,38 +280,32 @@ const MealPlanScreen = () => {
               <RequestMealPlanHeaderMP setViewState={setViewState}/>
               
               <Text style={styles.requestHeaders}>Choose Trainer</Text>
-              <TouchableOpacity onPress={togglePicker} style={styles.pickerBlack}>
-                <Text style={styles.requestHeaders}>
-                  {trainer ? `Selected: ${trainer}` : 'Select Trainer'}
-                </Text>
-              </TouchableOpacity>
-              {showPicker && (
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    selectedValue={trainer}
-                    onValueChange={(itemValue) => setTrainer(itemValue)}
-                    style={styles.picker}
-                    itemStyle = {{ color: Colors.buttonText }}
-                    prompt="Select trainer"
-                    dropdownIconColor={Colors.buttonBlack}
-                    dropdownIconRippleColor={Colors.buttonBlack}
-                    mode="dropdown" // Optional for Android
-                  >
-                    <Picker.Item label="Select Trainer" value="" style={styles.input}/>
-                    <Picker.Item label="Trainer A" value="trainerA" />
-                    <Picker.Item label="Trainer B" value="trainerB" />
-                    <Picker.Item label="Trainer C" value="trainerC" />
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={trainer}
+                  onValueChange={(itemValue) => setTrainer(itemValue)}
+                  style={styles.picker}
+                  itemStyle = {{ color: Colors.white }}
+                  prompt="Select Trainer:"
+                  dropdownIconColor={Colors.black}
+                  dropdownIconRippleColor={Colors.black}
+                  mode="dialog"
+                >
+                  <Picker.Item label="Select Trainer:" value="" style={styles.input}/>
+                  <Picker.Item label="Trainer A" value="trainerA" />
+                  <Picker.Item label="Trainer B" value="trainerB" />
+                  <Picker.Item label="Trainer C" value="trainerC" />
 
-                    {/* Dynamic Picker Item from API */}
+                  {/* Dynamic Picker Item from API */}
 
-                    {/* <Picker.Item label="Select Trainer" value="" />
-                    {trainers.map((trainer) => (
-                      <Picker.Item key={trainer.id} label={trainer.name} value={trainer.id} />
-                    ))} */}
-                    
-                  </Picker>
-                </View>
-              )}
+                  {/* <Picker.Item label="Select Trainer" value="" />
+                  {trainers.map((trainer) => (
+                    <Picker.Item key={trainer.id} label={trainer.name} value={trainer.id} />
+                  ))} */}
+                  
+                </Picker>
+              </View>
+
               <Text style={styles.requestHeaders}>Fitness Goal</Text>
               <TextInput
                 placeholder="Enter Your Fitness Goal"
@@ -359,34 +348,26 @@ const MealPlanScreen = () => {
                 numberOfLines={4}
               />
               <Text style={styles.requestHeaders}>Overall Rating</Text>
-              <TouchableOpacity onPress={togglePicker} style={styles.pickerBlack}>
-                <Text style={styles.requestHeaders}>
-                  {rating ? `Selected: ${rating}` : 'Enter Your Rating'}
-                </Text>
-              </TouchableOpacity>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={rating}
+                  onValueChange={(itemValue) => setRating(itemValue)}
+                  style={styles.pickerBlack}
+                  itemStyle={{ color: Colors.white }}
+                  mode="dialog"
+                  dropdownIconColor={Colors.white}
+                  dropdownIconRippleColor={Colors.white}
+                  prompt={"Select a Rating:"} // Android only
+                >
+                  <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="1 - Poor" value="1" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="2 - Fair" value="2" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="3 - Good" value="3" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="4 - Very Good" value="4" fontFamily="Fonts.regular"/>
+                  <Picker.Item label="5 - Excellent" value="5" fontFamily="Fonts.regular"/>
 
-              {showPicker && (
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    selectedValue={rating}
-                    onValueChange={(itemValue) => setRating(itemValue)}
-                    style={styles.pickerBlack}
-                    itemStyle={{ color: Colors.buttonText }}
-                    mode="dropdown" // Optional for Android
-                    dropdownIconColor={Colors.buttonText}
-                    dropdownIconRippleColor={Colors.buttonText}
-                    prompt={"Select a Rating:"} // Android only
-                  >
-                    <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="1 - Poor" value="1" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="2 - Fair" value="2" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="3 - Good" value="3" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="4 - Very Good" value="4" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="5 - Excellent" value="5" fontFamily="Fonts.regular"/>
-
-                  </Picker>
-                </View>
-              )}
+                </Picker>
+              </View>
 
               <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
                 <Text style={styles.buttonText}>Submit Feedback</Text>
@@ -426,7 +407,7 @@ const MealPlanScreen = () => {
                     </View>
                   ))}
                   <TouchableOpacity style={styles.trashIcon} onPress={() => setViewState("delete")}>
-                    <FontAwesome name="trash" size={24} color={Colors.buttonBlack} />
+                    <FontAwesome name="trash" size={24} color={Colors.black} />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.buttonFeedback} onPress={() => setViewState("feedback")}>
                     <Text style={styles.buttonText}>Send Feedback</Text>
@@ -461,21 +442,21 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     justifyContent: "flex-start",
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     paddingVertical: 20,
     paddingLeft: 30,
     paddingRight: 30,
   },
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     padding: 0,
     justifyContent: "flex-start",
     alignItems: "center",
   },
   centerContainer: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     padding: 0,
     justifyContent: "center",
     alignItems: "center",
@@ -503,7 +484,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   buttonFeedback: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.gold,
     padding: 12,
     borderRadius: 10,
     alignSelf: "center",
@@ -511,7 +492,7 @@ const styles = StyleSheet.create({
     width: "70%",
   },
   submitButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.gold,
     padding: 12,
     borderRadius: 5,
     alignSelf: "center",
@@ -527,11 +508,11 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 10,
     width: "70%",
-    backgroundColor: Colors.buttonBlack,
+    backgroundColor: Colors.black,
     marginHorizontal: 5,
   },
   buttonRed: {
-    backgroundColor: Colors.buttonRed,
+    backgroundColor: Colors.red,
     paddingVertical: 10,
     paddingHorizontal: 30,
     alignItems: "center",
@@ -539,14 +520,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   buttonGreen: {
-    backgroundColor: Colors.buttonGreen,
+    backgroundColor: Colors.green,
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 10,
     marginHorizontal: 5,
   },
   buttonText: {
-    color: Colors.buttonText,
+    color: Colors.white,
     fontSize: 16,
     textAlign: "center",
     fontFamily: Fonts.semibold,
@@ -611,7 +592,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
   },
   button: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.gold,
     padding: 12,
     borderRadius: 5,
     alignItems: "center",
@@ -622,16 +603,16 @@ const styles = StyleSheet.create({
   mealItem: {
     borderWidth: 1,       // Border thickness
     width: '100%',        // Full width
-    borderColor: Colors.buttonBlack,  // Border color (light gray)
+    borderColor: Colors.black,  // Border color (light gray)
     borderRadius: 0,     // Rounded corners
     padding: 15,          // Padding inside the box
     marginVertical: 10,   // Spacing between containers
-    backgroundColor: Colors.background, // Background color
+    backgroundColor: Colors.bg, // Background color
     marginBottom: 10,
   },
   mealTitle: {
     fontSize: 18,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     top: -28,
     marginBottom: -25,
     paddingLeft: 5,
@@ -658,7 +639,7 @@ const styles = StyleSheet.create({
     transform: [{ translateX: -150 }, { translateY: -100 }],
     width: 300,
     padding: 20,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     borderRadius: 10,
     shadowColor: Colors.shadowColor,
     shadowOffset: { width: 0, height: 2 },
@@ -668,7 +649,8 @@ const styles = StyleSheet.create({
   },  
   picker: { 
     width: '100%', 
-    backgroundColor: Colors.background,
+    height: 50,
+    backgroundColor: Colors.bg,
     fontFamily: Fonts.regular,
   },
   pickerContainer: {
@@ -679,8 +661,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   pickerBlack: {
-    width: '100%', 
-    backgroundColor: Colors.buttonBlack,
+    width: '100%',
+    height: 50,
+    backgroundColor: Colors.black,
     color: Colors.offishWhite,
     fontFamily: Fonts.regular,
   },

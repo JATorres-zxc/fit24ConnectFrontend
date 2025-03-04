@@ -190,7 +190,7 @@ export default RegisterScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.buttonBlack, // Black background
+        backgroundColor: Colors.black, // Black background
     },
     scrollContainer: {
         flexGrow: 1,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     formContainer: {
         width: "100%",
         flexGrow: 1,
-        backgroundColor: Colors.background,
+        backgroundColor: Colors.bg,
         borderTopLeftRadius: 35,
         borderTopRightRadius: 35,
         paddingTop: 50,
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     },
     button: {
         width: "30%",
-        backgroundColor: Colors.background2,
+        backgroundColor: Colors.gold,
         padding: 12,
         borderRadius: 8,
         alignItems: "center",

@@ -27,9 +27,7 @@ const ExerciseContainer: React.FC<ExerciseContainerProps> = ({ exercises }) => {
                           <Text style={styles.exerciseDescription}>{exercise.description}</Text>
                       </View>
                   </View>
-                  <View style={styles.container}>
-                    <View style={styles.horizontalLine} />
-                  </View>
+                  <View style={styles.horizontalLine} />
                 </View>
             ))}
         </View>
@@ -39,15 +37,16 @@ const ExerciseContainer: React.FC<ExerciseContainerProps> = ({ exercises }) => {
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: Colors.background,
+      backgroundColor: Colors.bg,
       padding: 0,
       marginTop: 10,
     },
     horizontalLine: {
-      width: "100%", // This makes the line span the entire width
-      height: 1, // Adjust the height as needed
-      backgroundColor: Colors.buttonBlack, // Adjust the color as needed
-      marginBottom: 45,
+      width: "100%",
+      height: 1,
+      backgroundColor: Colors.black,
+      marginTop: 10,
+      marginBottom: 35,
     },
     exerciseItem: {
         flexDirection: 'row',
@@ -64,7 +63,7 @@ const styles = StyleSheet.create({
         height: 90,
         marginRight: 15,
         borderWidth: 1,
-        borderColor: Colors.buttonBlack,
+        borderColor: Colors.black,
     },
     textContainer: {
         flex: 1,
@@ -73,7 +72,7 @@ const styles = StyleSheet.create({
     exerciseName: {
         fontSize: 18,
         fontFamily: Fonts.bold,
-        color: Colors.primary
+        color: Colors.gold
     },
     exerciseDescription: {
         fontSize: 14,

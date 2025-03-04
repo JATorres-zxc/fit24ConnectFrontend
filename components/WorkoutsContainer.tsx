@@ -51,12 +51,10 @@ const WorkoutsContainer: React.FC<WorkoutsContainerProps> = ({ workouts, onWorko
                   <Text style={{fontFamily: Fonts.semiboldItalic}}>{workout.intensityLevel}</Text>
                 </View>
                 <TouchableOpacity style={styles.trashIcon} onPress={() => onTrashPress(workout)}>
-                  <FontAwesome name="trash" size={24} color={Colors.buttonBlack} />
+                  <FontAwesome name="trash" size={24} color={Colors.black} />
                 </TouchableOpacity>
               </TouchableOpacity>
-              <View style={styles.container}>
-                <View style={styles.horizontalLine} />
-              </View>
+              <View style={styles.horizontalLine} />
             </View>
           ))}
         </View>
@@ -68,15 +66,16 @@ const WorkoutsContainer: React.FC<WorkoutsContainerProps> = ({ workouts, onWorko
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     padding: 0,
     marginTop: 10,
   },
   horizontalLine: {
     width: "100%", // This makes the line span the entire width
     height: 1, // Adjust the height as needed
-    backgroundColor: Colors.buttonBlack, // Adjust the color as needed
-    marginBottom: 45,
+    backgroundColor: Colors.black, // Adjust the color as needed
+    marginTop: 10,
+    marginBottom: 20,
   },
   planContainer: {
     width: "100%",
@@ -84,7 +83,7 @@ const styles = StyleSheet.create({
   workoutItem: {
     flexDirection: "row",
     padding: 16,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     alignItems: "center",
     justifyContent: "space-between",
   },
@@ -97,12 +96,12 @@ const styles = StyleSheet.create({
     height: 90,
     marginRight: 5,
     borderWidth: 1,
-    borderColor: Colors.buttonBlack,
+    borderColor: Colors.black,
   },
   workoutTitle: {
     fontSize: 18,
     fontFamily: Fonts.semibold,
-    color: Colors.buttonBlack,
+    color: Colors.black,
     marginBottom: 10,
   },
   fitnessGoal: {
