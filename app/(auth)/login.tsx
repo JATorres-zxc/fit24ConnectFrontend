@@ -73,20 +73,16 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             const temp_response = true;
 
             if (temp_response) {
-                Toast.show({
-                    type: 'success',
-                    text1: 'Login Successful',
-                    text2: 'You have successfully logged in.',
-                    position: 'bottom'
+                router.push({
+                    pathname: '/(tabs)/home',
+                    params: { showToast: 'true' }  // Pass parameter to home screen
                 });
-                setTimeout(() => {
-                    router.push('/(tabs)/home');
-                }, 2000); // 2-second delay
             } else {
                 Toast.show({
                     type: 'error',
                     text1: 'Login Failed',
                     text2: 'Invalid username or password.',
+                    visibilityTime: 1500,
                     position: 'bottom'
                 });
                 setError('Invalid username or password.');
@@ -107,11 +103,10 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             style={styles.container}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
+            <View style={styles.logoContainer}>
+                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
+            </View>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <View style={styles.logoContainer}>
-                    <Image source={require("./assets/images/icon.png")} style={styles.logo} />
-                </View>
-
                 <View style={styles.formContainer}>
                     <TextInput
                         placeholder="Username/Email"
@@ -138,8 +133,6 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     </TouchableOpacity>
                     {error && <Text style={styles.errorText}>{error}</Text>}
 
-                    <Text style={styles.orText}>OR</Text>
-
                     <Text style={styles.bottomText}>
                         Don&apos;t have an account?{" "}
                         <Text
@@ -165,12 +158,12 @@ const styles = StyleSheet.create({
     },
     scrollContainer: {
         flexGrow: 1,
-        paddingTop: screenHeight * 0.1 + 50,
+        paddingTop: screenHeight * 0.1,
         justifyContent: "center",
         alignItems: "center",
     },
     logoContainer: {
-        marginBottom: 20,
+        marginTop: 150,
         justifyContent: "center",
         alignItems: "center",
     },
@@ -191,7 +184,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     input: {
-        width: "100%",
+        width: "85%",
+        marginBottom: 10,
         borderColor: Colors.border,
         borderWidth: 1,
         borderRadius: 8,
