@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: '90%',
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.offishWhite,
     borderRadius: 15,
     alignItems: 'center',
     paddingBottom: 10,
@@ -184,6 +184,7 @@ const styles = StyleSheet.create({
   modalContent: {
     fontFamily: Fonts.regular,
     fontSize: 16,
+    color: Colors.textSecondary,
   },
   modalDetailsContainer: {
     width: '100%',
@@ -196,14 +197,14 @@ const styles = StyleSheet.create({
   modalDivider: {
     width: 1,
     height: '100%',
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.textSecondary,
   },
   modalDate: {
-    fontFamily: Fonts.medium,
+    fontFamily: Fonts.italic,
     color: Colors.textSecondary,
   },
   modalTime: {
-    fontFamily: Fonts.medium,
+    fontFamily: Fonts.italic,
     color: Colors.textSecondary,
   },
 });
