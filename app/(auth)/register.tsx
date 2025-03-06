@@ -143,12 +143,14 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 <View style={styles.formContainer}>
                     <TextInput
                         placeholder="Email"
+                        placeholderTextColor={Colors.textSecondary}
                         style={styles.input}
                         value={email}
                         onChangeText={setEmail}
                     />
                     <TextInput
                         placeholder="Password"
+                        placeholderTextColor={Colors.textSecondary}
                         style={styles.input}
                         secureTextEntry
                         value={password}
@@ -156,6 +158,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     />
                     <TextInput
                         placeholder="Confirm Password"
+                        placeholderTextColor={Colors.textSecondary}
                         style={styles.input}
                         secureTextEntry
                         value={confirmPassword}

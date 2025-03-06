@@ -2,14 +2,22 @@ import { Text, View, StyleSheet } from "react-native";
 
 import Button from '@/components/CreateAnnouncementButton';
 import Header from '@/components/HomeHeader';
+import AdminAnnouncements from "@/components/AdminSideAnnouncementsContainer";
+
+import { announcements } from "@/constants/announcements";
+import { Colors } from "@/constants/Colors";
 
 export default function Home() {
   return (
     <View style={styles.container}>
-      <Header name='Jilliane' />
+      <Header name='admin' />
 
-      <View style={styles.footerContainer}>
+      <View style={styles.buttonContainer}>
         <Button label="Create Announcement" theme="primary" />
+      </View>
+
+      <View style={styles.announcementsContainer}>
+        <AdminAnnouncements announcements={announcements} />
       </View>
 
     </View>
@@ -19,15 +27,17 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Colors.bg,
     alignItems: 'center',
   },
-  text: {
-    color: '#000000',
-  },
-  footerContainer: {
+  buttonContainer: {
     width: '85%',
-    flex: 1,
     alignItems: 'center',
+    marginBottom: 10,
+  },
+  announcementsContainer: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
   },
 });

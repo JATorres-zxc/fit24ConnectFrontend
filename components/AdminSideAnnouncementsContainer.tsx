@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, FlatList } from "react-native";
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
 interface Announcement {
   id: string;
   title: string;
@@ -15,7 +17,7 @@ interface Props {
   announcements: Announcement[];
 }
 
-export default function AnnouncementsContainer({ announcements }: Props) {
+export default function AdminAnnouncements({ announcements }: Props) {
   return (
     <View style={styles.container}>
       <FlatList
@@ -32,6 +34,11 @@ export default function AnnouncementsContainer({ announcements }: Props) {
 
             <View style={styles.cardContent}>
               <Text style={styles.content}>{item.content}</Text>
+
+              <View style={styles.contentSettings}>
+                <MaterialCommunityIcons name="pencil-outline" color={Colors.eyeIcon} size={20} />
+                <MaterialCommunityIcons name="trash-can-outline" color={Colors.eyeIcon} size={20} />
+              </View>
             </View>
 
             <View style={styles.cardFooter}>
@@ -84,6 +91,10 @@ const styles = StyleSheet.create({
   content: {
     fontSize: 14,
     fontFamily: Fonts.regular,
+  },
+  contentSettings: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   cardFooter: {
     marginTop: 5,

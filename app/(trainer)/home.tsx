@@ -6,11 +6,7 @@ import Header from '@/components/HomeHeader';
 export default function Home() {
   return (
     <View style={styles.container}>
-      <Header name='Jilliane' />
-
-      <View style={styles.footerContainer}>
-        <Button label="Create Announcement" theme="primary" />
-      </View>
+      <Header name='trainer' />
 
     </View>
   );

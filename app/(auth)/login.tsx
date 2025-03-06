@@ -1,4 +1,4 @@
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useState } from "react";
 import {
     View,
@@ -18,6 +18,37 @@ import { Colors } from '@/constants/Colors';
 import { Dimensions } from 'react-native'
 
 const screenHeight = Dimensions.get('window').height;
+
+// Define a type for user routes
+type UserRoute = 
+    | '/(admin)/home' 
+    | '/(tabs)/home' 
+    | '/(trainer)/home';
+
+// Predefined user credentials with typed routes
+interface PredefinedUser {
+    email: string;
+    password: string;
+    route: UserRoute;
+}
+
+const PREDEFINED_USERS: Record<string, PredefinedUser> = {
+    admin: {
+        email: 'admin@gym.com',
+        password: 'admin123',
+        route: '/(admin)/home'
+    },
+    member: {
+        email: 'member@gym.com',
+        password: 'member123',
+        route: '/(tabs)/home'
+    },
+    trainer: {
+        email: 'trainer@gym.com',
+        password: 'trainer123',
+        route: '/(trainer)/home'
+    }
+};
 
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const router = useRouter();
@@ -55,37 +86,31 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
         }
 
         try {
-            // Commented out API call for testing
-            // const response = await fetch('http://127.0.0.1:8000/api/account/login/', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({
-            //         email: sanitizedEmail,
-            //         password: sanitizedPassword,
-            //     }),
-            // });
+            // Check against predefined users
+            const matchedUser = Object.values(PREDEFINED_USERS).find(
+                user => user.email === sanitizedEmail && user.password === sanitizedPassword
+            );
 
-            // const result = await response.json();
-
-            // Temporary Success Placeholder
-            const temp_response = true;
-
-            if (temp_response) {
-                router.push({
-                    pathname: '/(tabs)/home',
-                    params: { showToast: 'true' }  // Pass parameter to home screen
-                });
-            } else {
+            if (matchedUser) {
+                // Successful login - route to appropriate dashboard
+                router.replace(matchedUser.route);
+                
                 Toast.show({
-                    type: 'error',
-                    text1: 'Login Failed',
-                    text2: 'Invalid username or password.',
-                    visibilityTime: 1500,
+                    type: 'success',
+                    text1: 'Login Successful',
+                    text2: `Logged in as ${sanitizedEmail}`,
                     position: 'bottom'
                 });
-                setError('Invalid username or password.');
+            } else {
+                // If not a predefined user, route to member side
+                router.replace('/(tabs)/home');
+                
+                Toast.show({
+                    type: 'success',
+                    text1: 'Login Successful',
+                    text2: 'Logged in as Member',
+                    position: 'bottom'
+                });
             }
         } catch (error) {
             Toast.show({
@@ -110,6 +135,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 <View style={styles.formContainer}>
                     <TextInput
                         placeholder="Username/Email"
+                        placeholderTextColor={Colors.textSecondary}
                         style={styles.input}
                         value={email}
                         onChangeText={setEmail}
@@ -117,6 +143,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
                     <TextInput
                         placeholder="Password"
+                        placeholderTextColor={Colors.textSecondary}
                         style={styles.input}
                         secureTextEntry
                         value={password}
@@ -131,7 +158,6 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                             Log In
                         </Text>
                     </TouchableOpacity>
-                    {error && <Text style={styles.errorText}>{error}</Text>}
 
                     <Text style={styles.bottomText}>
                         Don&apos;t have an account?{" "}
@@ -150,6 +176,8 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 };
 
 export default LoginScreen;
+
+// ... styles remain the same as in the previous example
 
 const styles = StyleSheet.create({
     container: {
