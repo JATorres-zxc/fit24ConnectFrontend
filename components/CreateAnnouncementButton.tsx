@@ -1,4 +1,5 @@
-import { StyleSheet, View, Pressable, Text } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { router } from 'expo-router';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Fonts } from '@/constants/Fonts';
@@ -10,29 +11,18 @@ type Props = {
 };
 
 export default function Button({ label, theme }: Props) {
-  if (theme === 'primary') {
-    return (
-      <View
-        style={[
-          styles.buttonContainer,
-        ]}>
-        <Pressable
-          style={[styles.button, { backgroundColor: Colors.gold }]}
-          onPress={() => alert('You pressed a button.')}>
-          <FontAwesome name="pencil" size={16} color={Colors.white} style={styles.buttonIcon} />
-          <Text style={[styles.buttonLabel, { color: Colors.white }]}>{label}</Text>
-        </Pressable>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.buttonContainer}>
-      <Pressable style={styles.button} onPress={() => alert('You pressed a button.')}>
-        <Text style={styles.buttonLabel}>{label}</Text>
-      </Pressable>
+    <View
+      style={[styles.buttonContainer,]}
+    >
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: Colors.gold }]}
+        onPress={() => router.push('/(admin)/create-announcement')}>
+        <FontAwesome name="pencil" size={16} color={Colors.white} style={styles.buttonIcon} />
+        <Text style={[styles.buttonLabel, { color: Colors.white }]}>{label}</Text>
+      </TouchableOpacity>
     </View>
-  );
+    );
 }
 
 const styles = StyleSheet.create({

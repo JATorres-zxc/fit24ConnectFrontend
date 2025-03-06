@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 
 import Button from '@/components/CreateAnnouncementButton';
 import Header from '@/components/HomeHeader';

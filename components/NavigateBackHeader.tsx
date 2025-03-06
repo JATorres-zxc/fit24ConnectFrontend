@@ -1,0 +1,60 @@
+import { useNavigation } from "@react-navigation/native";
+import { View, Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { AntDesign } from '@expo/vector-icons';
+import { Fonts } from '../constants/Fonts';
+import { Colors } from '@/constants/Colors';
+
+interface HeaderProps {
+  screen: string;
+}
+
+export default function Header({ screen }: HeaderProps) {
+const navigation = useNavigation();
+
+  return (
+    <SafeAreaView>
+      <View style={styles.header}>
+
+        <View style={styles.leftSection}>
+          <AntDesign 
+            name='arrowleft' 
+            color={'black'} 
+            size={24} 
+            onPress={() => navigation.goBack()}
+          />
+          <Text style={styles.headerText}>
+            {screen}
+          </Text>
+        </View>
+
+        {/* For spacing purposes */}
+        <View style={styles.rightSection}>
+          <Text>{''}</Text>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+    header: {
+      width: '85%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between'
+    },
+    leftSection: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+    },
+    headerText: {
+      fontSize: 20,
+      fontFamily: Fonts.semibold,
+    },
+    rightSection: {
+      alignItems: 'center',
+    },
+  });
