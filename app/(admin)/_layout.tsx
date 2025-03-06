@@ -1,8 +1,8 @@
 import React from "react";
 import { Tabs } from "expo-router";
+
 import Ionicons from '@expo/vector-icons/Ionicons'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Feather } from "@expo/vector-icons";
 
 export default function RootLayout() {
   return (
@@ -13,6 +13,7 @@ export default function RootLayout() {
           backgroundColor: '#f9f9f9',
         },
         headerShadowVisible: false,
+        headerShown: false,
         headerTintColor: '#000000',
         tabBarStyle: {
           backgroundColor: '#ffffff',
@@ -22,48 +23,47 @@ export default function RootLayout() {
       <Tabs.Screen 
         name="home" 
         options={{ 
-          headerShown: false,
           href: null,
         }} 
       />
 
       <Tabs.Screen 
-        name="mealplan" 
+        name="members" 
         options={{ 
-          title: 'Meal Plan',
+          title: 'Members',
           tabBarIcon: ({ color, focused }) => (
-            <MaterialIcons name={'set-meal'} color={color} size={24} />
+            <Feather name={'users'} color={color} size={24} />
           ),
         }} 
       />
 
       <Tabs.Screen 
-        name="workout" 
+        name="trainers" 
         options={{ 
-          title: 'Workout',
+          title: 'Trainers',
           tabBarIcon: ({ color, focused }) => (
-            <MaterialCommunityIcons name={focused ? 'arm-flex' : 'arm-flex-outline'} color={color} size={24} />
+            <Ionicons name={focused ? 'barbell' : 'barbell-outline'} color={color} size={24} />
           ),
         }} 
       />
 
       <Tabs.Screen 
-        name="scan" 
+        name="reports" 
         options={{ 
-          title: 'Scan',
+          title: 'Reports',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'scan-sharp' : 'scan-outline'} color={color} size={24} />
+            <Ionicons name={focused ? 'analytics-sharp' : 'analytics-outline'} color={color} size={24} />
           ),
         }} 
       />
 
       <Tabs.Screen 
-        name="history" 
+        name="settings" 
         options={{ 
-          title: 'History',
+          title: 'Settings',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'clipboard' : 'clipboard-outline'} color={color} size={24} />
+            <Ionicons name={focused ? 'settings' : 'settings-outline'} color={color} size={24} />
           ),
         }} 
       />
@@ -71,7 +71,13 @@ export default function RootLayout() {
       <Tabs.Screen 
         name="profile" 
         options={{ 
-          headerShown: false,
+          href: null,
+        }} 
+      />
+
+      <Tabs.Screen 
+        name="create-announcement" 
+        options={{ 
           href: null,
         }} 
       />
