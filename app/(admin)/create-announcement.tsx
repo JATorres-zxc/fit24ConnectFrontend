@@ -1,10 +1,19 @@
 import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity } from "react-native";
+import { useState } from "react";
 
 import Header from "@/components/NavigateBackHeader";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
 
 export default function CreateAnnouncement() {
+  const [announcementTitle, setAnnouncementTitle] = useState("");
+
+  const handleTitleChange = (text: string) => {
+    if (text.length <= 30) {
+      setAnnouncementTitle(text);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Header screen='Create Announcement' />
@@ -23,7 +32,10 @@ export default function CreateAnnouncement() {
           <TextInput
             style={styles.input}
             placeholder="Enter Title for Announcement"
+            value={announcementTitle}
+            onChangeText={handleTitleChange}
           />
+          <Text style={styles.charCount}>{announcementTitle.length}/30</Text>
         </View>
         <View style={styles.annMessage}>
           <Text style={styles.header}> Message </Text>
@@ -34,14 +46,14 @@ export default function CreateAnnouncement() {
             multiline={true}
           />
         </View>
-      </View>
 
-      <View style={styles.button}>
-        <TouchableOpacity style={styles.post}>
-          <Text style={styles.buttonText}>
-            Post Announcement
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.button}>
+          <TouchableOpacity style={styles.post}>
+            <Text style={styles.buttonText}>
+              Post Announcement
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
       </ScrollView>
     </View>
@@ -92,6 +104,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: Fonts.regular,
     color: Colors.textSecondary,
+  },
+  charCount: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    textAlign: "right",
+    marginTop: -25,
+    marginBottom: 20,
   },
   contentArea: {
     height: 150,
