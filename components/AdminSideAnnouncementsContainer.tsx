@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, Modal, TouchableOpacity } from "react-native";
 
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useState } from "react";
 
 interface Announcement {
   id: string;
@@ -15,9 +16,26 @@ interface Announcement {
 
 interface Props {
   announcements: Announcement[];
+  onDelete: (id:string) => void; // function to handle deletion
 }
 
-export default function AdminAnnouncements({ announcements }: Props) {
+export default function AdminAnnouncements({ announcements, onDelete }: Props) {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const handleDeletePress = (id: string) => {
+    setSelectedId(id);
+    setModalVisible(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedId) {
+      onDelete(selectedId);
+      setModalVisible(false);
+      setSelectedId(null);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -37,7 +55,9 @@ export default function AdminAnnouncements({ announcements }: Props) {
 
               <View style={styles.contentSettings}>
                 <MaterialCommunityIcons name="pencil-outline" color={Colors.eyeIcon} size={20} />
-                <MaterialCommunityIcons name="trash-can-outline" color={Colors.eyeIcon} size={20} />
+                <TouchableOpacity onPress={() => handleDeletePress(item.id)}>
+                  <MaterialCommunityIcons name="trash-can-outline" color={Colors.eyeIcon} size={20} />
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -48,6 +68,28 @@ export default function AdminAnnouncements({ announcements }: Props) {
         )}
         contentContainerStyle={styles.listContainer}
       />
+
+      {/* Confirmation Modal */}
+      <Modal visible={modalVisible} transparent animationType="fade">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <MaterialCommunityIcons name="delete-alert-outline" color={Colors.black} size={30} style={styles.icon} />
+              <Text style={styles.modalTitle}> Delete Announcement? </Text>
+            </View>
+
+            <Text style={styles.modalText}>You're going to permanently delete "{selectedId ? announcements.find(a => a.id === selectedId)?.title : ''}." Are you sure?</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.deleteButton} onPress={confirmDelete}>
+                <Text style={styles.buttonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -103,5 +145,60 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: Fonts.italic,
     textAlign: 'right',
-  }
+  },
+  // Modal Styles
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalHeader: {
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  icon: {
+    marginBottom: 10,
+  },
+  modalTitle: {
+    fontFamily: Fonts.bold,
+    fontSize: 18,
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalText: {
+    fontSize: 12,
+    fontFamily: Fonts.regular,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: Colors.gold,
+    padding: 10,
+    marginRight: 10,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  deleteButton: {
+    flex: 1,
+    backgroundColor: Colors.red,
+    padding: 10,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: Colors.white,
+    fontFamily: Fonts.medium,
+  },
 });
