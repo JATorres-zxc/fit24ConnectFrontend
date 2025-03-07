@@ -90,6 +90,13 @@ export default function RootLayout() {
       />
 
       <Tabs.Screen 
+        name="edit-password" 
+        options={{ 
+          href: null,
+        }} 
+      />
+
+      <Tabs.Screen 
         name="+not-found" 
         options={{ 
           href: null 

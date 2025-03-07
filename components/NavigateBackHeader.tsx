@@ -1,17 +1,16 @@
-import { useNavigation } from "@react-navigation/native";
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from "expo-router";
 
 import { AntDesign } from '@expo/vector-icons';
 import { Fonts } from '../constants/Fonts';
-import { Colors } from '@/constants/Colors';
 
 interface HeaderProps {
   screen: string;
+  prevScreen: `/${string}`;
 }
 
-export default function Header({ screen }: HeaderProps) {
-const navigation = useNavigation();
+export default function Header({ screen, prevScreen }: HeaderProps) {
 
   return (
     <SafeAreaView>
@@ -22,7 +21,7 @@ const navigation = useNavigation();
             name='arrowleft' 
             color={'black'} 
             size={24} 
-            onPress={() => navigation.goBack()}
+            onPress={() => router.push(prevScreen)}
           />
           <Text style={styles.headerText}>
             {screen}
