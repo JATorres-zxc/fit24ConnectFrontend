@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   usernameLabel: {
     fontFamily: Fonts.regular,
-    color: Colors.textgray
+    color: Colors.textSecondary,
   },
   usernameInput: {
     fontFamily: Fonts.regular,
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     height: 50,
-    color: Colors.textgray,
+    color: Colors.textSecondary,
   },
   buttonContainer: {
     alignItems: 'center',
