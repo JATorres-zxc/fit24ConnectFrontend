@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, FlatList, Modal, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
@@ -20,6 +21,8 @@ interface Props {
 }
 
 export default function AdminAnnouncements({ announcements, onDelete }: Props) {
+  const router = useRouter();
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -54,7 +57,17 @@ export default function AdminAnnouncements({ announcements, onDelete }: Props) {
               <Text style={styles.content}>{item.content}</Text>
 
               <View style={styles.contentSettings}>
-                <MaterialCommunityIcons name="pencil-outline" color={Colors.eyeIcon} size={20} />
+                <TouchableOpacity onPress={() => router.push({
+                  pathname: '/(admin)/edit-announcement',
+                  params: { 
+                    id: item.id, 
+                    title: item.title, 
+                    content: item.content 
+                  }
+                })}>
+                  <MaterialCommunityIcons name="pencil-outline" color={Colors.eyeIcon} size={20} />
+                </TouchableOpacity>
+                  
                 <TouchableOpacity onPress={() => handleDeletePress(item.id)}>
                   <MaterialCommunityIcons name="trash-can-outline" color={Colors.eyeIcon} size={20} />
                 </TouchableOpacity>
