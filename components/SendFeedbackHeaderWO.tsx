@@ -32,7 +32,7 @@ export default function RequestMealPlanButton({ setViewState }: SendFeedbackButt
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.bg,
     marginBottom: 30,
   },
   header: {
