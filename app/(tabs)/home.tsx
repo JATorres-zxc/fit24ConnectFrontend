@@ -7,7 +7,7 @@ import Button from "@/components/CreateAnnouncementButton";
 import Header from "@/components/HomeHeader";
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
 
-import { announcements } from "@/constants/announcements";
+import { announcements } from "@/context/announcements";
 import { Colors } from '@/constants/Colors';
 
 export default function Home() {

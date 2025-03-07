@@ -1,13 +1,27 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, } from "react-native";
+import { useState } from "react";
 
 import Button from '@/components/CreateAnnouncementButton';
 import Header from '@/components/HomeHeader';
 import AdminAnnouncements from "@/components/AdminSideAnnouncementsContainer";
 
 import { Colors } from "@/constants/Colors";
-import { announcements } from "@/context/announcements";
+import { announcements as initialAnnouncements } from "@/context/announcements";
 
 export default function Home() {
+  // Use state to manage announcements instead of static import
+  const [announcements, setAnnouncements] = useState(initialAnnouncements);
+
+  // Handle deletion by filtering out the deleted announcement
+  const handleDelete = (id: string) => {
+    setAnnouncements(currentAnnouncements => 
+      currentAnnouncements.filter(announcement => announcement.id !== id)
+    );
+    
+    // If you have a backend, you'd also want to sync the deletion
+    // deleteAnnouncementFromAPI(id);
+  };
+
   return (
     <View style={styles.container}>
       <Header name='admin' />
@@ -17,7 +31,7 @@ export default function Home() {
       </View>
 
       <View style={styles.announcementsContainer}>
-        <AdminAnnouncements announcements={announcements} />
+        <AdminAnnouncements announcements={announcements} onDelete={handleDelete} />
       </View>
 
     </View>
