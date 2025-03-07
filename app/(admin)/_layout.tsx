@@ -83,6 +83,13 @@ export default function RootLayout() {
       />
 
       <Tabs.Screen 
+        name="edit-announcement" 
+        options={{ 
+          href: null,
+        }} 
+      />
+
+      <Tabs.Screen 
         name="+not-found" 
         options={{ 
           href: null 

@@ -4,8 +4,8 @@ import Button from '@/components/CreateAnnouncementButton';
 import Header from '@/components/HomeHeader';
 import AdminAnnouncements from "@/components/AdminSideAnnouncementsContainer";
 
-import { announcements } from "@/constants/announcements";
 import { Colors } from "@/constants/Colors";
+import { announcements } from "@/context/announcements";
 
 export default function Home() {
   return (

@@ -1,6 +1,7 @@
-import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { useState, useEffect } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import Toast from "react-native-toast-message";
 
 import Header from "@/components/NavigateBackHeader";
 import { Colors } from "@/constants/Colors";
@@ -10,11 +11,85 @@ export default function CreateAnnouncement() {
   const { id, title, content } = useLocalSearchParams();
   const [announcementTitle, setAnnouncementTitle] = useState(title as string || '');
   const [announcementContent, setAnnouncementContent] = useState(content as string || '');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
     
   useEffect(() => {
     setAnnouncementTitle(title as string || '');
     setAnnouncementContent(content as string || '');
   }, [title, content]);
+
+  const handleUpdateAnnouncement = async () => {
+    // Validate input
+    if (!announcementTitle.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter a title for the announcement',
+        position: 'top',
+        topOffset: 100,
+      });
+      return;
+    }
+
+    if (!announcementContent.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter message content of the announcement',
+        position: 'top',
+        topOffset: 100,
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      // Replace with your actual API call
+      // Example:
+      // const response = await fetch('your-api-endpoint/announcements/' + id, {
+      //   method: 'PUT',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     title: announcementTitle,
+      //     content: announcementContent,
+      //   }),
+      // });
+      
+      // if (!response.ok) {
+      //   throw new Error('Failed to update announcement');
+      // }
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Show success toast
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: 'Announcement updated successfully',
+        position: 'top',
+        topOffset: 100,
+        visibilityTime: 2000,
+        autoHide: true,
+        onHide: () => router.back() // Navigate back after toast disappears
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to update announcement. Please try again.',
+        position: 'top',
+        topOffset: 100,
+      });
+      console.error("Update error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -36,6 +111,7 @@ export default function CreateAnnouncement() {
             placeholder="Enter Title"
             value={announcementTitle}
             onChangeText={setAnnouncementTitle}
+            maxLength={30}
           />
           <Text style={styles.charCount}>{announcementTitle.length}/30</Text>
         </View>
@@ -51,9 +127,13 @@ export default function CreateAnnouncement() {
         </View>
 
         <View style={styles.button}>
-          <TouchableOpacity style={styles.post}>
+          <TouchableOpacity 
+            style={[styles.post, isLoading && styles.disabledButton]}
+            onPress={handleUpdateAnnouncement}
+            disabled={isLoading}
+          >
             <Text style={styles.buttonText}>
-              Update Announcement
+              {isLoading ? "Updating..." : "Update Announcement"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -127,6 +207,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 20,
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   buttonText: {
     fontFamily: Fonts.medium,
