@@ -63,6 +63,7 @@ const styles = StyleSheet.create({
         height: 90,
         marginRight: 15,
         borderWidth: 1,
+        borderRadius: 12,
         borderColor: Colors.black,
     },
     textContainer: {

@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, 
   TextInput
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import RNPickerSelect from 'react-native-picker-select';
 import Header from '@/components/WorkoutHeader';
 import Toast from 'react-native-toast-message';
 import ProgramHeader from '@/components/ProgramHeaderWO';
@@ -300,34 +300,32 @@ const WorkoutScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
           { viewState === "request" ? (
+            // Request Meal Plan View
             <View style={styles.formContainer}>
               <RequestWorkoutHeader setViewState={setViewState}/>
-              <Text style={styles.requestHeaders}>Choose Trainer</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={trainer}
-                  onValueChange={(itemValue) => setTrainer(itemValue)}
-                  style={styles.picker}
-                  itemStyle={{ color: Colors.white }}
-                  prompt="Select Trainer:"
-                  dropdownIconColor={Colors.black}
-                  dropdownIconRippleColor={Colors.black}
-                  mode="dialog"
-                >
-                  <Picker.Item label="Select Trainer:" value="" style={styles.input}/>
-                  <Picker.Item label="Trainer A" value="trainerA" />
-                  <Picker.Item label="Trainer B" value="trainerB" />
-                  <Picker.Item label="Trainer C" value="trainerC" />
-
-                  {/* Dynamic Picker Item from API */}
-
-                  {/* <Picker.Item label="Select Trainer" value="" />
-                  {trainers.map((trainer) => (
-                    <Picker.Item key={trainer.id} label={trainer.name} value={trainer.id} />
-                  ))} */}
-
-                </Picker>
-              </View>
+              
+              <View style={styles.requestWOContainer}>
+                {/* Trainer Picker */}
+                <Text style={styles.requestHeaders}>Choose Trainer</Text>
+                <View style={styles.pickerTrainer}>
+                  <RNPickerSelect
+                    onValueChange={(value) => setTrainer(value)}
+                    items={[
+                      { label: 'Trainer A', value: 'trainerA' },
+                      { label: 'Trainer B', value: 'trainerB' },
+                      { label: 'Trainer C', value: 'trainerC' },
+                    ]}
+                    style={trainerpickerSelectStyles}
+                    value={trainer}
+                    placeholder={{ label: 'Select Trainer', value: null }}
+                    useNativeAndroidPickerStyle={false}
+                    Icon={() =>
+                      Platform.OS === "ios" ? (
+                        <Ionicons name="chevron-down" size={20} color="gray" />
+                      ) : null
+                    }
+                  />
+                </View>
 
               <Text style={styles.requestHeaders}>Fitness Goal</Text>
               <TextInput
@@ -349,42 +347,50 @@ const WorkoutScreen = () => {
                 <Text style={styles.buttonText}>Submit Request</Text>
               </TouchableOpacity>
             </View>
+          </View>
           ) : viewState === "feedback" ? (
             <View style={styles.formContainer}>
               <SendFeedbackHeader setViewState={setViewState}/>
-              <Text style={styles.feedbackHeaders}>Feedback</Text>
-              <TextInput
-                placeholder="Enter your feedback here"
-                style={[styles.input, styles.feedbackInput]}
-                value={feedback}
-                onChangeText={setFeedback}
-                multiline
-                numberOfLines={4}
-              />
-              <Text style={styles.requestHeaders}>Overall Rating</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={rating}
-                  onValueChange={(itemValue) => setRating(itemValue)}
-                  style={styles.pickerBlack}
-                  itemStyle={{ color: Colors.white }}
-                  mode="dialog"
-                  dropdownIconColor={Colors.white}
-                  dropdownIconRippleColor={Colors.white}
-                  prompt="Select a Rating:"
-                >
-                  <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="1 - Poor" value="1" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="2 - Fair" value="2" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="3 - Good" value="3" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="4 - Very Good" value="4" fontFamily="Fonts.regular"/>
-                  <Picker.Item label="5 - Excellent" value="5" fontFamily="Fonts.regular"/>
-                </Picker>
-              </View>
 
-              <TouchableOpacity style={styles.submitButton} onPress={() => selectedWorkout && handleFeedbackSubmit(selectedWorkout)}>
-                <Text style={styles.buttonText}>Submit Feedback</Text>
-              </TouchableOpacity>
+              <View style={styles.sendFBContainer}>
+                <Text style={styles.feedbackHeaders}>Feedback</Text>
+                <TextInput
+                  placeholder="Enter your feedback here"
+                  placeholderTextColor={Colors.textSecondary}
+                  style={[styles.input, styles.feedbackInput]}
+                  value={feedback}
+                  onChangeText={setFeedback}
+                  multiline
+                  numberOfLines={4}
+                />
+
+                <Text style={styles.requestHeaders}>Overall Rating</Text>
+                <View style={styles.pickerRating}>
+                  <RNPickerSelect
+                    onValueChange={(value) => setRating(value)}
+                    items={[
+                      { label: '1 - Poor', value: '1' },
+                      { label: '2 - Fair', value: '2' },
+                      { label: '3 - Good', value: '3' },
+                      { label: '4 - Very Good', value: '4' },
+                      { label: '5 - Excellent', value: '5' },
+                    ]}
+                    style={ratingpickerSelectStyles}
+                    value={rating}
+                    placeholder={{ label: 'Enter Your Rating', value: null }}
+                    useNativeAndroidPickerStyle={false}
+                    Icon={() =>
+                      Platform.OS === "ios" ? (
+                        <Ionicons name="chevron-down" size={20} color="gray" />
+                      ) : null
+                    }
+                  />
+                </View>
+
+                <TouchableOpacity style={styles.submitButton} onPress={() => selectedWorkout && handleFeedbackSubmit(selectedWorkout)}>
+                  <Text style={styles.buttonText}>Submit Feedback</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : viewState === "exercises" ? (
             <View style={styles.planContainer}>
@@ -466,7 +472,7 @@ const styles = StyleSheet.create({
   formContainer: {
     width: "100%",
     alignItems: "flex-start",
-    verticalAlign: 'middle',
+    flex: 1,
   },
   centerContainer: {
     flex: 1,
@@ -626,13 +632,13 @@ const styles = StyleSheet.create({
     flexGrow: 0,
   },
   requestHeaders: {
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 5,
     alignSelf: "flex-start",
     fontFamily: Fonts.semibold,
   },
   feedbackHeaders: {
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 15,
     alignSelf: "flex-start",
     fontFamily: Fonts.semibold,
@@ -640,11 +646,12 @@ const styles = StyleSheet.create({
   input: {
     width: "100%",
     padding: 12,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: Colors.textSecondary,
-    borderRadius: 0,
+    borderRadius: 10,
     marginBottom: 10,
     fontFamily: Fonts.regular,
+    fontSize: 14,
   },
   feedbackInput: {
     height: 200,
@@ -674,14 +681,82 @@ const styles = StyleSheet.create({
   submitButton: {
     backgroundColor: Colors.gold,
     padding: 12,
-    borderRadius: 5,
+    borderRadius: 10,
     alignSelf: "center",
     top: -5,
     width: "50%",
     height: 45,
-    marginTop: 10,
+    marginTop: 30,
     fontFamily: Fonts.medium,
   },
+  sendFBContainer: {
+    width: "100%",
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+  },
+  pickerRating: {
+    width: '100%', 
+    backgroundColor: Colors.black,
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  requestWOContainer: {
+    width: "100%",
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+  },
+  pickerTrainer: {
+    width: '100%',
+    backgroundColor: Colors.bg,
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
 });
+
+const trainerpickerSelectStyles = {
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    color: Colors.textSecondary,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    color: Colors.textSecondary,
+  },
+  iconContainer: {
+    top: 10,
+    right: 12,
+  },
+};
+
+const ratingpickerSelectStyles = {
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    color: Colors.white,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    color: Colors.textSecondary,
+  },
+  iconContainer: {
+    top: 10,
+    right: 12,
+  },
+};
 
 export default WorkoutScreen;
