@@ -13,10 +13,14 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
 interface Meal {
-  meal: string;
-  type: string;
-  calories: number;
+  id: string;
+  mealplan: string;
+  meal_name: string;
   description: string;
+  meal_type: string;
+  calories: number;
+  protein: number;
+  carbs: number;
 }
 
 interface Feedback {
@@ -27,27 +31,39 @@ interface Feedback {
 }
 
 interface MealPlan {
-  trainer: string;
-  fitnessGoal: string;
-  weightGoal: string;
-  allergens: string;
+  mealplan_id: string;
   meals: Meal[];
-  feedbacks: Feedback[];
+  member_id: string;
+  trainer_id: string;
+  mealplan_name: string;
+  fitness_goal: string;
+  calorie_intake: number;
+  protein: number;
+  carbs: number;
+  weight_goal: number;
+  allergens: string;
+  instructions: string;
 }
 
 const MealPlanScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
   const [mealPlan, setMealPlan] = useState<MealPlan | null>({
-    trainer: "Trainer A",
-    fitnessGoal: "Lose Weight",
-    weightGoal: "70",
+    mealplan_id: "X",
+    member_id: "Member A",
+    mealplan_name: "Meal Plan A",
+    trainer_id: "Trainer A",
+    fitness_goal: "Lose Weight",
+    weight_goal: 70,
+    calorie_intake: 430,
+    protein: 100,
+    carbs: 30,
     allergens: "Peanuts, Dairy",
     meals: [
-      { meal: "Breakfast", description: "Oatmeal with fruits", type: "Food", calories: 330 },
-      { meal: "Lunch", description: "Chicken Salad", type: "Food", calories: 440 },
-      { meal: "Dinner", description: "Siya <3", type: "Unknown", calories: 550 },
+      { id: "a", mealplan: "X", meal_name: "Breakfast", description: "Oatmeal with fruits", meal_type: "Breakfast", calories: 330, protein: 100, carbs: 30 },
+      { id: "b", mealplan: "X", meal_name: "Lunch", description: "Chicken Salad", meal_type: "Lunch", calories: 440, protein: 50, carbs: 80},
+      { id: "c", mealplan: "X", meal_name: "Dinner", description: "Siya <3", meal_type: "Dinner", calories: 550, protein: 9999, carbs: 0 },
     ],
-    feedbacks: [],
+    instructions: "Hatdog.",
   }); // State to store meal plan
   const [trainer, setTrainer] = useState<string | number | undefined>('');
   const [trainers, setTrainers] = useState([]);
@@ -56,11 +72,6 @@ const MealPlanScreen = () => {
   const [allergens, setAllergens] = useState(""); // State to store allergens
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
-
-  const [showPicker, setShowPicker] = useState<boolean>(false);
-  const togglePicker = () => {
-    setShowPicker(!showPicker);
-  };
 
   // Fetching trainers from API
 
@@ -80,19 +91,19 @@ const MealPlanScreen = () => {
 
   // Fetching Meal Plan from API
   
-  // useEffect(() => {
-  //   const fetchMealPlan = async () => {
-  //     try {
-  //       const response = await fetch('YOUR_MEAL_PLAN_API_ENDPOINT_HERE');
-  //       const data = await response.json();
-  //       setMealPlan(data);
-  //     } catch (error) {
-  //       console.error('Error fetching meal plan:', error);
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchMealPlan = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/mealplan/mealplans/1');
+        const data = await response.json();
+        setMealPlan(data);
+      } catch (error) {
+        console.error('Error fetching meal plan:', error);
+      }
+    };
   
-  //   fetchMealPlan();
-  // }, []);
+    fetchMealPlan();
+  }, []);
 
   const handleSubmit = async () => {
     if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
@@ -107,6 +118,8 @@ const MealPlanScreen = () => {
     
     try {
       // // Replace with actual API call
+      // To central feedback and request database
+
       // const response = await fetch('https://api.example.com/submitMealPlan', {
       //   method: 'POST',
       //   headers: {
@@ -124,7 +137,7 @@ const MealPlanScreen = () => {
 
       // const result = await response.json();
       
-      // Temporary Success Placeholder
+      // // Temporary Success Placeholder
       const temp_response = true;
 
       if (temp_response) {
@@ -167,27 +180,10 @@ const MealPlanScreen = () => {
       return;
     }
 
-    if (mealPlan) {
-      const newFeedback = {
-        id: `${mealPlan.meals[0].meal}-${Date.now()}`,
-        feedback,
-        rating: parseInt(rating.toString()),
-        createdAt: new Date(),
-      };      
-
-      const updatedMealPlan = {
-        ...mealPlan,
-        feedbacks: [...mealPlan.feedbacks, newFeedback],
-      };
-
-      setMealPlan(updatedMealPlan);
-    } else {
-      // Handle the case where mealPlan is null
-      console.error("No meal plan available to add feedback.");
-    }
-
     try {
-      // Uncomment and replace with actual API call
+      // Uncomment and replace with actual API call,
+      // This is in line with an agreed central feedback and request database.
+
       // const response = await fetch('https://api.example.com/submitFeedback', {
       //   method: 'POST',
       //   headers: {
@@ -200,7 +196,7 @@ const MealPlanScreen = () => {
       // });
 
       const temp_response = true;
-      // response.ok
+      // // response.ok
       if (temp_response) {
         Toast.show({
           type: 'info',
@@ -232,18 +228,18 @@ const MealPlanScreen = () => {
   const handleDelete = async () => {
     try {
       // // Replace with actual API call
-      // const response = await fetch('https://api.example.com/deleteMealPlan', {
-      //   method: 'DELETE',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      // });
+      const response = await fetch('https://api.example.com/deleteMealPlan', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       
-      const temp_response = true;
+      // const temp_response = true;
 
       // response.ok
 
-      if (temp_response) {
+      if (response.ok) {
         Toast.show({
           type: 'success',
           text1: 'Meal Plan Deleted',
@@ -409,11 +405,15 @@ const MealPlanScreen = () => {
                   <Header />
                   {mealPlan.meals.map((meal, index) => (
                     <View key={index} style={styles.mealItem}>
-                      <Text style={styles.mealTitle}>{meal.meal}</Text>
+                      <Text style={styles.mealTitle}>{meal.meal_name}</Text>
                       <Text style={styles.mealDescription}>Type of Food:</Text>
-                      <Text style={styles.mealData}>{meal.type}</Text>
+                      <Text style={styles.mealData}>{meal.meal_type}</Text>
                       <Text style={styles.mealDescription}>Calories:</Text>
                       <Text style={styles.mealData}>{meal.calories} kcal</Text>
+                      <Text style={styles.mealDescription}>Protein:</Text>
+                      <Text style={styles.mealData}>{meal.protein} g</Text>
+                      <Text style={styles.mealDescription}>Carbs:</Text>
+                      <Text style={styles.mealData}>{meal.carbs} g</Text>
                       <Text style={styles.mealDescription}>Description:</Text>
                       <Text style={styles.mealData}>{meal.description}</Text>
                     </View>
