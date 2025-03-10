@@ -21,7 +21,7 @@ export default function Home() {
     if (params.showToast === "true") {
       Toast.show({
         type: "success",
-        text1: "Login Succuess!",
+        text1: "Login Success!",
         text2: `Logged in as ${params.sanitizedEmail}`,
         visibilityTime: 1500
       });
