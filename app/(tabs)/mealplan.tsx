@@ -228,18 +228,18 @@ const MealPlanScreen = () => {
   const handleDelete = async () => {
     try {
       // // Replace with actual API call
-      const response = await fetch('https://api.example.com/deleteMealPlan', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      // const response = await fetch('https://api.example.com/deleteMealPlan', {
+      //   method: 'DELETE',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      // });
       
-      // const temp_response = true;
+      const temp_response = true;
 
       // response.ok
 
-      if (response.ok) {
+      if (temp_response) {
         Toast.show({
           type: 'success',
           text1: 'Meal Plan Deleted',
