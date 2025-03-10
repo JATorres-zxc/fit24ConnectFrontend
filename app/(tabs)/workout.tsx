@@ -172,7 +172,7 @@ const WorkoutScreen = () => {
     setViewState("delete");
   };
 
-  const handleFeedbackSubmit = async (selectedWorkout: Workout) => {
+  const handleFeedbackSubmit = async () => {
     if (!feedback || !rating) {
       Toast.show({
         type: 'error',
@@ -183,24 +183,20 @@ const WorkoutScreen = () => {
       return;
     }
 
-    if (selectedWorkout) {
-      const newFeedback: Feedback = {
-        id: `${selectedWorkout.fitnessGoal}-${Date.now()}`,
-        feedback,
-        rating: parseInt(rating),
-        createdAt: new Date(),
-      };
+    // Uncomment and replace with actual API call
+    // const response = await fetch('https://api.example.com/submitFeedback', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     workoutId: selectedWorkout?.id,
+    //     feedback,
+    //     rating: parseInt(rating),
+    //   }),
+    // });
 
-      const updatedWorkout: Workout = {
-        ...selectedWorkout,
-        feedbacks: [...selectedWorkout.feedbacks, newFeedback],
-      };
-      
-      setSelectedWorkout(updatedWorkout);
-      setWorkout(updatedWorkout);
-    } else {
-      console.error("No workout available to add feedback.");
-    }
+    // const result = await response.json();
 
     try {
       const temp_response = true;
@@ -387,9 +383,10 @@ const WorkoutScreen = () => {
                   />
                 </View>
 
-                <TouchableOpacity style={styles.submitButton} onPress={() => selectedWorkout && handleFeedbackSubmit(selectedWorkout)}>
+                <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
                   <Text style={styles.buttonText}>Submit Feedback</Text>
                 </TouchableOpacity>
+                
               </View>
             </View>
           ) : viewState === "exercises" ? (
