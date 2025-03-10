@@ -59,9 +59,9 @@ const MealPlanScreen = () => {
     carbs: 30,
     allergens: "Peanuts, Dairy",
     meals: [
-      { id: "a", mealplan: "X", meal_name: "Breakfast", description: "Oatmeal with fruits", meal_type: "Breakfast", calories: 330, protein: 100, carbs: 30 },
+      { id: "a", mealplan: "X", meal_name: "Breakfast", description: "Oatmeal with fruits", meal_type: "Breakfast", calories: 330, protein: 100, carbs: 30},
       { id: "b", mealplan: "X", meal_name: "Lunch", description: "Chicken Salad", meal_type: "Lunch", calories: 440, protein: 50, carbs: 80},
-      { id: "c", mealplan: "X", meal_name: "Dinner", description: "Siya <3", meal_type: "Dinner", calories: 550, protein: 9999, carbs: 0 },
+      { id: "c", mealplan: "X", meal_name: "Dinner", description: "Siya <3", meal_type: "Dinner", calories: 550, protein: 9999, carbs: 0},
     ],
     instructions: "Hatdog.",
   }); // State to store meal plan
@@ -94,7 +94,7 @@ const MealPlanScreen = () => {
   useEffect(() => {
     const fetchMealPlan = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/mealplan/mealplans/1');
+        const response = await fetch('http://127.0.0.1:8000/api/mealplan/');
         const data = await response.json();
         setMealPlan(data);
       } catch (error) {
