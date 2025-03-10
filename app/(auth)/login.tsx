@@ -86,6 +86,55 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
         }
 
         try {
+            // Uncomment and modify the API call for future use
+            // const response = await fetch('http://127.0.0.1:8000/api/account/login/', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({
+            //         email: sanitizedEmail,
+            //         password: sanitizedPassword,
+            //     }),
+            // });
+
+            // const result = await response.json();
+
+            // if (response.ok) {
+            //     const { user_type } = result;
+
+            //     // Determine the route based on user_type
+            //     let route: UserRoute;
+            //     switch (user_type) {
+            //         case 'admin':
+            //             route = '/(admin)/home';
+            //             break;
+            //         case 'trainer':
+            //             route = '/(trainer)/home';
+            //             break;
+            //         default:
+            //             route = '/(tabs)/home';
+            //             break;
+            //     }
+
+            //     // Successful login - route to appropriate dashboard
+            //     router.replace(route);
+
+            //     Toast.show({
+            //         type: 'success',
+            //         text1: 'Login Successful',
+            //         text2: `Logged in as ${sanitizedEmail}`,
+            //         position: 'bottom'
+            //     });
+            // } else {
+            //     Toast.show({
+            //         type: 'error',
+            //         text1: 'Login Failed',
+            //         text2: result.message || 'Invalid credentials',
+            //         position: 'bottom'
+            //     });
+            // }
+
             // Check against predefined users
             const matchedUser = Object.values(PREDEFINED_USERS).find(
                 user => user.email === sanitizedEmail && user.password === sanitizedPassword
@@ -93,23 +142,15 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
             if (matchedUser) {
                 // Successful login - route to appropriate dashboard
-                router.replace(matchedUser.route);
-                
-                Toast.show({
-                    type: 'success',
-                    text1: 'Login Successful',
-                    text2: `Logged in as ${sanitizedEmail}`,
-                    position: 'bottom'
+                router.replace({
+                    pathname: matchedUser.route,
+                    params: { showToast: "true" }
                 });
             } else {
                 // If not a predefined user, route to member side
-                router.replace('/(tabs)/home');
-                
-                Toast.show({
-                    type: 'success',
-                    text1: 'Login Successful',
-                    text2: 'Logged in as Member',
-                    position: 'bottom'
+                router.replace({
+                    pathname: '/(tabs)/home',
+                    params: { showToast: "true" }
                 });
             }
         } catch (error) {
