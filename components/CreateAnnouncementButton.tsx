@@ -2,6 +2,7 @@ import { StyleSheet, View, Pressable, Text } from 'react-native';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Fonts } from '@/constants/Fonts';
+import { Colors } from '@/constants/Colors';
 
 type Props = {
   label: string;
@@ -16,10 +17,10 @@ export default function Button({ label, theme }: Props) {
           styles.buttonContainer,
         ]}>
         <Pressable
-          style={[styles.button, { backgroundColor: '#d7be69' }]}
+          style={[styles.button, { backgroundColor: Colors.gold }]}
           onPress={() => alert('You pressed a button.')}>
-          <FontAwesome name="pencil" size={16} color="#ffffff" style={styles.buttonIcon} />
-          <Text style={[styles.buttonLabel, { color: '#ffffff' }]}>{label}</Text>
+          <FontAwesome name="pencil" size={16} color={Colors.white} style={styles.buttonIcon} />
+          <Text style={[styles.buttonLabel, { color: Colors.white }]}>{label}</Text>
         </Pressable>
       </View>
     );
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   buttonLabel: {
-    color: '#fff',
+    color: Colors.white,
     fontSize: 16,
     fontFamily: Fonts.semibold,
   },

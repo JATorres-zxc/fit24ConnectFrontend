@@ -316,6 +316,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontFamily: Fonts.regular,
     fontSize: 14,
-    color: "#fff"
+    color: Colors.white,
   },
 });

@@ -152,7 +152,7 @@ export default function EditPasswordScreen() {
               />
 
               <TouchableOpacity onPress={() => setShowCurrentPassword(prev => !prev)} style={styles.icon}>
-                <FontAwesome name={showCurrentPassword ? "eye" : "eye-slash"} size={20} color="#aaa" />
+                <FontAwesome name={showCurrentPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
               </TouchableOpacity>
             </View>  
           </View>
@@ -170,7 +170,7 @@ export default function EditPasswordScreen() {
                 onChangeText={setNewPassword}
               />
               <TouchableOpacity onPress={() => setShowNewPassword(prev => !prev)} style={styles.icon}>
-                <FontAwesome name={showNewPassword ? "eye" : "eye-slash"} size={20} color="#aaa" />
+                <FontAwesome name={showNewPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
               </TouchableOpacity>
             </View>
             <Text style={styles.reminder}>
@@ -191,7 +191,7 @@ export default function EditPasswordScreen() {
                 onChangeText={setConfirmPassword}
               />
               <TouchableOpacity onPress={() => setShowConfirmPassword(prev => !prev)} style={styles.icon}>
-                <FontAwesome name={showConfirmPassword ? "eye" : "eye-slash"} size={20} color="#aaa" />
+                <FontAwesome name={showConfirmPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
               </TouchableOpacity>
             </View>
             <Text style={styles.reminder}>
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 50,
-    borderColor: '#ccc',
+    borderColor: Colors.border,
     borderWidth: 1,
     borderRadius: 5,
     paddingLeft: 10,

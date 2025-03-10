@@ -101,7 +101,7 @@ export default function ScanScreen() {
           )}
           {scanned && (
             <View style={styles.scannedOverlay}>
-              {isLoading && <ActivityIndicator size="large" color="#fff" />}
+              {isLoading && <ActivityIndicator size="large" color={Colors.white} />}
             </View>
           )}
         </View>
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: Colors.textgray,
+    backgroundColor: Colors.textSecondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -211,19 +211,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
   },
   statusTitle: {
     fontFamily: Fonts.semibold,
     fontSize: 24,
-    color: '#fff',
+    color: Colors.white,
     marginBottom: 12,
     textAlign: 'center',
   },
   statusMessage: {
     fontFamily: Fonts.regular,
     fontSize: 14,
-    color: '#fff',
+    color: Colors.white,
     textAlign: 'center',
     marginBottom: 16,
   },
