@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useState } from "react";
 import {
@@ -32,23 +33,23 @@ interface PredefinedUser {
     route: UserRoute;
 }
 
-const PREDEFINED_USERS: Record<string, PredefinedUser> = {
-    admin: {
-        email: 'admin@gym.com',
-        password: 'admin123',
-        route: '/(admin)/home'
-    },
-    member: {
-        email: 'member@gym.com',
-        password: 'member123',
-        route: '/(tabs)/home'
-    },
-    trainer: {
-        email: 'trainer@gym.com',
-        password: 'trainer123',
-        route: '/(trainer)/home'
-    }
-};
+// const PREDEFINED_USERS: Record<string, PredefinedUser> = {
+//     admin: {
+//         email: 'admin@gym.com',
+//         password: 'admin123',
+//         route: '/(admin)/home'
+//     },
+//     member: {
+//         email: 'member@gym.com',
+//         password: 'member123',
+//         route: '/(tabs)/home'
+//     },
+//     trainer: {
+//         email: 'trainer@gym.com',
+//         password: 'trainer123',
+//         route: '/(trainer)/home'
+//     }
+// };
 
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const router = useRouter();
@@ -86,78 +87,67 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
         }
 
         try {
-            // Uncomment and modify the API call for future use
-            // const response = await fetch('http://127.0.0.1:8000/api/account/login/', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({
-            //         email: sanitizedEmail,
-            //         password: sanitizedPassword,
-            //     }),
-            // });
-
-            // const result = await response.json();
-
-            // if (response.ok) {
-            //     const { user_type } = result;
-
-            //     // Determine the route based on user_type
-            //     let route: UserRoute;
-            //     switch (user_type) {
-            //         case 'admin':
-            //             route = '/(admin)/home';
-            //             break;
-            //         case 'trainer':
-            //             route = '/(trainer)/home';
-            //             break;
-            //         default:
-            //             route = '/(tabs)/home';
-            //             break;
-            //     }
-
-            //     // Successful login - route to appropriate dashboard
-            //     router.replace({
-            //         pathname: route,
-            //         params: { showToast: "true", logged_in_as: sanitizedEmail  }
-            //     });
-            // } else {
-            //     Toast.show({
-            //         type: 'error',
-            //         text1: 'Login Failed',
-            //         text2: result.message || 'Invalid credentials',
-            //         position: 'bottom'
-            //     });
-            // }
-
-            // Check against predefined users
-            const matchedUser = Object.values(PREDEFINED_USERS).find(
-                user => user.email === sanitizedEmail && user.password === sanitizedPassword
-            );
-
-            if (matchedUser) {
-                // Successful login - route to appropriate dashboard
+            // Perform the API login call
+            const response = await fetch('http://127.0.0.1:8000/api/account/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json', // Ensure the server responds with JSON
+                },
+                body: JSON.stringify({
+                    email: sanitizedEmail,
+                    password: sanitizedPassword,
+                }),
+            });
+        
+            // Extract the token from the 'Authorization' header
+            const token = response.headers.get('Authorization');
+        
+            if (response.ok && token) {
+                const result = await response.json();
+                const { user_type } = result;
+        
+                // Store the token securely for future use
+                await AsyncStorage.setItem('authToken', token);
+        
+                // Determine the appropriate route based on user_type
+                let route: UserRoute;
+                switch (user_type) {
+                    case 'admin':
+                        route = '/(admin)/home';
+                        break;
+                    case 'trainer':
+                        route = '/(trainer)/home';
+                        break;
+                    default:
+                        route = '/(tabs)/home';
+                        break;
+                }
+        
+                // Successful login - navigate to the relevant dashboard
                 router.replace({
-                    pathname: matchedUser.route,
+                    pathname: route,
                     params: { showToast: "true", logged_in_as: sanitizedEmail }
                 });
             } else {
-                // If not a predefined user, route to member side
-                router.replace({
-                    pathname: '/(tabs)/home',
-                    params: { showToast: "true", logged_in_as: sanitizedEmail  }
+                // Handle errors if the response is not ok or token is missing
+                Toast.show({
+                    type: 'error',
+                    text1: 'Login Failed',
+                    text2: 'Invalid credentials or missing token',
+                    position: 'bottom',
                 });
             }
         } catch (error) {
+            // Handle unexpected errors
             Toast.show({
                 type: 'error',
                 text1: 'Login Failed',
                 text2: 'An error occurred. Please try again.',
-                position: 'bottom'
+                position: 'bottom',
             });
             setError('An error occurred. Please try again.');
-        }
+        }  
     };
 
     return (

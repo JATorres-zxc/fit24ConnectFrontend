@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState, useEffect } from "react";
 import { 
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform 
@@ -94,16 +95,44 @@ const MealPlanScreen = () => {
   useEffect(() => {
     const fetchMealPlan = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/mealplan/');
+        // Retrieve the token from AsyncStorage
+        const token = await AsyncStorage.getItem('authToken');
+        if (!token) throw new Error('No token found');
+  
+        // Make the API call with the token
+        const response = await fetch('http://127.0.0.1:8000/api/mealplan/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+  
+        // Check response status
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
+        // Parse response and update state
         const data = await response.json();
         setMealPlan(data);
       } catch (error) {
+        // Handle errors
         console.error('Error fetching meal plan:', error);
+  
+        // Provide specific error messages for network or CORS issues
+        if (error instanceof Error) {
+          if (error.message.includes('NetworkError')) {
+            console.error('Network error: Please check if the server is running and accessible.');
+          } else if (error.message.includes('CORS')) {
+            console.error('CORS error: Please ensure your server allows requests from your frontend.');
+          }
+        }
       }
     };
   
+    // Trigger fetch on component mount
     fetchMealPlan();
-  }, []);
+  }, []);  
 
   const handleSubmit = async () => {
     if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
