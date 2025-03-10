@@ -118,13 +118,9 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             //     }
 
             //     // Successful login - route to appropriate dashboard
-            //     router.replace(route);
-
-            //     Toast.show({
-            //         type: 'success',
-            //         text1: 'Login Successful',
-            //         text2: `Logged in as ${sanitizedEmail}`,
-            //         position: 'bottom'
+            //     router.replace({
+            //         pathname: route,
+            //         params: { showToast: "true", logged_in_as: sanitizedEmail  }
             //     });
             // } else {
             //     Toast.show({
@@ -144,13 +140,13 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 // Successful login - route to appropriate dashboard
                 router.replace({
                     pathname: matchedUser.route,
-                    params: { showToast: "true" }
+                    params: { showToast: "true", logged_in_as: sanitizedEmail }
                 });
             } else {
                 // If not a predefined user, route to member side
                 router.replace({
                     pathname: '/(tabs)/home',
-                    params: { showToast: "true" }
+                    params: { showToast: "true", logged_in_as: sanitizedEmail  }
                 });
             }
         } catch (error) {
