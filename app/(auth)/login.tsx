@@ -77,8 +77,9 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             const result = await response.json();
 
             if (response.ok && result.tokens.access) {
-                // Store the token securely for future use
+                // Store the token and user ID securely for future use
                 await AsyncStorage.setItem('authToken', result.tokens.access);
+                await AsyncStorage.setItem('userID', result.user.id);
 
                 // Navigate to the home screen
                 router.push({

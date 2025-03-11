@@ -32,7 +32,7 @@ interface Feedback {
 }
 
 interface MealPlan {
-  mealplan_id: string;
+  mealplan_id: number;
   meals: Meal[];
   member_id: string;
   trainer_id: string;
@@ -48,24 +48,7 @@ interface MealPlan {
 
 const MealPlanScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
-  const [mealPlan, setMealPlan] = useState<MealPlan | null>({
-    mealplan_id: "X",
-    member_id: "Member A",
-    mealplan_name: "Meal Plan A",
-    trainer_id: "Trainer A",
-    fitness_goal: "Lose Weight",
-    weight_goal: 70,
-    calorie_intake: 430,
-    protein: 100,
-    carbs: 30,
-    allergens: "Peanuts, Dairy",
-    meals: [
-      { id: "a", mealplan: "X", meal_name: "Breakfast", description: "Oatmeal with fruits", meal_type: "Breakfast", calories: 330, protein: 100, carbs: 30},
-      { id: "b", mealplan: "X", meal_name: "Lunch", description: "Chicken Salad", meal_type: "Lunch", calories: 440, protein: 50, carbs: 80},
-      { id: "c", mealplan: "X", meal_name: "Dinner", description: "Siya <3", meal_type: "Dinner", calories: 550, protein: 9999, carbs: 0},
-    ],
-    instructions: "Hatdog.",
-  }); // State to store meal plan
+  const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State to store meal plan
   const [trainer, setTrainer] = useState<string | number | undefined>('');
   const [trainers, setTrainers] = useState([]);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
@@ -102,10 +85,13 @@ const MealPlanScreen = () => {
                 : 'http://172.16.6.198:8000'; // Mobile uses local network IP
         
         const token = await AsyncStorage.getItem('authToken');
+        const userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+        
         if (!token) {
           throw new Error('No token found');
         }
-        const response = await fetch(`${API_BASE_URL}/api/mealplan/`, {
+        // ALEX! REPLACE HERE THE USER_ID, PLS TELL GELO TO CREATE FOR HEHE USER
+        const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/2`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
@@ -434,7 +420,7 @@ const MealPlanScreen = () => {
           ) : (
             // Nutritional Meal Plan View
             <>
-              {mealPlan ? (
+              {mealPlan && mealPlan.meals ? (
                 <View style={styles.planContainer}>
                   <Header />
                   {mealPlan.meals.map((meal, index) => (
