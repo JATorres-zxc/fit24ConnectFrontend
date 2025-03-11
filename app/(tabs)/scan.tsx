@@ -3,7 +3,7 @@ import {
   View, 
   StyleSheet,
   Modal,
-  TouchableOpacity,
+  Platform,
   ActivityIndicator,
  } from 'react-native';
 import React, { useState, useEffect, useCallback } from "react";
@@ -52,9 +52,14 @@ export default function ScanScreen() {
     setIsLoading(true);
 
     try {
+      const API_BASE_URL =
+          Platform.OS === 'web'
+              ? 'http://127.0.0.1:8000' // Web uses localhost
+              : 'http://192.168.1.7:8000'; // Mobile uses local network IP
+
       // Replace with your actual API endpoint 
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch("http://127.0.0.1:8000/api/facility/qr-scan/", {
+      const response = await fetch(`${API_BASE_URL}/api/facility/qr-scan/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
