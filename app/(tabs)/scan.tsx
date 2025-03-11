@@ -15,6 +15,7 @@ import Header from '@/components/ScanHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ScanScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -44,36 +45,50 @@ export default function ScanScreen() {
     }, [])
   );
 
-  const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
+  const handleBarcodeScanned = async ({ type, data }: { type: string; data: string }) => {
     if (isLoading || scanned) return;
 
     setScanData({ type, data });
     setIsLoading(true);
 
-    // Simulate API call to check access
-    setTimeout(() => {
-      // Here you would typically make an API call to verify the QR code
-      // For example: checkAccess(data).then(result => setAccessStatus(result))
-      
-      // For demo, we'll just check if the QR data contains "allowed" to grant access
-      const hasAccess = data.toLowerCase().includes("allowed");
-      setAccessStatus(hasAccess ? 'granted' : 'denied');
-      setIsLoading(false);
+    try {
+      // Replace with your actual API endpoint 
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch("http://127.0.0.1:8000/api/facility/qr-scan/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ qrCode: data }),
+      });
+  
+      const result = await response.json();
+  
+      // Assuming the API response has a field "accessGranted"
+      const hasAccess = result.accessGranted;
+  
+      setAccessStatus(hasAccess ? "granted" : "denied");
       setShowPopup(true);
-
+    } catch (error) {
+      console.error("API Error:", error);
+      setAccessStatus("denied");
+      setShowPopup(true);
+    } finally {
+      setIsLoading(false);
+  
       setTimeout(() => {
-        setShowPopup(false)
-        setScanned(false)
-        setScanData(null)
-        
-        if(hasAccess) {
-          router.replace('/(tabs)/home');
-        }
-        else{
-          router.replace('/(tabs)/scan');
+        setShowPopup(false);
+        setScanned(false);
+        setScanData(null);
+  
+        if (accessStatus === "granted") {
+          router.replace("/(tabs)/home");
+        } else {
+          router.replace("/(tabs)/scan");
         }
       }, 2000);
-    }, 1500);
+    }
   };
 
   if (hasPermission === null) {

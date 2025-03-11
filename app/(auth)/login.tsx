@@ -16,6 +16,7 @@ import { NavigationProp } from '@react-navigation/native';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { Dimensions } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -32,23 +33,23 @@ interface PredefinedUser {
     route: UserRoute;
 }
 
-const PREDEFINED_USERS: Record<string, PredefinedUser> = {
-    admin: {
-        email: 'admin@gym.com',
-        password: 'admin123',
-        route: '/(admin)/home'
-    },
-    member: {
-        email: 'member@gym.com',
-        password: 'member123',
-        route: '/(tabs)/home'
-    },
-    trainer: {
-        email: 'trainer@gym.com',
-        password: 'trainer123',
-        route: '/(trainer)/home'
-    }
-};
+// const PREDEFINED_USERS: Record<string, PredefinedUser> = {
+//     admin: {
+//         email: 'admin@gym.com',
+//         password: 'admin123',
+//         route: '/(admin)/home'
+//     },
+//     member: {
+//         email: 'member@gym.com',
+//         password: 'member123',
+//         route: '/(tabs)/home'
+//     },
+//     trainer: {
+//         email: 'trainer@gym.com',
+//         password: 'trainer123',
+//         route: '/(trainer)/home'
+//     }
+// };
 
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const router = useRouter();
@@ -86,31 +87,39 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
         }
 
         try {
-            // Check against predefined users
-            const matchedUser = Object.values(PREDEFINED_USERS).find(
-                user => user.email === sanitizedEmail && user.password === sanitizedPassword
-            );
+            // Perform the API login call
+            const response = await fetch('http://localhost:8000/api/account/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json', // Ensure the server responds with JSON
+                },
+                body: JSON.stringify({
+                    email: sanitizedEmail,
+                    password: sanitizedPassword,
+                }),
+            });
 
-            if (matchedUser) {
-                // Successful login - route to appropriate dashboard
-                router.replace(matchedUser.route);
-                
-                Toast.show({
-                    type: 'success',
-                    text1: 'Login Successful',
-                    text2: `Logged in as ${sanitizedEmail}`,
-                    position: 'bottom'
+            const result = await response.json();
+
+            if (response.ok && result.tokens.access) {
+                // Store the token securely for future use
+                await AsyncStorage.setItem('authToken', result.tokens.access);
+
+                // Navigate to the home screen
+                router.push({
+                    pathname: '/(tabs)/home',
+                    params: { showToast: 'true' }  // Pass parameter to home screen
                 });
             } else {
-                // If not a predefined user, route to member side
-                router.replace('/(tabs)/home');
-                
                 Toast.show({
-                    type: 'success',
-                    text1: 'Login Successful',
-                    text2: 'Logged in as Member',
+                    type: 'error',
+                    text1: 'Login Failed',
+                    text2: 'Invalid username or password.',
+                    visibilityTime: 1500,
                     position: 'bottom'
                 });
+                setError('Invalid username or password.');
             }
         } catch (error) {
             Toast.show({
