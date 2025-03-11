@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState, useEffect } from "react";
 import { 
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform 
@@ -12,6 +11,7 @@ import SendFeedbackHeaderMP from '@/components/SendFeedbackHeaderMP';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Meal {
   id: string;
@@ -95,15 +95,15 @@ const MealPlanScreen = () => {
   useEffect(() => {
     const fetchMealPlan = async () => {
       try {
-        // Retrieve the token from AsyncStorage
-        const token = await AsyncStorage.getItem('authToken');
-        if (!token) throw new Error('No token found');
-  
         // Make the API call with the token
+        const token = await AsyncStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No token found');
+        }
         const response = await fetch('http://127.0.0.1:8000/api/mealplan/', {
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
         });
   

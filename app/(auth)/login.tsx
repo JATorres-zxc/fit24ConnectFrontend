@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useState } from "react";
 import {
@@ -17,6 +16,7 @@ import { NavigationProp } from '@react-navigation/native';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { Dimensions } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -88,7 +88,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
         try {
             // Perform the API login call
-            const response = await fetch('http://127.0.0.1:8000/api/account/login/', {
+            const response = await fetch('http://localhost:8000/api/account/login/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -99,55 +99,37 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     password: sanitizedPassword,
                 }),
             });
-        
-            // Extract the token from the 'Authorization' header
-            const token = response.headers.get('Authorization');
-        
-            if (response.ok && token) {
-                const result = await response.json();
-                const { user_type } = result;
-        
+
+            const result = await response.json();
+
+            if (response.ok && result.tokens.access) {
                 // Store the token securely for future use
-                await AsyncStorage.setItem('authToken', token);
-        
-                // Determine the appropriate route based on user_type
-                let route: UserRoute;
-                switch (user_type) {
-                    case 'admin':
-                        route = '/(admin)/home';
-                        break;
-                    case 'trainer':
-                        route = '/(trainer)/home';
-                        break;
-                    default:
-                        route = '/(tabs)/home';
-                        break;
-                }
-        
-                // Successful login - navigate to the relevant dashboard
-                router.replace({
-                    pathname: route,
-                    params: { showToast: "true", logged_in_as: sanitizedEmail }
+                await AsyncStorage.setItem('authToken', result.tokens.access);
+
+                // Navigate to the home screen
+                router.push({
+                    pathname: '/(tabs)/home',
+                    params: { showToast: 'true' }  // Pass parameter to home screen
                 });
             } else {
-                // Handle errors if the response is not ok or token is missing
                 Toast.show({
                     type: 'error',
                     text1: 'Login Failed',
-                    text2: 'Invalid credentials or missing token',
-                    position: 'bottom',
+                    text2: 'Invalid username or password.',
+                    visibilityTime: 1500,
+                    position: 'bottom'
                 });
+                setError('Invalid username or password.');
             }
         } catch (error) {
-            // Handle unexpected errors
             Toast.show({
                 type: 'error',
                 text1: 'Login Failed',
                 text2: 'An error occurred. Please try again.',
-                position: 'bottom',
+                position: 'bottom'
             });
             setError('An error occurred. Please try again.');
-        }  
+        }
     };
 
     return (

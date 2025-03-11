@@ -87,23 +87,24 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
 
         try {
             // Commented out API call for testing
-            // const response = await fetch('http://127.0.0.1:8000/api/account/register/', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({
-            //         email: sanitizedEmail,
-            //         password: sanitizedPassword,
-            //     }),
-            // });
+            const response = await fetch('http://127.0.0.1:8000/api/account/register/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: sanitizedEmail,
+                    password: sanitizedPassword,
+                    confirm_password: sanitizedConfirmPassword,
+                }),
+            });
 
-            // const result = await response.json();
+            const result = await response.json();
 
             // Temporary Success Placeholder
-            const temp_response = true;
+            // const temp_response = true;
 
-            if (temp_response) {
+            if (result.success) {
                 Toast.show({
                     type: 'success',
                     text1: 'Registration Successful',
