@@ -1,12 +1,30 @@
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import Header from '@/components/AdminSectionHeaders';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
-export default function HistoryScreen() {
+export default function SettingsScreen() {
   const router = useRouter();
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Confirm Logout",
+      "Are you sure you want to log out?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Logout",
+          onPress: () => router.push('/login'),
+          style: "destructive",
+        },
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -43,7 +61,7 @@ export default function HistoryScreen() {
           <View style={styles.button}>
             <TouchableOpacity
               style={styles.logout}
-              onPress={() => router.push('/login')}
+              onPress={handleLogout}
             >
               <Text style={styles.buttonText}> Logout </Text>
             </TouchableOpacity>

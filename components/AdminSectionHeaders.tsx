@@ -19,7 +19,7 @@ export default function Header({ screen }: HeaderProps) {
             name='home' 
             color={'black'} 
             size={24} 
-            onPress={() => router.push('/home')} 
+            onPress={() => router.push('/(admin)/home')} 
           />
           <Text style={styles.headerText}>
             {screen}

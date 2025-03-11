@@ -111,7 +111,7 @@ export default function EditPasswordScreen() {
     
     // Short delay before navigation to allow toast to be seen
     setTimeout(() => {
-      router.push('/profile');
+      router.push('/(admin)/settings');
     }, 1500);
   };
 
