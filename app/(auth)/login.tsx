@@ -20,37 +20,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const screenHeight = Dimensions.get('window').height;
 
-// Define a type for user routes
-type UserRoute = 
-    | '/(admin)/home' 
-    | '/(tabs)/home' 
-    | '/(trainer)/home';
-
-// Predefined user credentials with typed routes
-interface PredefinedUser {
-    email: string;
-    password: string;
-    route: UserRoute;
-}
-
-// const PREDEFINED_USERS: Record<string, PredefinedUser> = {
-//     admin: {
-//         email: 'admin@gym.com',
-//         password: 'admin123',
-//         route: '/(admin)/home'
-//     },
-//     member: {
-//         email: 'member@gym.com',
-//         password: 'member123',
-//         route: '/(tabs)/home'
-//     },
-//     trainer: {
-//         email: 'trainer@gym.com',
-//         password: 'trainer123',
-//         route: '/(trainer)/home'
-//     }
-// };
-
 const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const router = useRouter();
     const [email, setEmail] = useState("");
@@ -88,11 +57,16 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
         try {
             // Perform the API login call
-            const response = await fetch('http://localhost:8000/api/account/login/', {
+            const API_BASE_URL =
+                Platform.OS === 'web'
+                    ? 'http://127.0.0.1:8000' // Web uses localhost
+                    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
+
+            // Commented out API call for testing
+            const response = await fetch(`${API_BASE_URL}/api/account/login/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json', // Ensure the server responds with JSON
                 },
                 body: JSON.stringify({
                     email: sanitizedEmail,

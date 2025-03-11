@@ -96,11 +96,16 @@ const MealPlanScreen = () => {
     const fetchMealPlan = async () => {
       try {
         // Make the API call with the token
+        const API_BASE_URL =
+            Platform.OS === 'web'
+                ? 'http://127.0.0.1:8000' // Web uses localhost
+                : 'http://172.16.6.198:8000'; // Mobile uses local network IP
+        
         const token = await AsyncStorage.getItem('authToken');
         if (!token) {
           throw new Error('No token found');
         }
-        const response = await fetch('http://127.0.0.1:8000/api/mealplan/', {
+        const response = await fetch(`${API_BASE_URL}/api/mealplan/`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
