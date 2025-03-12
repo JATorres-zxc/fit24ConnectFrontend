@@ -86,11 +86,17 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
         }
 
         try {
+            // Perform the API login call
+            const API_BASE_URL =
+                Platform.OS === 'web'
+                ? 'http://127.0.0.1:8000' // Web uses localhost
+                : 'http://172.16.6.198:8000'; // Mobile uses local network IP
+
             // Commented out API call for testing
-            const response = await fetch('http://127.0.0.1:8000/api/account/register/', {
+            const response = await fetch(`${API_BASE_URL}/api/account/register/`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     email: sanitizedEmail,

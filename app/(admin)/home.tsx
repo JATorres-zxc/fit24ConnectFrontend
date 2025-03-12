@@ -33,7 +33,6 @@ export default function Home() {
       <View style={styles.announcementsContainer}>
         <AdminAnnouncements announcements={announcements} onDelete={handleDelete} />
       </View>
-
     </View>
   );
 }

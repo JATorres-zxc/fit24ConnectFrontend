@@ -2,22 +2,26 @@ import React, { useState, useEffect } from "react";
 import { 
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform 
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 
 import Header from '@/components/MealPlanHeader';
-import RequestMealPlanHeaderMP from '@/components/RequestMealPlanHeaderMP';
+import RequestMealPlanHeaderMP from '@/components/RequestHeaderMP';
 import SendFeedbackHeaderMP from '@/components/SendFeedbackHeaderMP';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Meal {
-  meal: string;
-  type: string;
-  calories: number;
+  id: string;
+  mealplan: string;
+  meal_name: string;
   description: string;
+  meal_type: string;
+  calories: number;
+  protein: number;
+  carbs: number;
 }
 
 interface Feedback {
@@ -28,28 +32,32 @@ interface Feedback {
 }
 
 interface MealPlan {
-  trainer: string;
-  fitnessGoal: string;
-  weightGoal: string;
-  allergens: string;
+  mealplan_id: number;
   meals: Meal[];
-  feedbacks: Feedback[];
+  member_id: string;
+  trainer_id: string;
+  mealplan_name: string;
+  fitness_goal: string;
+  calorie_intake: number;
+  protein: number;
+  carbs: number;
+  weight_goal: number;
+  allergens: string;
+  instructions: string;
 }
+
+const API_BASE_URL =
+  Platform.OS === 'web'
+    ? 'http://127.0.0.1:8000' // Web uses localhost
+    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
+
+let token: string | null = null;
+let userID: string | null = null;
+let mealPlan_id: number | null = null;
 
 const MealPlanScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
-  const [mealPlan, setMealPlan] = useState<MealPlan | null>({
-    trainer: "Trainer A",
-    fitnessGoal: "Lose Weight",
-    weightGoal: "70",
-    allergens: "Peanuts, Dairy",
-    meals: [
-      { meal: "Breakfast", description: "Oatmeal with fruits", type: "Food", calories: 330 },
-      { meal: "Lunch", description: "Chicken Salad", type: "Food", calories: 440 },
-      { meal: "Dinner", description: "Siya <3", type: "Unknown", calories: 550 },
-    ],
-    feedbacks: [],
-  }); // State to store meal plan
+  const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State to store meal plan
   const [trainer, setTrainer] = useState<string | number | undefined>('');
   const [trainers, setTrainers] = useState([]);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
@@ -57,11 +65,6 @@ const MealPlanScreen = () => {
   const [allergens, setAllergens] = useState(""); // State to store allergens
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
-
-  const [showPicker, setShowPicker] = useState<boolean>(false);
-  const togglePicker = () => {
-    setShowPicker(!showPicker);
-  };
 
   // Fetching trainers from API
 
@@ -81,19 +84,72 @@ const MealPlanScreen = () => {
 
   // Fetching Meal Plan from API
   
-  // useEffect(() => {
-  //   const fetchMealPlan = async () => {
-  //     try {
-  //       const response = await fetch('YOUR_MEAL_PLAN_API_ENDPOINT_HERE');
-  //       const data = await response.json();
-  //       setMealPlan(data);
-  //     } catch (error) {
-  //       console.error('Error fetching meal plan:', error);
-  //     }
-  //   };
-  
-  //   fetchMealPlan();
-  // }, []);
+  useEffect(() => {
+    const fetchMealPlan = async () => {
+      try {
+        token = await AsyncStorage.getItem('authToken');
+        userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+
+        const mealPlansResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!mealPlansResponse.ok) {
+          throw new Error(`HTTP error! status: ${mealPlansResponse.status}`);
+        }
+
+        const mealPlansData = await mealPlansResponse.json();
+        const memberIds = mealPlansData.map((plan: MealPlan) => plan.member_id.toString());
+        console.log('member_ids:', memberIds);
+        console.log('userID:', userID);
+        const userMealPlan = mealPlansData.find((plan: MealPlan) => memberIds.includes(plan.member_id.toString()));
+        console.log('User Meal Plan:', userMealPlan);
+
+        if (!userMealPlan) {
+          throw new Error('No meal plan found for the user');
+        }
+
+        mealPlan_id = userMealPlan.mealplan_id;
+
+        if (!token) {
+          throw new Error('No token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}`, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        if (response.status === 404) {
+          setMealPlan(null);
+        } else {
+          const data = await response.json();
+          setMealPlan(data);
+        }
+      } catch (error) {
+        console.error('Error fetching meal plan:', error);
+
+        if (error instanceof Error) {
+          if (error.message.includes('NetworkError')) {
+            console.error('Network error: Please check if the server is running and accessible.');
+          } else if (error.message.includes('CORS')) {
+            console.error('CORS error: Please ensure your server allows requests from your frontend.');
+          }
+        }
+      }
+    };
+
+    fetchMealPlan();
+  }, []);  
 
   const handleSubmit = async () => {
     if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
@@ -108,6 +164,8 @@ const MealPlanScreen = () => {
     
     try {
       // // Replace with actual API call
+      // To central feedback and request database
+
       // const response = await fetch('https://api.example.com/submitMealPlan', {
       //   method: 'POST',
       //   headers: {
@@ -125,7 +183,7 @@ const MealPlanScreen = () => {
 
       // const result = await response.json();
       
-      // Temporary Success Placeholder
+      // // Temporary Success Placeholder
       const temp_response = true;
 
       if (temp_response) {
@@ -168,27 +226,10 @@ const MealPlanScreen = () => {
       return;
     }
 
-    if (mealPlan) {
-      const newFeedback = {
-        id: `${mealPlan.meals[0].meal}-${Date.now()}`,
-        feedback,
-        rating: parseInt(rating.toString()),
-        createdAt: new Date(),
-      };      
-
-      const updatedMealPlan = {
-        ...mealPlan,
-        feedbacks: [...mealPlan.feedbacks, newFeedback],
-      };
-
-      setMealPlan(updatedMealPlan);
-    } else {
-      // Handle the case where mealPlan is null
-      console.error("No meal plan available to add feedback.");
-    }
-
     try {
-      // Uncomment and replace with actual API call
+      // Uncomment and replace with actual API call,
+      // This is in line with an agreed central feedback and request database.
+
       // const response = await fetch('https://api.example.com/submitFeedback', {
       //   method: 'POST',
       //   headers: {
@@ -201,7 +242,7 @@ const MealPlanScreen = () => {
       // });
 
       const temp_response = true;
-      // response.ok
+      // // response.ok
       if (temp_response) {
         Toast.show({
           type: 'info',
@@ -233,18 +274,19 @@ const MealPlanScreen = () => {
   const handleDelete = async () => {
     try {
       // // Replace with actual API call
-      // const response = await fetch('https://api.example.com/deleteMealPlan', {
-      //   method: 'DELETE',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      // });
+      const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       
-      const temp_response = true;
+      // const temp_response = true;
 
       // response.ok
 
-      if (temp_response) {
+      if (response.ok) {
         Toast.show({
           type: 'success',
           text1: 'Meal Plan Deleted',
@@ -405,16 +447,20 @@ const MealPlanScreen = () => {
           ) : (
             // Nutritional Meal Plan View
             <>
-              {mealPlan ? (
+              {mealPlan && mealPlan.meals ? (
                 <View style={styles.planContainer}>
                   <Header />
                   {mealPlan.meals.map((meal, index) => (
                     <View key={index} style={styles.mealItem}>
-                      <Text style={styles.mealTitle}>{meal.meal}</Text>
+                      <Text style={styles.mealTitle}>{meal.meal_name}</Text>
                       <Text style={styles.mealDescription}>Type of Food:</Text>
-                      <Text style={styles.mealData}>{meal.type}</Text>
+                      <Text style={styles.mealData}>{meal.meal_type}</Text>
                       <Text style={styles.mealDescription}>Calories:</Text>
                       <Text style={styles.mealData}>{meal.calories} kcal</Text>
+                      <Text style={styles.mealDescription}>Protein:</Text>
+                      <Text style={styles.mealData}>{meal.protein} g</Text>
+                      <Text style={styles.mealDescription}>Carbs:</Text>
+                      <Text style={styles.mealData}>{meal.carbs} g</Text>
                       <Text style={styles.mealDescription}>Description:</Text>
                       <Text style={styles.mealData}>{meal.description}</Text>
                     </View>
