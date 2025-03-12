@@ -48,6 +48,7 @@ export default function ScanScreen() {
   const handleBarcodeScanned = async ({ type, data }: { type: string; data: string }) => {
     if (isLoading || scanned) return;
 
+    setScanned(true);
     setScanData({ type, data });
     setIsLoading(true);
 
@@ -55,7 +56,7 @@ export default function ScanScreen() {
       const API_BASE_URL =
           Platform.OS === 'web'
               ? 'http://127.0.0.1:8000' // Web uses localhost
-              : 'http://192.168.1.7:8000'; // Mobile uses local network IP
+              : 'http://172.16.15.51:8000'; // Mobile uses local network IP
 
       // Replace with your actual API endpoint 
       const token = await AsyncStorage.getItem('authToken');

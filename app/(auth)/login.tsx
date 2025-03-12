@@ -60,7 +60,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             const API_BASE_URL =
                 Platform.OS === 'web'
                     ? 'http://127.0.0.1:8000' // Web uses localhost
-                    : 'http://192.168.1.7:8000'; // Mobile uses local network IP
+                    : 'http://172.16.15.51:8000'; // Mobile uses local network IP
 
             // Commented out API call for testing
             const response = await fetch(`${API_BASE_URL}/api/account/login/`, {
