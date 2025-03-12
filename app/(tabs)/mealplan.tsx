@@ -86,11 +86,30 @@ const MealPlanScreen = () => {
         
         const token = await AsyncStorage.getItem('authToken');
         const userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-        
+        const mealPlansResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!mealPlansResponse.ok) {
+          throw new Error(`HTTP error! status: ${mealPlansResponse.status}`);
+        }
+
+        const mealPlansData = await mealPlansResponse.json();
+        const userMealPlan = mealPlansData.find((plan: MealPlan) => plan.member_id === userID);
+
+        if (!userMealPlan) {
+          throw new Error('No meal plan found for the user');
+        }
+
+        const mealPlan_id = userMealPlan.mealplan_id;
+
         if (!token) {
           throw new Error('No token found');
         }
-        // ALEX! REPLACE HERE THE USER_ID, PLS TELL GELO TO CREATE FOR HEHE USER
+        // ALEX! REPLACE HERE THE MEALPLAN_ID, PLS TELL GELO TO CREATE FOR HEHE USER
         const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/2`, {
           headers: {
             'Accept': 'application/json',
