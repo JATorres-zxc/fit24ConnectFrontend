@@ -60,7 +60,7 @@ export default function Home() {
       Toast.show({
         type: "success",
         text1: "Login Success!",
-        text2: `Logged in as ${params.sanitizedEmail}`,
+        text2: `Logged in as ${params.full_name}`,
         visibilityTime: 1500
       });
     }
