@@ -72,7 +72,7 @@ export default function ScanScreen() {
       const result = await response.json();
   
       // Assuming the API response has a field "accessGranted"
-      const hasAccess = result.accessGranted;
+      const hasAccess = result.status;
   
       setAccessStatus(hasAccess ? "granted" : "denied");
       setShowPopup(true);

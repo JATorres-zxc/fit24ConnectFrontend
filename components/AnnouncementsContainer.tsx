@@ -15,6 +15,15 @@ interface Props {
 }
 
 export default function AnnouncementsContainer({ announcements }: Props) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -25,7 +34,7 @@ export default function AnnouncementsContainer({ announcements }: Props) {
             <View style={styles.cardHeader}>
               <View style={styles.headerText}>
                 <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.date}>{item.updated_at}</Text>
+                <Text style={styles.date}>{formatDate(item.updated_at)}</Text>
               </View>
             </View>
 
