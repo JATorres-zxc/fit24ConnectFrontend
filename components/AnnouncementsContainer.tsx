@@ -8,6 +8,7 @@ interface Announcement {
   title: string;
   content: string;
   date: string;
+  admin: string;
 }
 
 interface Props {
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
   },
   cardContent: {
-    backgroundColor: 'white',
+    backgroundColor: Colors.white,
     borderColor: Colors.icongray,
     borderWidth: 1,
     padding: 5,
