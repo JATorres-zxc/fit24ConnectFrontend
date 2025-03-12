@@ -46,6 +46,15 @@ interface MealPlan {
   instructions: string;
 }
 
+const API_BASE_URL =
+  Platform.OS === 'web'
+    ? 'http://127.0.0.1:8000' // Web uses localhost
+    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
+
+let token: string | null = null;
+let userID: string | null = null;
+let mealPlan_id: number | null = null;
+
 const MealPlanScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State to store meal plan
@@ -78,14 +87,9 @@ const MealPlanScreen = () => {
   useEffect(() => {
     const fetchMealPlan = async () => {
       try {
-        // Make the API call with the token
-        const API_BASE_URL =
-            Platform.OS === 'web'
-                ? 'http://127.0.0.1:8000' // Web uses localhost
-                : 'http://172.16.6.198:8000'; // Mobile uses local network IP
-        
-        const token = await AsyncStorage.getItem('authToken');
-        const userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+        token = await AsyncStorage.getItem('authToken');
+        userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+
         const mealPlansResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
           headers: {
             'Accept': 'application/json',
@@ -98,38 +102,42 @@ const MealPlanScreen = () => {
         }
 
         const mealPlansData = await mealPlansResponse.json();
-        const userMealPlan = mealPlansData.find((plan: MealPlan) => plan.member_id === userID);
+        const memberIds = mealPlansData.map((plan: MealPlan) => plan.member_id.toString());
+        console.log('member_ids:', memberIds);
+        console.log('userID:', userID);
+        const userMealPlan = mealPlansData.find((plan: MealPlan) => memberIds.includes(plan.member_id.toString()));
+        console.log('User Meal Plan:', userMealPlan);
 
         if (!userMealPlan) {
           throw new Error('No meal plan found for the user');
         }
 
-        const mealPlan_id = userMealPlan.mealplan_id;
+        mealPlan_id = userMealPlan.mealplan_id;
 
         if (!token) {
           throw new Error('No token found');
         }
-        // ALEX! REPLACE HERE THE MEALPLAN_ID, PLS TELL GELO TO CREATE FOR HEHE USER
-        const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/2`, {
+
+        const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
-  
-        // Check response status
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-  
-        // Parse response and update state
-        const data = await response.json();
-        setMealPlan(data);
+
+        if (response.status === 404) {
+          setMealPlan(null);
+        } else {
+          const data = await response.json();
+          setMealPlan(data);
+        }
       } catch (error) {
-        // Handle errors
         console.error('Error fetching meal plan:', error);
-  
-        // Provide specific error messages for network or CORS issues
+
         if (error instanceof Error) {
           if (error.message.includes('NetworkError')) {
             console.error('Network error: Please check if the server is running and accessible.');
@@ -139,8 +147,7 @@ const MealPlanScreen = () => {
         }
       }
     };
-  
-    // Trigger fetch on component mount
+
     fetchMealPlan();
   }, []);  
 
@@ -267,18 +274,19 @@ const MealPlanScreen = () => {
   const handleDelete = async () => {
     try {
       // // Replace with actual API call
-      // const response = await fetch('https://api.example.com/deleteMealPlan', {
-      //   method: 'DELETE',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      // });
+      const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       
-      const temp_response = true;
+      // const temp_response = true;
 
       // response.ok
 
-      if (temp_response) {
+      if (response.ok) {
         Toast.show({
           type: 'success',
           text1: 'Meal Plan Deleted',
