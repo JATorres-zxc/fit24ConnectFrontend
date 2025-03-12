@@ -91,6 +91,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
   },
   disabledSave: {
-    color: Colors.textgray,
+    color: Colors.textSecondary,
   }
 });

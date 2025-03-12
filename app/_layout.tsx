@@ -44,7 +44,15 @@ export default function RootLayout() {
         />
         <Stack.Screen 
           name="(tabs)" 
-          options={{ headerShown: false }}  // Keep header for your main app screens (if desired)
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="(admin)" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="(trainer)" 
+          options={{ headerShown: false }}
         />
       </Stack>
 
