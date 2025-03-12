@@ -7,7 +7,7 @@ interface Announcement {
   id: string;
   title: string;
   content: string;
-  date: string;
+  updated_at: string;
 }
 
 interface Props {
@@ -15,6 +15,15 @@ interface Props {
 }
 
 export default function AnnouncementsContainer({ announcements }: Props) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -25,7 +34,7 @@ export default function AnnouncementsContainer({ announcements }: Props) {
             <View style={styles.cardHeader}>
               <View style={styles.headerText}>
                 <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.date}>{item.date}</Text>
+                <Text style={styles.date}>{formatDate(item.updated_at)}</Text>
               </View>
             </View>
 
@@ -34,7 +43,7 @@ export default function AnnouncementsContainer({ announcements }: Props) {
             </View>
 
             <View style={styles.cardFooter}>
-              <Text style={styles.postedby}>posted by {item.admin}</Text>
+              <Text style={styles.postedby}>posted by admin</Text>
             </View>
           </View>
         )}
@@ -75,7 +84,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
   },
   cardContent: {
-    backgroundColor: 'white',
+    backgroundColor: Colors.white,
     borderColor: Colors.icongray,
     borderWidth: 1,
     padding: 5,
