@@ -14,6 +14,7 @@ import RequestWorkoutHeader from '@/components/RequestHeaderWO';
 import SendFeedbackHeader from '@/components/SendFeedbackHeaderWO';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Exercise {
   id: string;
@@ -39,6 +40,15 @@ interface Workout {
   feedbacks: Feedback[];
 }
 
+const API_BASE_URL =
+  Platform.OS === 'web'
+    ? 'http://127.0.0.1:8000' // Web uses localhost
+    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
+
+let token: string | null = null;
+let userID: string | null = null;
+let workout_id: string | null = null;
+
 const WorkoutScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
   const [trainer, setTrainer] = useState(""); // State to store selected trainer
@@ -55,7 +65,20 @@ const WorkoutScreen = () => {
   // useEffect(() => {
   //   const fetchTrainers = async () => {
   //     try {
-  //       const response = await fetch('YOUR_API_ENDPOINT_HERE');
+  //       token = await AsyncStorage.getItem('authToken');
+  //       userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+
+  //       const response = await fetch(`${API_BASE_URL}/api/workout/trainers`, {
+  //         headers: {
+  //           'Accept': 'application/json',
+  //           'Authorization': `Bearer ${token}`,
+  //         },
+  //       });
+
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! status: ${response.status}`);
+  //       }
+
   //       const data = await response.json();
   //       setTrainers(data);
   //     } catch (error) {
@@ -71,11 +94,60 @@ const WorkoutScreen = () => {
   // useEffect(() => {
   //   const fetchWorkout = async () => {
   //     try {
-  //       const response = await fetch('YOUR_WORKOUT_API_ENDPOINT_HERE');
-  //       const data = await response.json();
-  //       setWorkout(data);
+  //       token = await AsyncStorage.getItem('authToken');
+  //       userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+
+  //       const workoutsResponse = await fetch(`${API_BASE_URL}/api/workout/workouts`, {
+  //         headers: {
+  //           'Accept': 'application/json',
+  //           'Authorization': `Bearer ${token}`,
+  //         },
+  //       });
+
+  //       if (!workoutsResponse.ok) {
+  //         throw new Error(`HTTP error! status: ${workoutsResponse.status}`);
+  //       }
+
+  //       const workoutsData = await workoutsResponse.json();
+  //       const userWorkout = workoutsData.find((workout: Workout) => workout.member_id === userID);
+
+  //       if (!userWorkout) {
+  //         throw new Error('No workout found for the user');
+  //       }
+
+  //       workout_id = userWorkout.id;
+
+  //       if (!token) {
+  //         throw new Error('No token found');
+  //       }
+
+  //       const response = await fetch(`${API_BASE_URL}/api/workout/workouts/${workout_id}`, {
+  //         headers: {
+  //           'Accept': 'application/json',
+  //           'Authorization': `Bearer ${token}`,
+  //         },
+  //       });
+
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! status: ${response.status}`);
+  //       }
+
+  //       if (response.status === 404) {
+  //         setWorkout(null);
+  //       } else {
+  //         const data = await response.json();
+  //         setWorkout(data);
+  //       }
   //     } catch (error) {
   //       console.error('Error fetching workout:', error);
+
+  //       if (error instanceof Error) {
+  //         if (error.message.includes('NetworkError')) {
+  //           console.error('Network error: Please check if the server is running and accessible.');
+  //         } else if (error.message.includes('CORS')) {
+  //           console.error('CORS error: Please ensure your server allows requests from your frontend.');
+  //         }
+  //       }
   //     }
   //   };
 

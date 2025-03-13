@@ -71,7 +71,20 @@ const MealPlanScreen = () => {
   // useEffect(() => {
   //   const fetchTrainers = async () => {
   //     try {
-  //       const response = await fetch('YOUR_API_ENDPOINT_HERE');
+  //       token = await AsyncStorage.getItem('authToken');
+  //       userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+
+  //       const response = await fetch(`${API_BASE_URL}/api/mealplan/trainers`, {
+  //         headers: {
+  //           'Accept': 'application/json',
+  //           'Authorization': `Bearer ${token}`,
+  //         },
+  //       });
+
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! status: ${response.status}`);
+  //       }
+
   //       const data = await response.json();
   //       setTrainers(data);
   //     } catch (error) {
