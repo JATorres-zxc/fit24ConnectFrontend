@@ -1,5 +1,5 @@
 import { View, StyleSheet, } from "react-native";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import Button from '@/components/CreateAnnouncementButton';
 import Header from '@/components/HomeHeader';
@@ -7,10 +7,30 @@ import AdminAnnouncements from "@/components/AdminSideAnnouncementsContainer";
 
 import { Colors } from "@/constants/Colors";
 import { announcements as initialAnnouncements } from "@/context/announcements";
+import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Home() {
   // Use state to manage announcements instead of static import
   const [announcements, setAnnouncements] = useState(initialAnnouncements);
+
+  // Fetch announcements when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      const fetchAnnouncements = async () => {
+        try {
+          const storedAnnouncements = await AsyncStorage.getItem('announcements');
+          if (storedAnnouncements) {
+            setAnnouncements(JSON.parse(storedAnnouncements));
+          }
+        } catch (error) {
+          console.error("Error fetching announcements:", error);
+        }
+      };
+      
+      fetchAnnouncements();
+    }, [])
+  );
 
   // Handle deletion by filtering out the deleted announcement
   const handleDelete = (id: string) => {
