@@ -1,4 +1,4 @@
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useState } from "react";
 import {
     View,
@@ -16,6 +16,7 @@ import { NavigationProp } from '@react-navigation/native';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { Dimensions } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -55,27 +56,35 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
         }
 
         try {
+            // Perform the API login call
+            const API_BASE_URL =
+                Platform.OS === 'web'
+                    ? 'http://127.0.0.1:8000' // Web uses localhost
+                    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
+
             // Commented out API call for testing
-            // const response = await fetch('http://127.0.0.1:8000/api/account/login/', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({
-            //         email: sanitizedEmail,
-            //         password: sanitizedPassword,
-            //     }),
-            // });
+            const response = await fetch(`${API_BASE_URL}/api/account/login/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: sanitizedEmail,
+                    password: sanitizedPassword,
+                }),
+            });
 
-            // const result = await response.json();
+            const result = await response.json();
 
-            // Temporary Success Placeholder
-            const temp_response = true;
+            if (response.ok && result.tokens.access) {
+                // Store the token and user ID securely for future use
+                await AsyncStorage.setItem('authToken', result.tokens.access);
+                await AsyncStorage.setItem('userID', result.user.id);
 
-            if (temp_response) {
+                // Navigate to the home screen
                 router.push({
                     pathname: '/(tabs)/home',
-                    params: { showToast: 'true' }  // Pass parameter to home screen
+                    params: { showToast: 'true', full_name: result.user.full_name }  // Pass parameters to home screen
                 });
             } else {
                 Toast.show({
@@ -110,6 +119,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 <View style={styles.formContainer}>
                     <TextInput
                         placeholder="Username/Email"
+                        placeholderTextColor={Colors.textSecondary}
                         style={styles.input}
                         value={email}
                         onChangeText={setEmail}
@@ -117,6 +127,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
                     <TextInput
                         placeholder="Password"
+                        placeholderTextColor={Colors.textSecondary}
                         style={styles.input}
                         secureTextEntry
                         value={password}
@@ -131,7 +142,6 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                             Log In
                         </Text>
                     </TouchableOpacity>
-                    {error && <Text style={styles.errorText}>{error}</Text>}
 
                     <Text style={styles.bottomText}>
                         Don&apos;t have an account?{" "}
@@ -150,6 +160,8 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 };
 
 export default LoginScreen;
+
+// ... styles remain the same as in the previous example
 
 const styles = StyleSheet.create({
     container: {

@@ -2,20 +2,26 @@ import React, { useState, useEffect } from "react";
 import { 
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform 
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
+
 import Header from '@/components/MealPlanHeader';
-import RequestMealPlanHeaderMP from '@/components/RequestMealPlanHeaderMP';
+import RequestMealPlanHeaderMP from '@/components/RequestHeaderMP';
 import SendFeedbackHeaderMP from '@/components/SendFeedbackHeaderMP';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Meal {
-  meal: string;
-  type: string;
-  calories: number;
+  id: string;
+  mealplan: string;
+  meal_name: string;
   description: string;
+  meal_type: string;
+  calories: number;
+  protein: number;
+  carbs: number;
 }
 
 interface Feedback {
@@ -26,28 +32,32 @@ interface Feedback {
 }
 
 interface MealPlan {
-  trainer: string;
-  fitnessGoal: string;
-  weightGoal: string;
-  allergens: string;
+  mealplan_id: number;
   meals: Meal[];
-  feedbacks: Feedback[];
+  member_id: string;
+  trainer_id: string;
+  mealplan_name: string;
+  fitness_goal: string;
+  calorie_intake: number;
+  protein: number;
+  carbs: number;
+  weight_goal: number;
+  allergens: string;
+  instructions: string;
 }
+
+const API_BASE_URL =
+  Platform.OS === 'web'
+    ? 'http://127.0.0.1:8000' // Web uses localhost
+    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
+
+let token: string | null = null;
+let userID: string | null = null;
+let mealPlan_id: number | null = null;
 
 const MealPlanScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
-  const [mealPlan, setMealPlan] = useState<MealPlan | null>({
-    trainer: "Trainer A",
-    fitnessGoal: "Lose Weight",
-    weightGoal: "70",
-    allergens: "Peanuts, Dairy",
-    meals: [
-      { meal: "Breakfast", description: "Oatmeal with fruits", type: "Food", calories: 330 },
-      { meal: "Lunch", description: "Chicken Salad", type: "Food", calories: 440 },
-      { meal: "Dinner", description: "Siya <3", type: "Unknown", calories: 550 },
-    ],
-    feedbacks: [],
-  }); // State to store meal plan
+  const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State to store meal plan
   const [trainer, setTrainer] = useState<string | number | undefined>('');
   const [trainers, setTrainers] = useState([]);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
@@ -56,17 +66,25 @@ const MealPlanScreen = () => {
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
 
-  const [showPicker, setShowPicker] = useState<boolean>(false);
-  const togglePicker = () => {
-    setShowPicker(!showPicker);
-  };
-
   // Fetching trainers from API
 
   // useEffect(() => {
   //   const fetchTrainers = async () => {
   //     try {
-  //       const response = await fetch('YOUR_API_ENDPOINT_HERE');
+  //       token = await AsyncStorage.getItem('authToken');
+  //       userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+
+  //       const response = await fetch(`${API_BASE_URL}/api/mealplan/trainers`, {
+  //         headers: {
+  //           'Accept': 'application/json',
+  //           'Authorization': `Bearer ${token}`,
+  //         },
+  //       });
+
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! status: ${response.status}`);
+  //       }
+
   //       const data = await response.json();
   //       setTrainers(data);
   //     } catch (error) {
@@ -79,19 +97,72 @@ const MealPlanScreen = () => {
 
   // Fetching Meal Plan from API
   
-  // useEffect(() => {
-  //   const fetchMealPlan = async () => {
-  //     try {
-  //       const response = await fetch('YOUR_MEAL_PLAN_API_ENDPOINT_HERE');
-  //       const data = await response.json();
-  //       setMealPlan(data);
-  //     } catch (error) {
-  //       console.error('Error fetching meal plan:', error);
-  //     }
-  //   };
-  
-  //   fetchMealPlan();
-  // }, []);
+  useEffect(() => {
+    const fetchMealPlan = async () => {
+      try {
+        token = await AsyncStorage.getItem('authToken');
+        userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+
+        const mealPlansResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!mealPlansResponse.ok) {
+          throw new Error(`HTTP error! status: ${mealPlansResponse.status}`);
+        }
+
+        const mealPlansData = await mealPlansResponse.json();
+        const memberIds = mealPlansData.map((plan: MealPlan) => plan.member_id.toString());
+        console.log('member_ids:', memberIds);
+        console.log('userID:', userID);
+        const userMealPlan = mealPlansData.find((plan: MealPlan) => memberIds.includes(plan.member_id.toString()));
+        console.log('User Meal Plan:', userMealPlan);
+
+        if (!userMealPlan) {
+          throw new Error('No meal plan found for the user');
+        }
+
+        mealPlan_id = userMealPlan.mealplan_id;
+
+        if (!token) {
+          throw new Error('No token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}`, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        if (response.status === 404) {
+          setMealPlan(null);
+        } else {
+          const data = await response.json();
+          setMealPlan(data);
+        }
+      } catch (error) {
+        console.error('Error fetching meal plan:', error);
+
+        if (error instanceof Error) {
+          if (error.message.includes('NetworkError')) {
+            console.error('Network error: Please check if the server is running and accessible.');
+          } else if (error.message.includes('CORS')) {
+            console.error('CORS error: Please ensure your server allows requests from your frontend.');
+          }
+        }
+      }
+    };
+
+    fetchMealPlan();
+  }, []);  
 
   const handleSubmit = async () => {
     if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
@@ -106,6 +177,8 @@ const MealPlanScreen = () => {
     
     try {
       // // Replace with actual API call
+      // To central feedback and request database
+
       // const response = await fetch('https://api.example.com/submitMealPlan', {
       //   method: 'POST',
       //   headers: {
@@ -123,7 +196,7 @@ const MealPlanScreen = () => {
 
       // const result = await response.json();
       
-      // Temporary Success Placeholder
+      // // Temporary Success Placeholder
       const temp_response = true;
 
       if (temp_response) {
@@ -166,27 +239,10 @@ const MealPlanScreen = () => {
       return;
     }
 
-    if (mealPlan) {
-      const newFeedback = {
-        id: `${mealPlan.meals[0].meal}-${Date.now()}`,
-        feedback,
-        rating: parseInt(rating.toString()),
-        createdAt: new Date(),
-      };      
-
-      const updatedMealPlan = {
-        ...mealPlan,
-        feedbacks: [...mealPlan.feedbacks, newFeedback],
-      };
-
-      setMealPlan(updatedMealPlan);
-    } else {
-      // Handle the case where mealPlan is null
-      console.error("No meal plan available to add feedback.");
-    }
-
     try {
-      // Uncomment and replace with actual API call
+      // Uncomment and replace with actual API call,
+      // This is in line with an agreed central feedback and request database.
+
       // const response = await fetch('https://api.example.com/submitFeedback', {
       //   method: 'POST',
       //   headers: {
@@ -199,12 +255,12 @@ const MealPlanScreen = () => {
       // });
 
       const temp_response = true;
-      // response.ok
+      // // response.ok
       if (temp_response) {
         Toast.show({
           type: 'info',
           text1: 'Feedback Sent',
-          text2: 'Your feedback has been sent successfully. Please wait a few days for your new meal plan!',
+          text2: 'Your feedback has been sent successfully.',
           position: 'bottom'
         });
         setViewState("plan");
@@ -231,18 +287,19 @@ const MealPlanScreen = () => {
   const handleDelete = async () => {
     try {
       // // Replace with actual API call
-      // const response = await fetch('https://api.example.com/deleteMealPlan', {
-      //   method: 'DELETE',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      // });
+      const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       
-      const temp_response = true;
+      // const temp_response = true;
 
       // response.ok
 
-      if (temp_response) {
+      if (response.ok) {
         Toast.show({
           type: 'success',
           text1: 'Meal Plan Deleted',
@@ -284,113 +341,105 @@ const MealPlanScreen = () => {
             <View style={styles.formContainer}>
               <RequestMealPlanHeaderMP setViewState={setViewState}/>
               
-              <Text style={styles.requestHeaders}>Choose Trainer</Text>
-              <TouchableOpacity onPress={togglePicker} style={styles.pickerBlack}>
-                <Text style={styles.requestHeaders}>
-                  {trainer ? `Selected: ${trainer}` : 'Select Trainer'}
-                </Text>
-              </TouchableOpacity>
-              {showPicker && (
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    selectedValue={trainer}
-                    onValueChange={(itemValue) => setTrainer(itemValue)}
-                    style={styles.picker}
-                    itemStyle = {{ color: Colors.white }}
-                    prompt="Select trainer"
-                    dropdownIconColor={Colors.black}
-                    dropdownIconRippleColor={Colors.black}
-                    mode="dropdown" // Optional for Android
-                  >
-                    <Picker.Item label="Select Trainer" value="" style={styles.input}/>
-                    <Picker.Item label="Trainer A" value="trainerA" />
-                    <Picker.Item label="Trainer B" value="trainerB" />
-                    <Picker.Item label="Trainer C" value="trainerC" />
-
-                    {/* Dynamic Picker Item from API */}
-
-                    {/* <Picker.Item label="Select Trainer" value="" />
-                    {trainers.map((trainer) => (
-                      <Picker.Item key={trainer.id} label={trainer.name} value={trainer.id} />
-                    ))} */}
-                    
-                  </Picker>
+              <View style={styles.requestMPContainer}>
+                {/* Trainer Picker */}
+                <Text style={styles.requestHeaders}>Choose Trainer</Text>
+                <View style={styles.pickerTrainer}>
+                  <RNPickerSelect
+                    onValueChange={(value) => setTrainer(value)}
+                    items={[
+                      { label: 'Trainer A', value: 'trainerA' },
+                      { label: 'Trainer B', value: 'trainerB' },
+                      { label: 'Trainer C', value: 'trainerC' },
+                    ]}
+                    style={trainerpickerSelectStyles}
+                    value={trainer}
+                    placeholder={{ label: 'Select Trainer', value: null }}
+                    useNativeAndroidPickerStyle={false}
+                    Icon={() =>
+                      Platform.OS === "ios" ? (
+                        <Ionicons name="chevron-down" size={20} color="gray" />
+                      ) : null
+                    }
+                  />
                 </View>
-              )}
-              <Text style={styles.requestHeaders}>Fitness Goal</Text>
-              <TextInput
-                placeholder="Enter Your Fitness Goal"
-                style={styles.input}
-                value={fitnessGoal}
-                onChangeText={(text) => setFitnessGoal(text)}
-              />
 
-              <Text style={styles.requestHeaders}>Weight Goal</Text>
-              <TextInput
-                placeholder="Enter Your Weight Goal"
-                style={styles.input}
-                value={weightGoal}
-                onChangeText={(number) => setWeightGoal(number.replace(/[^0-9]/g, ""))}
-                keyboardType="numeric"
-              />
+                <Text style={styles.requestHeaders}>Fitness Goal</Text>
+                <TextInput
+                  placeholder="Enter Your Fitness Goal"
+                  placeholderTextColor={Colors.textSecondary}
+                  style={styles.input}
+                  value={fitnessGoal}
+                  onChangeText={(text) => setFitnessGoal(text)}
+                />
 
-              <Text style={styles.requestHeaders}>Allergen/s</Text>
-              <TextInput
-                placeholder="Enter Your Allergen/s"
-                style={styles.input}
-                value={allergens}
-                onChangeText={setAllergens}
-              />
+                <Text style={styles.requestHeaders}>Weight Goal</Text>
+                <TextInput
+                  placeholder="Enter Your Weight Goal"
+                  placeholderTextColor={Colors.textSecondary}
+                  style={styles.input}
+                  value={weightGoal}
+                  onChangeText={(number) => setWeightGoal(number.replace(/[^0-9]/g, ""))}
+                  keyboardType="numeric"
+                />
 
-              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Submit Request</Text>
-              </TouchableOpacity>
+                <Text style={styles.requestHeaders}>Allergen/s</Text>
+                <TextInput
+                  placeholder="Enter Your Allergen/s"
+                  placeholderTextColor={Colors.textSecondary}
+                  style={styles.input}
+                  value={allergens}
+                  onChangeText={setAllergens}
+                />
+
+                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                  <Text style={styles.buttonText}>Submit Request</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : viewState === "feedback" ? (
             <View style={styles.formContainer}>
               <SendFeedbackHeaderMP setViewState={setViewState}/>
-              <Text style={styles.feedbackHeaders}>Feedback</Text>
-              <TextInput
-                placeholder="Enter your feedback here"
-                style={[styles.input, styles.feedbackInput]}
-                value={feedback}
-                onChangeText={setFeedback}
-                multiline
-                numberOfLines={4}
-              />
-              <Text style={styles.requestHeaders}>Overall Rating</Text>
-              <TouchableOpacity onPress={togglePicker} style={styles.pickerBlack}>
-                <Text style={styles.requestHeaders}>
-                  {rating ? `Selected: ${rating}` : 'Enter Your Rating'}
-                </Text>
-              </TouchableOpacity>
 
-              {showPicker && (
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    selectedValue={rating}
-                    onValueChange={(itemValue) => setRating(itemValue)}
-                    style={styles.pickerBlack}
-                    itemStyle={{ color: Colors.white }}
-                    mode="dropdown" // Optional for Android
-                    dropdownIconColor={Colors.white}
-                    dropdownIconRippleColor={Colors.white}
-                    prompt={"Select a Rating:"} // Android only
-                  >
-                    <Picker.Item label="Enter Your Rating" value="" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="1 - Poor" value="1" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="2 - Fair" value="2" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="3 - Good" value="3" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="4 - Very Good" value="4" fontFamily="Fonts.regular"/>
-                    <Picker.Item label="5 - Excellent" value="5" fontFamily="Fonts.regular"/>
+              <View style={styles.sendFBContainer}>
+                <Text style={styles.feedbackHeaders}>Feedback</Text>
+                <TextInput
+                  placeholder="Enter your feedback here"
+                  placeholderTextColor={Colors.textSecondary}
+                  style={[styles.input, styles.feedbackInput]}
+                  value={feedback}
+                  onChangeText={setFeedback}
+                  multiline
+                  numberOfLines={4}
+                />
 
-                  </Picker>
+                <Text style={styles.requestHeaders}>Overall Rating</Text>
+                <View style={styles.pickerRating}>
+                  <RNPickerSelect
+                    onValueChange={(value) => setRating(value)}
+                    items={[
+                      { label: '1 - Poor', value: '1' },
+                      { label: '2 - Fair', value: '2' },
+                      { label: '3 - Good', value: '3' },
+                      { label: '4 - Very Good', value: '4' },
+                      { label: '5 - Excellent', value: '5' },
+                    ]}
+                    style={ratingpickerSelectStyles}
+                    value={rating}
+                    placeholder={{ label: 'Enter Your Rating', value: null }}
+                    useNativeAndroidPickerStyle={false}
+                    Icon={() =>
+                      Platform.OS === "ios" ? (
+                        <Ionicons name="chevron-down" size={20} color="gray" />
+                      ) : null
+                    }
+                  />
                 </View>
-              )}
 
-              <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
-                <Text style={styles.buttonText}>Submit Feedback</Text>
-              </TouchableOpacity>
+                <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
+                  <Text style={styles.buttonText}>Submit Feedback</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : viewState === "delete" ? (
             <View style={styles.deleteContainer}>
@@ -411,16 +460,20 @@ const MealPlanScreen = () => {
           ) : (
             // Nutritional Meal Plan View
             <>
-              {mealPlan ? (
+              {mealPlan && mealPlan.meals ? (
                 <View style={styles.planContainer}>
                   <Header />
                   {mealPlan.meals.map((meal, index) => (
                     <View key={index} style={styles.mealItem}>
-                      <Text style={styles.mealTitle}>{meal.meal}</Text>
+                      <Text style={styles.mealTitle}>{meal.meal_name}</Text>
                       <Text style={styles.mealDescription}>Type of Food:</Text>
-                      <Text style={styles.mealData}>{meal.type}</Text>
+                      <Text style={styles.mealData}>{meal.meal_type}</Text>
                       <Text style={styles.mealDescription}>Calories:</Text>
                       <Text style={styles.mealData}>{meal.calories} kcal</Text>
+                      <Text style={styles.mealDescription}>Protein:</Text>
+                      <Text style={styles.mealData}>{meal.protein} g</Text>
+                      <Text style={styles.mealDescription}>Carbs:</Text>
+                      <Text style={styles.mealData}>{meal.carbs} g</Text>
                       <Text style={styles.mealDescription}>Description:</Text>
                       <Text style={styles.mealData}>{meal.description}</Text>
                     </View>
@@ -499,8 +552,8 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
+    justifyContent: "center",
+    gap: 10,
   },
   buttonFeedback: {
     backgroundColor: Colors.gold,
@@ -513,12 +566,12 @@ const styles = StyleSheet.create({
   submitButton: {
     backgroundColor: Colors.gold,
     padding: 12,
-    borderRadius: 5,
+    borderRadius: 10,
     alignSelf: "center",
     top: -5,
     width: "50%",
     height: 45,
-    marginTop: 10,
+    marginTop: 30,
     fontFamily: Fonts.medium,
   },
   buttonBlack: {
@@ -547,7 +600,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: Colors.white,
-    fontSize: 16,
+    fontSize: 15,
     textAlign: "center",
     fontFamily: Fonts.semibold,
   },
@@ -563,7 +616,7 @@ const styles = StyleSheet.create({
   formContainer: {
     width: "100%",
     alignItems: "flex-start",
-    verticalAlign: 'middle',
+    flex: 1,
   },
   title: {
     fontSize: 20,
@@ -585,13 +638,13 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mediumItalic,
   },
   requestHeaders: {
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 5,
     alignSelf: "flex-start",
     fontFamily: Fonts.semibold,
   },
   feedbackHeaders: {
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 15,
     alignSelf: "flex-start",
     fontFamily: Fonts.semibold,
@@ -599,16 +652,18 @@ const styles = StyleSheet.create({
   input: {
     width: "100%",
     padding: 12,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: Colors.textSecondary,
-    borderRadius: 0,
+    borderRadius: 10,
     marginBottom: 10,
     fontFamily: Fonts.regular,
+    fontSize: 14,
   },
   feedbackInput: {
     height: 200,
     textAlignVertical: 'top',
     fontFamily: Fonts.regular,
+    fontSize: 14,
   },
   button: {
     backgroundColor: Colors.gold,
@@ -665,30 +720,109 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
-  },  
-  picker: { 
-    width: '100%', 
-    backgroundColor: Colors.bg,
-    fontFamily: Fonts.regular,
   },
-  pickerContainer: {
-    borderWidth: 1.5,
-    borderColor: Colors.textSecondary,
+  sendFBContainer: {
+    width: "100%",
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+  },
+  pickerRating: {
     width: '100%', 
-    borderRadius: 0,
+    backgroundColor: Colors.black,
+    borderWidth: 1,
+    borderRadius: 10,
     marginBottom: 10,
+  },
+  requestMPContainer: {
+    width: "100%",
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+  },
+  pickerTrainer: {
+    width: '100%',
+    backgroundColor: Colors.bg,
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  selectTrainerHeader: {
+    color: Colors.textSecondary,
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+    padding: 12,
+  },
+  trainerPicker: {
+    backgroundColor: Colors.bg,
+    color: Colors.black,
+    fontFamily: Fonts.regular,
+    fontSize: 14,
   },
   pickerBlack: {
     width: '100%', 
     backgroundColor: Colors.black,
-    color: Colors.offishWhite,
-    fontFamily: Fonts.regular,
+    borderRadius: 10,
   },
   trashIcon: {
     alignSelf: 'flex-end',
     marginTop: 0,
     flexGrow: 0,
   },
+  ratingHeader: {
+    color: Colors.white,
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+    padding: 12,
+  },
+  ratingPicker: {
+    backgroundColor: Colors.black,
+    color: Colors.white,
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+  },
 });
+
+const trainerpickerSelectStyles = {
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    color: Colors.textSecondary,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    color: Colors.textSecondary,
+  },
+  iconContainer: {
+    top: 10,
+    right: 12,
+  },
+};
+
+const ratingpickerSelectStyles = {
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    color: Colors.white,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingRight: 30, // to ensure the text is never behind the icon
+    color: Colors.textSecondary,
+  },
+  iconContainer: {
+    top: 10,
+    right: 12,
+  },
+};
 
 export default MealPlanScreen;

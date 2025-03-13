@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   usernameLabel: {
     fontFamily: Fonts.regular,
-    color: Colors.textSecondary
+    color: Colors.textSecondary,
   },
   usernameInput: {
     fontFamily: Fonts.regular,

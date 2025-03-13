@@ -4,9 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
-import { Colors } from '@/constants/Colors';
 
-export default function Header() {
+interface HeaderProps {
+  screen: string;
+}
+
+export default function Header({ screen }: HeaderProps) {
   return (
     <SafeAreaView>
       <View style={styles.header}>
@@ -16,16 +19,15 @@ export default function Header() {
             name='home' 
             color={'black'} 
             size={24} 
-            onPress={() => router.push('/home')} 
+            onPress={() => router.push('/(admin)/home')} 
           />
           <Text style={styles.headerText}>
-            Nutritional Meal Plan
+            {screen}
           </Text>
         </View>
 
         <View style={styles.headerIcon}>
-          <FontAwesome name='user-circle' color={Colors.black} size={24} onPress={() => router.push('/profile')} />
-          <FontAwesome name='bell-o' color={Colors.black} size={24} onPress={() => router.push('/notifications')} />
+          <FontAwesome name='bell-o' color={'black'} size={24} onPress={() => router.push('/notifications')} />
         </View>
       </View>
     </SafeAreaView>
@@ -34,7 +36,7 @@ export default function Header() {
 
 const styles = StyleSheet.create({
   header: {
-    width: '100%',
+    width: '85%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between'
