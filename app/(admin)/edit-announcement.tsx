@@ -93,7 +93,7 @@ export default function CreateAnnouncement() {
 
   return (
     <View style={styles.container}>
-      <Header screen='Edit Announcement' />
+      <Header screen='Edit Announcement' prevScreen='/(admin)/home' />
 
       <View style={styles.textContainer}>
         <Text style={styles.title}>Update Announcement</Text>
