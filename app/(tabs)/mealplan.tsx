@@ -179,10 +179,26 @@ const MealPlanScreen = () => {
       // // Replace with actual API call
       // To central feedback and request database
 
+      // Fetch member data from AsyncStorage
+      // const profileResponse = await fetch(`${API_BASE_URL}/api/profile`, {
+      //   headers: {
+      //     'Accept': 'application/json',
+      //     'Authorization': `Bearer ${token}`,
+      //   },
+      // });
+
+      // if (!profileResponse.ok) {
+      //   throw new Error(`HTTP error! status: ${profileResponse.status}`);
+      // }
+
+      // const profileData = await profileResponse.json();
+      // const { height, weight, age } = profileData;
+
       // const response = await fetch('https://api.example.com/submitMealPlan', {
       //   method: 'POST',
       //   headers: {
       //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${token}`,
       //   },
       //   body: JSON.stringify({
       //     trainer,
@@ -191,6 +207,9 @@ const MealPlanScreen = () => {
       //     allergens,
       //     feedback,
       //     rating,
+      //     height,
+      //     weight,
+      //     age,
       //   }),
       // });
 

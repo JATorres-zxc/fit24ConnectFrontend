@@ -83,7 +83,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
                 // Navigate to the home screen
                 router.push({
-                    pathname: '/(tabs)/home',
+                    pathname: '/(trainer)/home',
                     params: { showToast: 'true', full_name: result.user.full_name }  // Pass parameters to home screen
                 });
             } else {
