@@ -24,7 +24,7 @@ const MealPlanRequest: React.FC<MealPlanRequestProps> = ({ memberName, fitnessGo
                     <View style={styles.headerContainer}>
                         <Text style={styles.title}>Requested by: {memberName}</Text>
                         <TouchableOpacity onPress={onEditPress}>
-                            <FontAwesome name="pencil" size={24} color={Colors.black} />
+                            <FontAwesome name="edit" size={24} color={Colors.black} />
                         </TouchableOpacity>
                     </View>
                     <View style={styles.infoContainer}>

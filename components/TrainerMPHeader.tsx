@@ -11,10 +11,10 @@ export default function TrainerMPHeader() {
 
         <View style={styles.leftSection}>
           <FontAwesome 
-            name='arrow-left' 
+            name='home' 
             color={'black'} 
             size={24} 
-            onPress={() => router.push('/(trainer)/mealplan')} 
+            onPress={() => router.push('/home')} 
           />
           <View>
             <Text style={styles.headerText}>

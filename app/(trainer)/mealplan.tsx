@@ -6,7 +6,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 
 import Header from '@/components/MealPlanHeader';
-import RequestMealPlanHeaderMP from '@/components/RequestHeaderMP';
+import MealPlanRequestHeader from '@/components/MealPlanRequestHeader';
 import EditMPHeader from '@/components/EditMPHeader';
 import CreateMPHeader from '@/components/CreateMPHeader';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
@@ -15,6 +15,7 @@ import { Colors } from '@/constants/Colors';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MemberMealPlan from "@/components/MemberMealPlan";
 import MealPlanRequest from "@/components/MealPlanRequest";
+import TrainerMPHeader from "@/components/TrainerMPHeader";
 
 interface Meal {
   id: string;
@@ -40,11 +41,11 @@ interface MealPlan {
   member_id: string;
   trainer_id: string;
   mealplan_name: string;
-  fitness_goal: string;
+  fitnessGoal: string;
   calorie_intake: number;
   protein: number;
   carbs: number;
-  weight_goal: number;
+  weightGoal: number;
   allergens: string;
   instructions: string;
 }
@@ -69,9 +70,13 @@ const MealPlanScreen = () => {
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
   const [memberData, setMemberData] = useState({
-    height: '',
-    weight: '',
-    age: '',
+    requesteeID: '',
+    height: '170',
+    weight: '65',
+    age: '25',
+    fitnessGoal: 'Gain Weight',
+    weightGoal: '60',
+    allergens: 'Peanuts, Dairy',
   });
 
   // Fetching trainers from API
@@ -103,13 +108,15 @@ const MealPlanScreen = () => {
   //   fetchTrainers();
   // }, []);
 
-  // Fetch member data from AsyncStorage
+  // Fetch member data and request data from different APIs
   // useEffect(() => {
-  //   const fetchMemberData = async () => {
+  //   const fetchData = async () => {
   //     try {
-  //       token = await AsyncStorage.getItem('authToken');
-  //       userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+  //       // Retrieve token and userID from AsyncStorage
+  //       const token = await AsyncStorage.getItem('authToken');
+  //       const userID = await AsyncStorage.getItem('userID'); // Logged-in user's ID
 
+  //       // Fetch height, weight, and age from the first API
   //       const profileResponse = await fetch(`${API_BASE_URL}/api/profile`, {
   //         headers: {
   //           'Accept': 'application/json',
@@ -118,18 +125,44 @@ const MealPlanScreen = () => {
   //       });
 
   //       if (!profileResponse.ok) {
-  //         throw new Error(`HTTP error! status: ${profileResponse.status}`);
+  //         throw new Error(`Profile API error! status: ${profileResponse.status}`);
   //       }
 
   //       const profileData = await profileResponse.json();
   //       const { height, weight, age } = profileData;
-  //       setMemberData({ height, weight, age });
+
+  //       // Fetch requests from a different API
+  //       const requestResponse = await fetch(`${API_BASE_URL}/api/requests-feedback`, {
+  //         method: 'GET',
+  //         headers: {
+  //           'Accept': 'application/json',
+  //           'Authorization': `Bearer ${token}`,
+  //         },
+  //       });
+
+  //       if (!requestResponse.ok) {
+  //         throw new Error(`Requests API error! status: ${requestResponse.status}`);
+  //       }
+
+  //       const requestData = await requestResponse.json();
+  //       const { fitnessGoal, weightGoal, allergens } = requestData;
+
+  //       // Update state with both sets of data
+  //       setMemberData({
+  //         requesteeID,
+  //         height,
+  //         weight,
+  //         age,
+  //         fitnessGoal,
+  //         weightGoal,
+  //         allergens,
+  //       });
   //     } catch (error) {
-  //       console.error('Error fetching member data:', error);
+  //       console.error('Error fetching data:', error);
   //     }
   //   };
 
-  //   fetchMemberData();
+  //   fetchData();
   // }, []);
 
   // Fetching Meal Plan from API
@@ -201,125 +234,148 @@ const MealPlanScreen = () => {
     fetchMealPlan();
   }, []);  
 
-  const handleSubmit = async () => {
-    if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
+  const handlePublish = async () => {
+    if (!mealPlan || !mealPlan.meals) {
       Toast.show({
         type: 'error',
         text1: 'Missing Fields',
-        text2: 'Please fill out all fields before submitting.',
-        position: 'bottom'
+        text2: 'Please fill out all fields before publishing the meal plan.',
+        position: 'bottom',
       });
       return;
     }
-    
+  
     try {
-      // // Replace with actual API call
-      // To central feedback and request database
-
-      // const response = await fetch('https://api.example.com/submitMealPlan', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     trainer,
-      //     fitnessGoal,
-      //     weightGoal,
-      //     allergens,
-      //     feedback,
-      //     rating,
-      //   }),
-      // });
-
-      // const result = await response.json();
-      
-      // // Temporary Success Placeholder
-      const temp_response = true;
-
-      if (temp_response) {
-        Toast.show({
-          type: 'success',
-          text1: 'Request Submitted',
-          text2: 'Your meal plan request has been submitted successfully.',
-          position: 'bottom'
-        });
-        setTimeout(() => {
-          setViewState("plan");
-          // setMealPlan("result"); // Update meal plan with the new data
-        }, 2000); // 2-second delay
-      } else {
+      // Temporary placeholder for responses
+      const temp_response = {
+        searchResponse: true, // Simulating a response indicating existing meal plans
+        updateResponse: true, // Simulating a successful update
+        createResponse: true, // Simulating a successful creation
+      };
+  
+      // Retrieve token and trainer's user ID from AsyncStorage
+      const token = await AsyncStorage.getItem('authToken');
+      const trainerID = await AsyncStorage.getItem('userID'); // Logged-in trainer's ID
+      const requesteeID = memberData?.requesteeID; // Member's ID from the state
+  
+      if (!requesteeID) {
         Toast.show({
           type: 'error',
-          text1: 'Request Failed',
-          text2: 'There was an error with your meal plan request.',
-          position: 'bottom'
+          text1: 'Missing Member ID',
+          text2: 'Please select a member before publishing the meal plan.',
+          position: 'bottom',
         });
+        return;
       }
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Request Failed',
-        text2: 'There was an error with your meal plan request.',
-        position: 'bottom'
-      });
-    }
-  };
-
-  const handleFeedbackSubmit = async () => {
-    if (!feedback || !rating) {
-      Toast.show({
-        type: 'error',
-        text1: 'Missing Fields',
-        text2: 'Please fill out all fields before submitting feedback.',
-        position: 'bottom'
-      });
-      return;
-    }
-
-    try {
-      // Uncomment and replace with actual API call,
-      // This is in line with an agreed central feedback and request database.
-
-      // const response = await fetch('https://api.example.com/submitFeedback', {
-      //   method: 'POST',
+  
+      // Check for an existing meal plan with the same member_id
+      // const searchResponse = await fetch(`${API_BASE_URL}/api/mealplans?member_id=${requesteeID}`, {
+      //   method: 'GET',
       //   headers: {
-      //     'Content-Type': 'application/json',
+      //     'Accept': 'application/json',
+      //     'Authorization': `Bearer ${token}`,
       //   },
-      //   body: JSON.stringify({
-      //     feedback,
-      //     rating,
-      //   }),
       // });
-
-      const temp_response = true;
-      // // response.ok
-      if (temp_response) {
-        Toast.show({
-          type: 'info',
-          text1: 'Feedback Sent',
-          text2: 'Your feedback has been sent successfully.',
-          position: 'bottom'
-        });
-        setViewState("plan");
-        setFeedback("");
-        setRating("");
+  
+      let mealPlanId;
+  
+      if (temp_response.searchResponse) {
+        // Simulating existing meal plans
+        const existingMealPlans = [{ mealplan_id: 1 }]; // Example: An existing meal plan
+        if (existingMealPlans.length > 0) {
+          mealPlanId = existingMealPlans[0].mealplan_id;
+  
+          // Update existing meal plan
+          // const updateResponse = await fetch(`${API_BASE_URL}/api/mealplans/${mealPlanId}`, {
+          //   method: 'PUT',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //     'Authorization': `Bearer ${token}`,
+          //   },
+          //   body: JSON.stringify({
+          //     member_id: requesteeID,
+          //     trainer_id: trainerID,
+          //     meals: mealPlan.meals.map(meal => ({
+          //       name: meal.meal_name,
+          //       type: meal.meal_type,
+          //       calories: meal.calories,
+          //       protein: meal.protein,
+          //       carbs: meal.carbs,
+          //       description: meal.description,
+          //     })),
+          //     fitness_goal: fitnessGoal,
+          //     calorie_intake: mealPlan.calorie_intake,
+          //     protein: mealPlan.protein,
+          //     carbs: mealPlan.carbs,
+          //     weight_goal: weightGoal,
+          //     allergens: allergens,
+          //     instructions: mealPlan.instructions,
+          //   }),
+          // });
+  
+          if (temp_response.updateResponse) {
+            console.log("Meal plan updated successfully!");
+          } else {
+            throw new Error("Simulated update failed!");
+          }
+        } else {
+          // Create a new meal plan
+          // const createResponse = await fetch(`${API_BASE_URL}/api/mealplans`, {
+          //   method: 'POST',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //     'Authorization': `Bearer ${token}`,
+          //   },
+          //   body: JSON.stringify({
+          //     member_id: requesteeID,
+          //     trainer_id: trainerID,
+          //     meals: mealPlan.meals.map(meal => ({
+          //       name: meal.meal_name,
+          //       type: meal.meal_type,
+          //       calories: meal.calories,
+          //       protein: meal.protein,
+          //       carbs: meal.carbs,
+          //       description: meal.description,
+          //     })),
+          //     mealplan_name: "New Meal Plan",
+          //     fitness_goal: fitnessGoal,
+          //     calorie_intake: mealPlan.calorie_intake,
+          //     protein: mealPlan.protein,
+          //     carbs: mealPlan.carbs,
+          //     weight_goal: weightGoal,
+          //     allergens: allergens,
+          //     instructions: mealPlan.instructions,
+          //   }),
+          // });
+  
+          if (temp_response.createResponse) {
+            console.log("New meal plan created successfully!");
+          } else {
+            throw new Error("Simulated creation failed!");
+          }
+        }
       } else {
-        Toast.show({
-          type: 'error',
-          text1: 'Feedback Failed',
-          text2: 'There was an error submitting your feedback.',
-          position: 'bottom'
-        });
+        throw new Error("Simulated search failed!");
       }
+  
+      // Finalizing the publishing process
+      Toast.show({
+        type: 'info',
+        text1: 'Meal Plan Published',
+        text2: 'Your meal plan has been published successfully.',
+        position: 'bottom',
+      });
+      setViewState("");
     } catch (error) {
+      console.error("Error handling meal plan:", error);
       Toast.show({
         type: 'error',
-        text1: 'Feedback Failed',
-        text2: 'There was an error submitting your feedback.',
-        position: 'bottom'
+        text1: 'Publish Failed',
+        text2: 'An unexpected error occurred. Please try again later.',
+        position: 'bottom',
       });
     }
-  };
+  };    
 
   const handleDelete = async () => {
     try {
@@ -375,17 +431,20 @@ const MealPlanScreen = () => {
         <View style={styles.container}>
           {viewState === "requests" ? (
             // Request Meal Plan View
-            <MealPlanRequest 
-              setViewState={setViewState} 
-              memberName={userID || ''} // Assuming userID is the member's name
-              fitnessGoal={fitnessGoal} 
-              weightGoal={weightGoal} 
-              allergens={allergens} 
-              height={memberData.height || ''} // Fetch height from memberDetails
-              weight={memberData.weight || ''} // Fetch weight from memberDetails
-              age={memberData.age || ''} // Fetch age from memberDetails
-              onEditPress={() => setViewState("editMP")} 
-            />
+            <View style={styles.planContainer}>
+              <MealPlanRequestHeader setViewState={setViewState} />
+              <MealPlanRequest
+                  setViewState={setViewState}
+                  memberName={userID || ''}
+                  fitnessGoal={memberData.fitnessGoal || ''}
+                  weightGoal={memberData.weightGoal || ''}
+                  allergens={memberData.allergens || ''}
+                  height={memberData.height || ''}
+                  weight={memberData.weight || ''}
+                  age={memberData.age || ''}
+                  onEditPress={() => setViewState("createMP")}
+              />
+          </View>
             ) : viewState === "sendMP" ? (
             <View style={styles.deleteContainer}>
               <Ionicons name="create-outline" size={24} color="black" style={styles.icon} />
@@ -397,7 +456,7 @@ const MealPlanScreen = () => {
                 <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
                   <Text style={styles.buttonText}>NO</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonGreen} onPress={handleFeedbackSubmit}>
+                <TouchableOpacity style={styles.buttonGreen} onPress={handlePublish}>
                   <Text style={styles.buttonText}>YES</Text>
                 </TouchableOpacity>
               </View>
@@ -430,7 +489,7 @@ const MealPlanScreen = () => {
                       <Text style={styles.mealDescription}>Type of Food:</Text>
                       <TextInput
                         style={styles.mealData}
-                        value={meal.meal_type}
+                        value={""}
                         onChangeText={(text) => {
                           const updatedMeals = [...mealPlan.meals];
                           updatedMeals[index].meal_type = text;
@@ -440,7 +499,7 @@ const MealPlanScreen = () => {
                       <Text style={styles.mealDescription}>Calories:</Text>
                       <TextInput
                         style={styles.mealData}
-                        value={meal.calories.toString()}
+                        value={""}
                         onChangeText={(text) => {
                           const updatedMeals = [...mealPlan.meals];
                           updatedMeals[index].calories = parseInt(text) || 0;
@@ -451,7 +510,7 @@ const MealPlanScreen = () => {
                       <Text style={styles.mealDescription}>Protein:</Text>
                       <TextInput
                         style={styles.mealData}
-                        value={meal.protein.toString()}
+                        value={""}
                         onChangeText={(text) => {
                           const updatedMeals = [...mealPlan.meals];
                           updatedMeals[index].protein = parseInt(text) || 0;
@@ -462,7 +521,7 @@ const MealPlanScreen = () => {
                       <Text style={styles.mealDescription}>Carbs:</Text>
                       <TextInput
                         style={styles.mealData}
-                        value={meal.carbs.toString()}
+                        value={""}
                         onChangeText={(text) => {
                           const updatedMeals = [...mealPlan.meals];
                           updatedMeals[index].carbs = parseInt(text) || 0;
@@ -473,7 +532,7 @@ const MealPlanScreen = () => {
                       <Text style={styles.mealDescription}>Description:</Text>
                       <TextInput
                         style={styles.mealData}
-                        value={meal.description}
+                        value={""}
                         onChangeText={(text) => {
                           const updatedMeals = [...mealPlan.meals];
                           updatedMeals[index].description = text;
@@ -502,88 +561,90 @@ const MealPlanScreen = () => {
             // Nutritional Meal Plan View
             <>
               {mealPlan && mealPlan.meals ? (
-                <View style={styles.planContainer}>
-                  <EditMPHeader setViewState={setViewState} />
-                  {mealPlan.meals.map((meal, index) => (
-                    <View key={index} style={styles.mealItem}>
-                      <Text style={styles.mealTitle}>{meal.meal_name}</Text>
-                      <Text style={styles.mealDescription}>Type of Food:</Text>
-                      <TextInput
-                        style={styles.mealData}
-                        value={meal.meal_type}
-                        onChangeText={(text) => {
-                          const updatedMeals = [...mealPlan.meals];
-                          updatedMeals[index].meal_type = text;
-                          setMealPlan({ ...mealPlan, meals: updatedMeals });
-                        }}
-                      />
-                      <Text style={styles.mealDescription}>Calories:</Text>
-                      <TextInput
-                        style={styles.mealData}
-                        value={meal.calories.toString()}
-                        onChangeText={(text) => {
-                          const updatedMeals = [...mealPlan.meals];
-                          updatedMeals[index].calories = parseInt(text) || 0;
-                          setMealPlan({ ...mealPlan, meals: updatedMeals });
-                        }}
-                        keyboardType="numeric"
-                      />
-                      <Text style={styles.mealDescription}>Protein:</Text>
-                      <TextInput
-                        style={styles.mealData}
-                        value={meal.protein.toString()}
-                        onChangeText={(text) => {
-                          const updatedMeals = [...mealPlan.meals];
-                          updatedMeals[index].protein = parseInt(text) || 0;
-                          setMealPlan({ ...mealPlan, meals: updatedMeals });
-                        }}
-                        keyboardType="numeric"
-                      />
-                      <Text style={styles.mealDescription}>Carbs:</Text>
-                      <TextInput
-                        style={styles.mealData}
-                        value={meal.carbs.toString()}
-                        onChangeText={(text) => {
-                          const updatedMeals = [...mealPlan.meals];
-                          updatedMeals[index].carbs = parseInt(text) || 0;
-                          setMealPlan({ ...mealPlan, meals: updatedMeals });
-                        }}
-                        keyboardType="numeric"
-                      />
-                      <Text style={styles.mealDescription}>Description:</Text>
-                      <TextInput
-                        style={styles.mealData}
-                        value={meal.description}
-                        onChangeText={(text) => {
-                          const updatedMeals = [...mealPlan.meals];
-                          updatedMeals[index].description = text;
-                          setMealPlan({ ...mealPlan, meals: updatedMeals });
-                        }}
-                      />
-                    </View>
-                  ))}
-                  <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
-                    <Text style={styles.buttonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.buttonFeedback} onPress={() => setViewState("sendMP")}>
-                    <Text style={styles.buttonText}>Save</Text>
-                  </TouchableOpacity>
+              <View style={styles.planContainer}>
+                <EditMPHeader setViewState={setViewState} />
+                {mealPlan.meals.map((meal, index) => (
+                <View key={index} style={styles.mealItem}>
+                  <Text style={styles.mealTitle}>{meal.meal_name}</Text>
+                  <Text style={styles.mealDescription}>Type of Food:</Text>
+                  <TextInput
+                  style={styles.mealData}
+                  defaultValue={meal.meal_type}
+                  onChangeText={(text) => {
+                    const updatedMeals = [...mealPlan.meals];
+                    updatedMeals[index].meal_type = text;
+                    setMealPlan({ ...mealPlan, meals: updatedMeals });
+                  }}
+                  />
+                  <Text style={styles.mealDescription}>Calories:</Text>
+                  <TextInput
+                  style={styles.mealData}
+                  defaultValue={meal.calories.toString()}
+                  onChangeText={(text) => {
+                    const updatedMeals = [...mealPlan.meals];
+                    updatedMeals[index].calories = parseInt(text) || 0;
+                    setMealPlan({ ...mealPlan, meals: updatedMeals });
+                  }}
+                  keyboardType="numeric"
+                  />
+                  <Text style={styles.mealDescription}>Protein:</Text>
+                  <TextInput
+                  style={styles.mealData}
+                  defaultValue={meal.protein.toString()}
+                  onChangeText={(text) => {
+                    const updatedMeals = [...mealPlan.meals];
+                    updatedMeals[index].protein = parseInt(text) || 0;
+                    setMealPlan({ ...mealPlan, meals: updatedMeals });
+                  }}
+                  keyboardType="numeric"
+                  />
+                  <Text style={styles.mealDescription}>Carbs:</Text>
+                  <TextInput
+                  style={styles.mealData}
+                  defaultValue={meal.carbs.toString()}
+                  onChangeText={(text) => {
+                    const updatedMeals = [...mealPlan.meals];
+                    updatedMeals[index].carbs = parseInt(text) || 0;
+                    setMealPlan({ ...mealPlan, meals: updatedMeals });
+                  }}
+                  keyboardType="numeric"
+                  />
+                  <Text style={styles.mealDescription}>Description:</Text>
+                  <TextInput
+                  style={styles.mealData}
+                  defaultValue={meal.description}
+                  onChangeText={(text) => {
+                    const updatedMeals = [...mealPlan.meals];
+                    updatedMeals[index].description = text;
+                    setMealPlan({ ...mealPlan, meals: updatedMeals });
+                  }}
+                  />
                 </View>
+                ))}
+                <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.buttonSave} onPress={() => setViewState("sendMP")}>
+                  <Text style={styles.buttonText}>Save</Text>
+                </TouchableOpacity>
+                </View>
+              </View>
               ) : (
-                <View>
-                  <Header />
-                  <View style={styles.centerContainer}>
-                    <Text style={styles.subtitle2}>There are no meal plans yet.</Text>
-                    <TouchableOpacity style={styles.button} onPress={() => setViewState("createMP")}>
-                      <Text style={styles.buttonText}>Create Meal Plan</Text>
-                    </TouchableOpacity>
-                  </View>
+              <View>
+                <Header />
+                <View style={styles.centerContainer}>
+                <Text style={styles.subtitle2}>There are no meal plans yet.</Text>
+                <TouchableOpacity style={styles.button} onPress={() => setViewState("createMP")}>
+                  <Text style={styles.buttonText}>Create Meal Plan</Text>
+                </TouchableOpacity>
                 </View>
+              </View>
               )}
             </>
           ) : ( 
             <View>
-              <Header />
+              <TrainerMPHeader />
               <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("requests")}>
               <Text style={styles.buttonText}>Meal Plan Requests</Text>
               </TouchableOpacity>
@@ -595,7 +656,7 @@ const MealPlanScreen = () => {
               ) : (
               <View style={styles.centerContainer}>
                 <Text style={styles.subtitle2}>You have no existing meal plan.</Text>
-                <TouchableOpacity style={styles.button} onPress={() => setViewState("createMP")}>
+                <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("createMP")}>
                 <Text style={styles.buttonText}>Create Meal Plan</Text>
                 </TouchableOpacity>
               </View>
@@ -670,7 +731,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignSelf: "center",
     top: -5,
-    width: "50%",
+    width: "100%",
     height: 45,
     marginTop: 30,
     fontFamily: Fonts.medium,
@@ -686,6 +747,14 @@ const styles = StyleSheet.create({
   },
   buttonRed: {
     backgroundColor: Colors.red,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    alignItems: "center",
+    borderRadius: 10,
+    marginHorizontal: 5,
+  },
+  buttonSave: {
+    backgroundColor: Colors.gold,
     paddingVertical: 10,
     paddingHorizontal: 30,
     alignItems: "center",
@@ -883,47 +952,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
-
-const trainerpickerSelectStyles = {
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    paddingRight: 30, // to ensure the text is never behind the icon
-    color: Colors.textSecondary,
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    paddingRight: 30, // to ensure the text is never behind the icon
-    color: Colors.textSecondary,
-  },
-  iconContainer: {
-    top: 10,
-    right: 12,
-  },
-};
-
-const ratingpickerSelectStyles = {
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    paddingRight: 30, // to ensure the text is never behind the icon
-    color: Colors.white,
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    paddingRight: 30, // to ensure the text is never behind the icon
-    color: Colors.textSecondary,
-  },
-  iconContainer: {
-    top: 10,
-    right: 12,
-  },
-};
 
 export default MealPlanScreen;

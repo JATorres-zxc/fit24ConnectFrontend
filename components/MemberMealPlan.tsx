@@ -21,11 +21,11 @@ interface MealPlan {
     member_id: string;
     trainer_id: string;
     mealplan_name: string;
-    fitness_goal: string;
+    fitnessGoal: string;
     calorie_intake: number;
     protein: number;
     carbs: number;
-    weight_goal: number;
+    weightGoal: number;
     allergens: string;
     instructions: string;
 }
@@ -38,25 +38,26 @@ interface MemberMealPlanProps {
 const MemberMealPlan: React.FC<MemberMealPlanProps> = ({ mealPlan, onEditPress }) => {
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.editIcon} onPress={onEditPress}>
-                <FontAwesome name="pencil" size={24} color={Colors.black} />
-            </TouchableOpacity>
             <View style={styles.header}>
                 <Image source={{ uri: 'https://via.placeholder.com/90' }} style={styles.image} />
                 <View style={styles.textContainer}>
                     <Text style={styles.title}>Member's Meal Plan</Text>
                     <Text style={styles.subtitle}>Working on:</Text>
-                    <Text style={styles.fitnessGoal}>{mealPlan.fitness_goal}</Text>
+                    <Text style={styles.fitnessGoal}>{mealPlan.fitnessGoal}</Text>
                 </View>
+                <TouchableOpacity style={styles.editIcon} onPress={onEditPress}>
+                    <FontAwesome name="pencil" size={24} color={Colors.black} />
+                </TouchableOpacity>
             </View>
-            <View style={styles.mealContainer}>
+            <View style={styles.horizontalLine} />
+            {/* <View style={styles.mealContainer}>
                 {mealPlan.meals.map((meal) => (
                     <View key={meal.id} style={styles.mealItem}>
                         <Text style={styles.mealName}>{meal.meal_name}</Text>
                         <Text style={styles.mealDescription}>{meal.description}</Text>
                     </View>
                 ))}
-            </View>
+            </View> */}
         </View>
     );
 };
@@ -66,14 +67,25 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: Colors.bg,
         padding: 16,
+        marginTop: 15,
     },
     editIcon: {
         alignSelf: 'flex-start',
+        justifyContent: 'flex-end',
+        marginTop: 5,
+        marginLeft: 20,
         marginBottom: 10,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginBottom: 20,
+    },
+    horizontalLine: {
+        width: "100%", // This makes the line span the entire width
+        height: 1, // Adjust the height as needed
+        backgroundColor: Colors.black, // Adjust the color as needed
+        marginTop: 10,
         marginBottom: 20,
     },
     image: {
