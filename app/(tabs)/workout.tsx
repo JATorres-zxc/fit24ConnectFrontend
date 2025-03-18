@@ -190,19 +190,17 @@ const WorkoutScreen = () => {
 
   const handleDelete = async (workout: Workout) => {
     try {
-      // Uncomment and replace with actual API call
-      // const response = await fetch(`https://api.example.com/deleteWorkout/${workout.title}`, {
-      //   method: 'DELETE',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      // });
-      
-      const temp_response = true;
+      token = await AsyncStorage.getItem('authToken');
 
-      // response.ok
+      const response = await fetch(`${API_BASE_URL}/api/workout/workouts/${workout.id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-      if (temp_response) {
+      if (response.ok) {
         Toast.show({
           type: 'success',
           text1: 'Workout Deleted',
