@@ -1,7 +1,8 @@
-import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Platform } from "react-native";
 import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import Header from "@/components/NavigateBackHeader";
 import { Colors } from "@/constants/Colors";
@@ -54,47 +55,42 @@ export default function CreateAnnouncement() {
     try {
       setIsLoading(true);
       
+      // Use the same API_BASE_URL pattern as in Home component
+      const API_BASE_URL = 
+        Platform.OS === 'web'
+          ? 'http://127.0.0.1:8000'
+          : 'http://172.16.15.51:8000';
+      
       // Create a new announcement object
       const newAnnouncement = {
-        id: Date.now().toString(), // Generate a unique ID
         title: announcementTitle,
         content: announcementContent,
-        date: new Date().toLocaleDateString(),
-        admin: "Admin" // Replace with actual admin name or get from context
+        // The backend will handle the date and admin ID
       };
       
-      // For a real implementation, make an API call to your backend
-      // Example:
-      // const response = await fetch('your-api-endpoint/announcements', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(newAnnouncement),
-      // });
-      // 
-      // if (!response.ok) {
-      //   throw new Error('Failed to create announcement');
-      // }
-      
-      // For local storage implementation:
-      try {
-        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-        
-        // Get existing announcements
-        const existingData = await AsyncStorage.getItem('announcements');
-        let announcements = existingData ? JSON.parse(existingData) : [];
-        
-        // Add new announcement
-        announcements.unshift(newAnnouncement); // Add to beginning of array
-        
-        // Save updated announcements
-        await AsyncStorage.setItem('announcements', JSON.stringify(announcements));
-        
-      } catch (storageError) {
-        console.error("Storage error:", storageError);
-        throw new Error('Failed to save announcement to storage');
+      // Get auth token from AsyncStorage
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Authentication token not found');
       }
+      
+      // API call to create the announcement
+      const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(newAnnouncement),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create announcement');
+      }
+      
+      // Process successful response
+      const createdAnnouncement = await response.json();
       
       // Show success toast
       Toast.show({
@@ -112,7 +108,7 @@ export default function CreateAnnouncement() {
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Failed to create announcement. Please try again.',
+        text2: typeof error === 'object' && error !== null && 'message' in error ? String(error.message) : 'Failed to create announcement. Please try again.',
         position: 'top',
         topOffset: 100,
       });
