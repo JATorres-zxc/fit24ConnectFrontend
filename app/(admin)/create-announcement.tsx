@@ -1,12 +1,26 @@
-import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity } from "react-native";
-import { useState } from "react";
+import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Platform } from "react-native";
+import { useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import Header from "@/components/NavigateBackHeader";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
+import Toast from "react-native-toast-message";
 
 export default function CreateAnnouncement() {
   const [announcementTitle, setAnnouncementTitle] = useState("");
+  const [announcementContent, setAnnouncementContent] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  useFocusEffect(
+    useCallback(() => {
+      setAnnouncementTitle("");
+      setAnnouncementContent("");
+    }, [])
+  );
 
   const handleTitleChange = (text: string) => {
     if (text.length <= 30) {
@@ -14,9 +28,99 @@ export default function CreateAnnouncement() {
     }
   };
 
+  const handleCreateAnnouncement = async () => {
+    // Validate input
+    if (!announcementTitle.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter a title for the announcement',
+        position: 'top',
+        topOffset: 100,
+      });
+      return;
+    }
+
+    if (!announcementContent.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter message content for the announcement',
+        position: 'top',
+        topOffset: 100,
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      // Use the same API_BASE_URL pattern as in Home component
+      const API_BASE_URL = 
+        Platform.OS === 'web'
+          ? 'http://127.0.0.1:8000'
+          : 'http://172.16.15.51:8000';
+      
+      // Create a new announcement object
+      const newAnnouncement = {
+        title: announcementTitle,
+        content: announcementContent,
+        // The backend will handle the date and admin ID
+      };
+      
+      // Get auth token from AsyncStorage
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+      
+      // API call to create the announcement
+      const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(newAnnouncement),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create announcement');
+      }
+      
+      // Process successful response
+      const createdAnnouncement = await response.json();
+      
+      // Show success toast
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: 'Announcement created successfully',
+        position: 'top',
+        topOffset: 100,
+        visibilityTime: 2000,
+        autoHide: true,
+        onHide: () => router.push('/(admin)/home') // Navigate back after toast disappears
+      });
+      
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: typeof error === 'object' && error !== null && 'message' in error ? String(error.message) : 'Failed to create announcement. Please try again.',
+        position: 'top',
+        topOffset: 100,
+      });
+      console.error("Create error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Header screen='Create Announcement' />
+      <Header screen='Create Announcement' prevScreen='/(admin)/home' />
 
       <View style={styles.textContainer}>
         <Text style={styles.title}>Send out news and updates</Text>
@@ -44,13 +148,19 @@ export default function CreateAnnouncement() {
             placeholder="Enter Details of Announcement"
             placeholderTextColor={Colors.textSecondary}
             multiline={true}
+            value={announcementContent}
+            onChangeText={setAnnouncementContent}
           />
         </View>
 
         <View style={styles.button}>
-          <TouchableOpacity style={styles.post}>
+          <TouchableOpacity 
+            style={[styles.post, isLoading && styles.disabledButton]}
+            onPress={handleCreateAnnouncement}
+            disabled={isLoading}
+          >
             <Text style={styles.buttonText}>
-              Post Announcement
+              {isLoading ? "Creating..." : "Post Announcement"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -124,6 +234,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 20,
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   buttonText: {
     fontFamily: Fonts.medium,
