@@ -60,7 +60,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             const API_BASE_URL =
                 Platform.OS === 'web'
                     ? 'http://127.0.0.1:8000' // Web uses localhost
-                    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
+                    : 'http://172.16.15.51:8000'; // Mobile uses local network IP
 
             // Commented out API call for testing
             const response = await fetch(`${API_BASE_URL}/api/account/login/`, {
@@ -79,7 +79,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             if (response.ok && result.tokens.access) {
                 // Store the token and user ID securely for future use
                 await AsyncStorage.setItem('authToken', result.tokens.access);
-                await AsyncStorage.setItem('userID', result.user.id);
+                await AsyncStorage.setItem('userID', result.user.id.toString());
 
                 // Navigate to the home screen
                 router.push({
