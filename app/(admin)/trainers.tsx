@@ -1,12 +1,12 @@
 import { View, StyleSheet } from 'react-native';
 
-import Header from '@/components/HistoryHeader';
+import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 
-export default function HistoryScreen() {
+export default function TrainersScreen() {
   return (
     <View style={styles.container}>
-      <Header />
+      <Header screen="Trainers" />
     </View>
   );
 }
