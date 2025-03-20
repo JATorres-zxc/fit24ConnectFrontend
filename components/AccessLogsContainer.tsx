@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
   },
   status: {
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.italic,
     color: Colors.textSecondary,
   },
   divider: {
