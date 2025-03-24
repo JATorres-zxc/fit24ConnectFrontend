@@ -7,6 +7,7 @@ import Toast from 'react-native-toast-message';
 
 import Header from '@/components/MealPlanHeader';
 import MealPlanRequestHeader from '@/components/MealPlanRequestHeader';
+import MealPlanForm from '@/components/TrainerMealPlanForm';
 import EditMPHeader from '@/components/EditMPHeader';
 import CreateMPHeader from '@/components/CreateMPHeader';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
@@ -41,11 +42,11 @@ interface MealPlan {
   member_id: string;
   trainer_id: string;
   mealplan_name: string;
-  fitnessGoal: string;
+  fitness_goal: string;
   calorie_intake: number;
   protein: number;
   carbs: number;
-  weightGoal: number;
+  weight_goal: number;
   allergens: string;
   instructions: string;
 }
@@ -61,7 +62,9 @@ let mealPlan_id: number | null = null;
 
 const MealPlanScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
-  const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State to store meal plan
+  const [mealPlans, setMealPlans] = useState<MealPlan[]>([]); // State for multiple meal plans
+  const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State for singular meal plan
+  const [updateMealPlan, setUpdateMealPlan] = useState<MealPlan | null>(null);
   const [trainer, setTrainer] = useState<string | number | undefined>('');
   const [trainers, setTrainers] = useState([]);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
@@ -70,7 +73,8 @@ const MealPlanScreen = () => {
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
   const [memberData, setMemberData] = useState({
-    requesteeID: '',
+    requesteeID: '2',
+    requesteeName: 'John Daks',
     height: '170',
     weight: '65',
     age: '25',
@@ -78,6 +82,21 @@ const MealPlanScreen = () => {
     weightGoal: '60',
     allergens: 'Peanuts, Dairy',
   });
+  const [newMealPlan, setNewMealPlan] = useState<MealPlan | null>({
+    mealplan_id: Date.now(),
+    meals: [], // Ensures `meals` is always defined
+    member_id: memberData.requesteeID,
+    trainer_id: userID?.toString() || "",
+    mealplan_name: "",
+    fitness_goal: "",
+    calorie_intake: 0,
+    protein: 0,
+    carbs: 0,
+    weight_goal: 0,
+    allergens: "",
+    instructions: "",
+  });
+  
 
   // Fetching trainers from API
 
@@ -129,7 +148,7 @@ const MealPlanScreen = () => {
   //       }
 
   //       const profileData = await profileResponse.json();
-  //       const { height, weight, age } = profileData;
+  //       const { height, weight, age, requesteeName } = profileData;
 
   //       // Fetch requests from a different API
   //       const requestResponse = await fetch(`${API_BASE_URL}/api/requests-feedback`, {
@@ -150,6 +169,7 @@ const MealPlanScreen = () => {
   //       // Update state with both sets of data
   //       setMemberData({
   //         requesteeID,
+  //         requesteeName,
   //         height,
   //         weight,
   //         age,
@@ -168,40 +188,12 @@ const MealPlanScreen = () => {
   // Fetching Meal Plan from API
   
   useEffect(() => {
-    const fetchMealPlan = async () => {
+    const fetchMealPlans = async () => {
       try {
         token = await AsyncStorage.getItem('authToken');
         userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
 
-        const mealPlansResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!mealPlansResponse.ok) {
-          throw new Error(`HTTP error! status: ${mealPlansResponse.status}`);
-        }
-
-        const mealPlansData = await mealPlansResponse.json();
-        const memberIds = mealPlansData.map((plan: MealPlan) => plan.member_id.toString());
-        console.log('member_ids:', memberIds);
-        console.log('userID:', userID);
-        const userMealPlan = mealPlansData.find((plan: MealPlan) => memberIds.includes(plan.member_id.toString()));
-        console.log('User Meal Plan:', userMealPlan);
-
-        if (!userMealPlan) {
-          throw new Error('No meal plan found for the user');
-        }
-
-        mealPlan_id = userMealPlan.mealplan_id;
-
-        if (!token) {
-          throw new Error('No token found');
-        }
-
-        const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
@@ -212,30 +204,20 @@ const MealPlanScreen = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        if (response.status === 404) {
-          setMealPlan(null);
-        } else {
-          const data = await response.json();
-          setMealPlan(data);
-        }
+        const mealPlansData = await response.json();
+        setMealPlans(mealPlansData); // Store all meal plans
       } catch (error) {
-        console.error('Error fetching meal plan:', error);
-
-        if (error instanceof Error) {
-          if (error.message.includes('NetworkError')) {
-            console.error('Network error: Please check if the server is running and accessible.');
-          } else if (error.message.includes('CORS')) {
-            console.error('CORS error: Please ensure your server allows requests from your frontend.');
-          }
-        }
+        console.error('Error fetching meal plans:', error);
       }
     };
 
-    fetchMealPlan();
-  }, []);  
+    fetchMealPlans();
+  }, []);
 
-  const handlePublish = async () => {
-    if (!mealPlan || !mealPlan.meals) {
+  const handlePublish = async (currentMealPlan?: MealPlan) => {
+    const plan = currentMealPlan || mealPlan; // Use the passed meal plan or fallback to mealPlan
+  
+    if (!plan || !plan.meals || Array.from(plan.meals).some(meal => !meal.meal_name?.trim())) {
       Toast.show({
         type: 'error',
         text1: 'Missing Fields',
@@ -246,14 +228,6 @@ const MealPlanScreen = () => {
     }
   
     try {
-      // Temporary placeholder for responses
-      const temp_response = {
-        searchResponse: true, // Simulating a response indicating existing meal plans
-        updateResponse: true, // Simulating a successful update
-        createResponse: true, // Simulating a successful creation
-      };
-  
-      // Retrieve token and trainer's user ID from AsyncStorage
       const token = await AsyncStorage.getItem('authToken');
       const trainerID = await AsyncStorage.getItem('userID'); // Logged-in trainer's ID
       const requesteeID = memberData?.requesteeID; // Member's ID from the state
@@ -268,87 +242,91 @@ const MealPlanScreen = () => {
         return;
       }
   
-      // Check for an existing meal plan with the same member_id
-      // const searchResponse = await fetch(`${API_BASE_URL}/api/mealplans?member_id=${requesteeID}`, {
-      //   method: 'GET',
-      //   headers: {
-      //     'Accept': 'application/json',
-      //     'Authorization': `Bearer ${token}`,
-      //   },
-      // });
+      // Simulated responses for now
+      const temp_response = {
+        searchResponse: true,
+        updateResponse: true,
+        createResponse: true,
+      };
   
-      let mealPlanId;
+      let mealPlanId: number;
   
-      if (temp_response.searchResponse) {
-        // Simulating existing meal plans
-        const existingMealPlans = [{ mealplan_id: 1 }]; // Example: An existing meal plan
+      if (temp_response.searchResponse) { // REMOVE IF API AVAILABLE
+        // const searchResponse = await fetch(`${API_BASE_URL}/api/mealplans?member_id=${requesteeID}`, {
+        //   method: 'GET',
+        //   headers: {
+        //     'Accept': 'application/json',
+        //     'Authorization': `Bearer ${token}`,
+        //   },
+        // });
+        // if (!searchResponse.ok) {
+        //   throw new Error(`Search API error! status: ${searchResponse.status}`);
+        // }
+        const existingMealPlans = [{ mealplan_id: 1 }]; // Placeholder for simulated response: await searchResponse.json();
         if (existingMealPlans.length > 0) {
           mealPlanId = existingMealPlans[0].mealplan_id;
   
-          // Update existing meal plan
-          // const updateResponse = await fetch(`${API_BASE_URL}/api/mealplans/${mealPlanId}`, {
-          //   method: 'PUT',
-          //   headers: {
-          //     'Content-Type': 'application/json',
-          //     'Authorization': `Bearer ${token}`,
-          //   },
-          //   body: JSON.stringify({
-          //     member_id: requesteeID,
-          //     trainer_id: trainerID,
-          //     meals: mealPlan.meals.map(meal => ({
-          //       name: meal.meal_name,
-          //       type: meal.meal_type,
-          //       calories: meal.calories,
-          //       protein: meal.protein,
-          //       carbs: meal.carbs,
-          //       description: meal.description,
-          //     })),
-          //     fitness_goal: fitnessGoal,
-          //     calorie_intake: mealPlan.calorie_intake,
-          //     protein: mealPlan.protein,
-          //     carbs: mealPlan.carbs,
-          //     weight_goal: weightGoal,
-          //     allergens: allergens,
-          //     instructions: mealPlan.instructions,
-          //   }),
-          // });
-  
-          if (temp_response.updateResponse) {
+          if (temp_response.updateResponse) { // REMOVE IF API AVAILABLE
+            // const updateResponse = await fetch(`${API_BASE_URL}/api/mealplans/${mealPlanId}`, {
+            //   method: 'PUT',
+            //   headers: {
+            //     'Content-Type': 'application/json',
+            //     'Authorization': `Bearer ${token}`,
+            //   },
+            //   body: JSON.stringify({
+            //     member_id: requesteeID,
+            //     trainer_id: trainerID,
+            //     meals: plan.meals.map(meal => ({
+            //       id: meal.id,
+            //       meal_name: meal.meal_name,
+            //       description: meal.description,
+            //       meal_type: meal.meal_type,
+            //       calories: meal.calories,
+            //       protein: meal.protein,
+            //       carbs: meal.carbs,
+            //       mealplan: mealPlanId,
+            //     })),
+            //     mealplan_name: plan.mealplan_name,
+            //     fitness_goal: fitnessGoal,
+            //     calorie_intake: plan.calorie_intake,
+            //     protein: plan.protein,
+            //     carbs: plan.carbs,
+            //     weight_goal: weightGoal,
+            //     instructions: plan.instructions,
+            //   }),
+            // });
             console.log("Meal plan updated successfully!");
           } else {
             throw new Error("Simulated update failed!");
           }
         } else {
-          // Create a new meal plan
-          // const createResponse = await fetch(`${API_BASE_URL}/api/mealplans`, {
-          //   method: 'POST',
-          //   headers: {
-          //     'Content-Type': 'application/json',
-          //     'Authorization': `Bearer ${token}`,
-          //   },
-          //   body: JSON.stringify({
-          //     member_id: requesteeID,
-          //     trainer_id: trainerID,
-          //     meals: mealPlan.meals.map(meal => ({
-          //       name: meal.meal_name,
-          //       type: meal.meal_type,
-          //       calories: meal.calories,
-          //       protein: meal.protein,
-          //       carbs: meal.carbs,
-          //       description: meal.description,
-          //     })),
-          //     mealplan_name: "New Meal Plan",
-          //     fitness_goal: fitnessGoal,
-          //     calorie_intake: mealPlan.calorie_intake,
-          //     protein: mealPlan.protein,
-          //     carbs: mealPlan.carbs,
-          //     weight_goal: weightGoal,
-          //     allergens: allergens,
-          //     instructions: mealPlan.instructions,
-          //   }),
-          // });
-  
-          if (temp_response.createResponse) {
+          if (temp_response.createResponse) { // REMOVE IF API AVAILABLE
+            // const createResponse = await fetch(`${API_BASE_URL}/api/mealplans`, {
+            //   method: 'POST',
+            //   headers: {
+            //     'Content-Type': 'application/json',
+            //     'Authorization': `Bearer ${token}`,
+            //   },
+            //   body: JSON.stringify({
+            //     member_id: requesteeID,
+            //     trainer_id: trainerID,
+            //     meals: plan.meals.map(meal => ({
+            //       meal_name: meal.meal_name,
+            //       description: meal.description,
+            //       meal_type: meal.meal_type,
+            //       calories: meal.calories,
+            //       protein: meal.protein,
+            //       carbs: meal.carbs,
+            //     })),
+            //     mealplan_name: "New Meal Plan",
+            //     fitness_goal: fitnessGoal,
+            //     calorie_intake: plan.calorie_intake,
+            //     protein: plan.protein,
+            //     carbs: plan.carbs,
+            //     weight_goal: weightGoal,
+            //     instructions: plan.instructions,
+            //   }),
+            // });
             console.log("New meal plan created successfully!");
           } else {
             throw new Error("Simulated creation failed!");
@@ -358,24 +336,32 @@ const MealPlanScreen = () => {
         throw new Error("Simulated search failed!");
       }
   
-      // Finalizing the publishing process
+      // Update state after successful publish
+      setMealPlans((prevMealPlans) =>
+        prevMealPlans.map((p) =>
+          p.mealplan_id === mealPlanId ? { ...plan, mealplan_id: mealPlanId } : p
+        )
+      );
+      setMealPlan(null); // Clear view state
+  
       Toast.show({
         type: 'info',
         text1: 'Meal Plan Published',
         text2: 'Your meal plan has been published successfully.',
         position: 'bottom',
       });
-      setViewState("");
+      setViewState('');
     } catch (error) {
       console.error("Error handling meal plan:", error);
       Toast.show({
         type: 'error',
-        text1: 'Publish Failed',
-        text2: 'An unexpected error occurred. Please try again later.',
-        position: 'bottom',
+        text1: "Publish Failed",
+        text2: "An unexpected error occurred. Please try again later.",
+        position: "bottom",
       });
     }
-  };    
+  };  
+    
 
   const handleDelete = async () => {
     try {
@@ -422,6 +408,11 @@ const MealPlanScreen = () => {
     }
   };
 
+  const handleMealPlanSelect = (selectedMealPlan: MealPlan) => {
+    setMealPlan(selectedMealPlan); // Set the selected meal plan
+    setViewState("editMP");
+  };
+
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === "ios" ? "padding" : "height"} 
@@ -435,7 +426,7 @@ const MealPlanScreen = () => {
               <MealPlanRequestHeader setViewState={setViewState} />
               <MealPlanRequest
                   setViewState={setViewState}
-                  memberName={userID || ''}
+                  memberName={memberData.requesteeName || ''}
                   fitnessGoal={memberData.fitnessGoal || ''}
                   weightGoal={memberData.weightGoal || ''}
                   allergens={memberData.allergens || ''}
@@ -445,23 +436,7 @@ const MealPlanScreen = () => {
                   onEditPress={() => setViewState("createMP")}
               />
           </View>
-            ) : viewState === "sendMP" ? (
-            <View style={styles.deleteContainer}>
-              <Ionicons name="create-outline" size={24} color="black" style={styles.icon} />
-              <Text style={styles.alertTitle}>Publish Meal Plan?</Text>
-              <Text style={styles.alertMessage}>
-              Are you sure you want to publish this Meal Plan?
-              </Text>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
-                  <Text style={styles.buttonText}>NO</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonGreen} onPress={handlePublish}>
-                  <Text style={styles.buttonText}>YES</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ) : viewState === "delete" ? (
+            ) : viewState === "delete" ? (
             <View style={styles.deleteContainer}>
               <Ionicons name="trash-outline" size={24} color="black" style={styles.icon} />
               <Text style={styles.alertTitle}>Delete Meal Plan?</Text>
@@ -478,168 +453,118 @@ const MealPlanScreen = () => {
               </View>
             </View>
           ) : viewState === "createMP" ? (
-            // Nutritional Meal Plan View
             <>
-              {mealPlan && mealPlan.meals ? (
-                <View style={styles.planContainer}>
-                  <CreateMPHeader setViewState={setViewState} />
-                  {mealPlan.meals.map((meal, index) => (
-                    <View key={index} style={styles.mealItem}>
-                      <Text style={styles.mealTitle}>{meal.meal_name}</Text>
-                      <Text style={styles.mealDescription}>Type of Food:</Text>
-                      <TextInput
-                        style={styles.mealData}
-                        value={""}
-                        onChangeText={(text) => {
-                          const updatedMeals = [...mealPlan.meals];
-                          updatedMeals[index].meal_type = text;
-                          setMealPlan({ ...mealPlan, meals: updatedMeals });
-                        }}
-                      />
-                      <Text style={styles.mealDescription}>Calories:</Text>
-                      <TextInput
-                        style={styles.mealData}
-                        value={""}
-                        onChangeText={(text) => {
-                          const updatedMeals = [...mealPlan.meals];
-                          updatedMeals[index].calories = parseInt(text) || 0;
-                          setMealPlan({ ...mealPlan, meals: updatedMeals });
-                        }}
-                        keyboardType="numeric"
-                      />
-                      <Text style={styles.mealDescription}>Protein:</Text>
-                      <TextInput
-                        style={styles.mealData}
-                        value={""}
-                        onChangeText={(text) => {
-                          const updatedMeals = [...mealPlan.meals];
-                          updatedMeals[index].protein = parseInt(text) || 0;
-                          setMealPlan({ ...mealPlan, meals: updatedMeals });
-                        }}
-                        keyboardType="numeric"
-                      />
-                      <Text style={styles.mealDescription}>Carbs:</Text>
-                      <TextInput
-                        style={styles.mealData}
-                        value={""}
-                        onChangeText={(text) => {
-                          const updatedMeals = [...mealPlan.meals];
-                          updatedMeals[index].carbs = parseInt(text) || 0;
-                          setMealPlan({ ...mealPlan, meals: updatedMeals });
-                        }}
-                        keyboardType="numeric"
-                      />
-                      <Text style={styles.mealDescription}>Description:</Text>
-                      <TextInput
-                        style={styles.mealData}
-                        value={""}
-                        onChangeText={(text) => {
-                          const updatedMeals = [...mealPlan.meals];
-                          updatedMeals[index].description = text;
-                          setMealPlan({ ...mealPlan, meals: updatedMeals });
-                        }}
-                      />
-                    </View>
-                  ))}
-                  <TouchableOpacity style={styles.buttonFeedback} onPress={() => setViewState("sendMP")}>
-                    <Text style={styles.buttonText}>Send Meal Plan</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <View>
-                  <Header />
-                  <View style={styles.centerContainer}>
-                    <Text style={styles.subtitle2}>There are no meal plans yet.</Text>
-                    <TouchableOpacity style={styles.button} onPress={() => setViewState("createMP")}>
-                      <Text style={styles.buttonText}>Create Meal Plan</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
+              <CreateMPHeader setViewState={setViewState} setMealPlan={setNewMealPlan} />
+              <MealPlanForm
+                meals={newMealPlan?.meals || []} // Use newMealPlan for unconfirmed changes
+                onChangeMeal={(index: number, key: keyof Meal, value: string | number) => {
+                  setNewMealPlan((prevMealPlan) => {
+                    if (!prevMealPlan) return prevMealPlan; // Prevent null reference
+
+                    const updatedMeals = [...prevMealPlan.meals];
+                    updatedMeals[index] = { ...updatedMeals[index], [key]: value }; // Safe update
+
+                    return { ...prevMealPlan, meals: updatedMeals };
+                  });
+                }}
+                onDeleteMeal={(index: number) => {
+                  setNewMealPlan((prevMealPlan) => {
+                    if (!prevMealPlan) return prevMealPlan; // Prevent null state
+
+                    const updatedMeals = prevMealPlan.meals.filter((_, i) => i !== index);
+                    return { ...prevMealPlan, meals: updatedMeals };
+                  });
+                }}
+                onAction={() => {
+                  const newMeal: Meal = {
+                    id: Date.now().toString(),
+                    mealplan: "0", // Placeholder, may need an updated value
+                    meal_name: "",
+                    meal_type: "",
+                    calories: 0,
+                    protein: 0,
+                    carbs: 0,
+                    description: "",
+                  };
+
+                  setNewMealPlan((prevMealPlan) => ({
+                    ...prevMealPlan!,
+                    meals: [...(prevMealPlan?.meals || []), newMeal],
+                    trainer_id: userID?.toString() || "", // Assign trainer
+                    member_id: memberData.requesteeID, // Assign member
+                  }));
+                }}
+                actionLabel="Add Meal"
+              />
+
+              {/* External Button for Publishing Meal Plan */}
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={() => {
+                  if (!newMealPlan) return; // Prevent passing null
+                  handlePublish(newMealPlan);
+                }}
+              >
+                <Text style={styles.buttonText}>Publish Meal Plan</Text>
+              </TouchableOpacity>
             </>
           ) : viewState === "editMP" ? (
             // Nutritional Meal Plan View
             <>
               {mealPlan && mealPlan.meals ? (
-              <View style={styles.planContainer}>
-                <EditMPHeader setViewState={setViewState} />
-                {mealPlan.meals.map((meal, index) => (
-                <View key={index} style={styles.mealItem}>
-                  <Text style={styles.mealTitle}>{meal.meal_name}</Text>
-                  <Text style={styles.mealDescription}>Type of Food:</Text>
-                  <TextInput
-                  style={styles.mealData}
-                  defaultValue={meal.meal_type}
-                  onChangeText={(text) => {
-                    const updatedMeals = [...mealPlan.meals];
-                    updatedMeals[index].meal_type = text;
-                    setMealPlan({ ...mealPlan, meals: updatedMeals });
-                  }}
+                <>
+                  <EditMPHeader setViewState={setViewState} setMealPlan={setMealPlan} />
+                  <MealPlanForm
+                    meals={mealPlan?.meals || []} // Use newMealPlan if changes exist, fallback to selected mealPlan
+                    onChangeMeal={(index: number, key: keyof Meal, value: string | number) => {
+                      setMealPlan((prevMealPlan) => {
+                        if (!prevMealPlan) return prevMealPlan; // Prevent null state
+
+                        const updatedMeals = [...prevMealPlan.meals]; // Copy the meals array
+                        updatedMeals[index] = { ...updatedMeals[index], [key]: value }; // Safely update field
+
+                        return { ...prevMealPlan, meals: updatedMeals };
+                      });
+                    }}
+                    onDeleteMeal={(index: number) => {
+                      setMealPlan((prevMealPlan) => {
+                        if (!prevMealPlan) return prevMealPlan; // Prevent null state
+
+                        const updatedMeals = prevMealPlan.meals.filter((_, i) => i !== index);
+                        return { ...prevMealPlan, meals: updatedMeals };
+                      });
+                    }}
+                    onAction={() => {
+                      const newMeal: Meal = {
+                        id: Date.now().toString(),
+                        mealplan: mealPlan?.mealplan_id?.toString() || "", // Use selected meal plan ID
+                        meal_name: "",
+                        meal_type: "",
+                        calories: 0,
+                        protein: 0,
+                        carbs: 0,
+                        description: "",
+                      };
+                      setMealPlan((prevMealPlan) => ({
+                        ...prevMealPlan!,
+                        meals: [...(prevMealPlan?.meals || []), newMeal],
+                      }));
+                    }}
+                    actionLabel="Save"
                   />
-                  <Text style={styles.mealDescription}>Calories:</Text>
-                  <TextInput
-                  style={styles.mealData}
-                  defaultValue={meal.calories.toString()}
-                  onChangeText={(text) => {
-                    const updatedMeals = [...mealPlan.meals];
-                    updatedMeals[index].calories = parseInt(text) || 0;
-                    setMealPlan({ ...mealPlan, meals: updatedMeals });
-                  }}
-                  keyboardType="numeric"
-                  />
-                  <Text style={styles.mealDescription}>Protein:</Text>
-                  <TextInput
-                  style={styles.mealData}
-                  defaultValue={meal.protein.toString()}
-                  onChangeText={(text) => {
-                    const updatedMeals = [...mealPlan.meals];
-                    updatedMeals[index].protein = parseInt(text) || 0;
-                    setMealPlan({ ...mealPlan, meals: updatedMeals });
-                  }}
-                  keyboardType="numeric"
-                  />
-                  <Text style={styles.mealDescription}>Carbs:</Text>
-                  <TextInput
-                  style={styles.mealData}
-                  defaultValue={meal.carbs.toString()}
-                  onChangeText={(text) => {
-                    const updatedMeals = [...mealPlan.meals];
-                    updatedMeals[index].carbs = parseInt(text) || 0;
-                    setMealPlan({ ...mealPlan, meals: updatedMeals });
-                  }}
-                  keyboardType="numeric"
-                  />
-                  <Text style={styles.mealDescription}>Description:</Text>
-                  <TextInput
-                  style={styles.mealData}
-                  defaultValue={meal.description}
-                  onChangeText={(text) => {
-                    const updatedMeals = [...mealPlan.meals];
-                    updatedMeals[index].description = text;
-                    setMealPlan({ ...mealPlan, meals: updatedMeals });
-                  }}
-                  />
-                </View>
-                ))}
-                <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
-                  <Text style={styles.buttonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonSave} onPress={() => setViewState("sendMP")}>
-                  <Text style={styles.buttonText}>Save</Text>
-                </TouchableOpacity>
-                </View>
-              </View>
+
+                  {/* External Button for Publishing Meal Plan */}
+                  <TouchableOpacity style={styles.submitButton} onPress={() => handlePublish(mealPlan)}>
+                    <Text style={styles.buttonText}>Publish Meal Plan</Text>
+                  </TouchableOpacity>
+                </>
               ) : (
-              <View>
-                <Header />
-                <View style={styles.centerContainer}>
-                <Text style={styles.subtitle2}>There are no meal plans yet.</Text>
-                <TouchableOpacity style={styles.button} onPress={() => setViewState("createMP")}>
-                  <Text style={styles.buttonText}>Create Meal Plan</Text>
-                </TouchableOpacity>
+                <View>
+                  <Header />
+                  <View style={styles.centerContainer}>
+                    <Text style={styles.subtitle2}>There are no meal plans yet.</Text>
+                  </View>
                 </View>
-              </View>
               )}
             </>
           ) : ( 
@@ -648,19 +573,15 @@ const MealPlanScreen = () => {
               <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("requests")}>
               <Text style={styles.buttonText}>Meal Plan Requests</Text>
               </TouchableOpacity>
-              {mealPlan ? (
-              <View style={styles.planContainer}>
-                {/* Render the MemberMealPlan component here */}
-                <MemberMealPlan mealPlan={mealPlan} onEditPress={() => setViewState("editMP")} />
-              </View>
-              ) : (
-              <View style={styles.centerContainer}>
-                <Text style={styles.subtitle2}>You have no existing meal plan.</Text>
-                <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("createMP")}>
-                <Text style={styles.buttonText}>Create Meal Plan</Text>
+              {mealPlans.map((plan) => (
+                <TouchableOpacity key={plan.mealplan_id} onPress={() => handleMealPlanSelect(plan)}>
+                  <MemberMealPlan 
+                    mealPlan={plan} 
+                    requesteeName={memberData.requesteeName}  // Pass the prop here
+                    onEditPress={() => handleMealPlanSelect(plan)} 
+                  />
                 </TouchableOpacity>
-              </View>
-              )}
+              ))}
             </View>
           )}
           
@@ -671,8 +592,8 @@ const MealPlanScreen = () => {
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
+  // Used for the ScrollView container
   scrollContainer: {
     flexGrow: 1,
     justifyContent: "flex-start",
@@ -681,6 +602,8 @@ const styles = StyleSheet.create({
     paddingLeft: 30,
     paddingRight: 30,
   },
+
+  // General container for layouts
   container: {
     flex: 1,
     backgroundColor: Colors.bg,
@@ -688,6 +611,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "center",
   },
+
+  // Center-aligned container (used in cases like "No meal plans available")
   centerContainer: {
     flex: 1,
     backgroundColor: Colors.bg,
@@ -695,16 +620,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
+  // Icon styles for delete confirmation
   icon: {
     marginBottom: 15,
     alignSelf: "center",
   },
+
+  // Title for alert dialogs (e.g., delete confirmation)
   alertTitle: {
     fontSize: 20,
     marginBottom: 10,
     textAlign: "center",
     fontFamily: Fonts.bold,
   },
+
+  // Message for alert dialogs
   alertMessage: {
     textAlign: "center",
     fontSize: 14,
@@ -712,19 +643,34 @@ const styles = StyleSheet.create({
     marginBottom: 25,
     fontFamily: Fonts.regular,
   },
+
+  // Button container for aligned buttons
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "center",
     gap: 10,
   },
-  buttonFeedback: {
-    backgroundColor: Colors.gold,
-    padding: 12,
+
+  // Red button for actions like "NO" in delete confirmation
+  buttonRed: {
+    backgroundColor: Colors.red,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    alignItems: "center",
     borderRadius: 10,
-    alignSelf: "center",
-    top: -5,
-    width: "70%",
+    marginHorizontal: 5,
   },
+
+  // Green button for actions like "YES" in delete confirmation
+  buttonGreen: {
+    backgroundColor: Colors.green,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    marginHorizontal: 5,
+  },
+
+  // General button styling
   submitButton: {
     backgroundColor: Colors.gold,
     padding: 12,
@@ -736,146 +682,29 @@ const styles = StyleSheet.create({
     marginTop: 30,
     fontFamily: Fonts.medium,
   },
-  buttonBlack: {
-    padding: 12,
-    borderRadius: 10,
-    alignSelf: "center",
-    marginTop: 10,
-    width: "70%",
-    backgroundColor: Colors.black,
-    marginHorizontal: 5,
-  },
-  buttonRed: {
-    backgroundColor: Colors.red,
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    alignItems: "center",
-    borderRadius: 10,
-    marginHorizontal: 5,
-  },
-  buttonSave: {
-    backgroundColor: Colors.gold,
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    alignItems: "center",
-    borderRadius: 10,
-    marginHorizontal: 5,
-  },
-  buttonGreen: {
-    backgroundColor: Colors.green,
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    marginHorizontal: 5,
-  },
+
+  // Text styles for buttons
   buttonText: {
     color: Colors.white,
     fontSize: 15,
     textAlign: "center",
     fontFamily: Fonts.semibold,
   },
-  logo: {
-    width: 100,
-    height: 100,
-    resizeMode: "contain",
-    marginBottom: 20,
-  },
+
+  // Styles for the nutritional meal plan container
   planContainer: {
     width: "100%",
   },
-  formContainer: {
-    width: "100%",
-    alignItems: "flex-start",
-    flex: 1,
-  },
-  title: {
-    fontSize: 20,
-    marginBottom: 20,
-    alignSelf: "baseline",
-    fontFamily: Fonts.bold,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-    textAlign: "center",
-    marginBottom: 20,
-    fontFamily: Fonts.medium,
-  },
+
+  // Subtitle styles for the "No meal plan available" message
   subtitle2: {
     fontSize: 16,
     color: Colors.textSecondary,
     textAlign: "center",
     fontFamily: Fonts.mediumItalic,
   },
-  requestHeaders: {
-    fontSize: 16,
-    marginBottom: 5,
-    alignSelf: "flex-start",
-    fontFamily: Fonts.semibold,
-  },
-  feedbackHeaders: {
-    fontSize: 16,
-    marginBottom: 15,
-    alignSelf: "flex-start",
-    fontFamily: Fonts.semibold,
-  },
-  input: {
-    width: "100%",
-    padding: 12,
-    borderWidth: 1,
-    borderColor: Colors.textSecondary,
-    borderRadius: 10,
-    marginBottom: 10,
-    fontFamily: Fonts.regular,
-    fontSize: 14,
-  },
-  feedbackInput: {
-    height: 200,
-    textAlignVertical: 'top',
-    fontFamily: Fonts.regular,
-    fontSize: 14,
-  },
-  button: {
-    backgroundColor: Colors.gold,
-    padding: 12,
-    borderRadius: 5,
-    alignItems: "center",
-    marginTop: 20,
-    width: "100%",
-    fontFamily: Fonts.medium,
-  },
-  mealItem: {
-    borderWidth: 1,       // Border thickness
-    width: '100%',        // Full width
-    borderColor: Colors.black,  // Border color (light gray)
-    borderRadius: 0,     // Rounded corners
-    padding: 15,          // Padding inside the box
-    marginVertical: 10,   // Spacing between containers
-    backgroundColor: Colors.bg, // Background color
-    marginBottom: 10,
-  },
-  mealTitle: {
-    fontSize: 18,
-    backgroundColor: Colors.bg,
-    top: -28,
-    marginBottom: -25,
-    paddingLeft: 5,
-    paddingRight: 5,  // Ensures the background fully wraps the text
-    alignSelf: "flex-start", // Shrinks the background to fit the text
-    fontFamily: Fonts.semibold,
-  },  
-  mealData: {
-    fontSize: 16,
-    marginBottom: 10,
-    color: Colors.textPrimary,
-    fontFamily: Fonts.semibold,
-  },
-  mealDescription: {
-    fontSize: 16,
-    marginBottom: 3,
-    color: Colors.textSecondary,
-    fontFamily: Fonts.regular,
-  },
+
+  // Delete confirmation dialog container
   deleteContainer: {
     position: "absolute",
     top: "50%",
@@ -890,66 +719,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
-  },
-  sendFBContainer: {
-    width: "100%",
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center',
-  },
-  pickerRating: {
-    width: '100%', 
-    backgroundColor: Colors.black,
-    borderWidth: 1,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  requestMPContainer: {
-    width: "100%",
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center',
-  },
-  pickerTrainer: {
-    width: '100%',
-    backgroundColor: Colors.bg,
-    borderWidth: 1,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  selectTrainerHeader: {
-    color: Colors.textSecondary,
-    fontFamily: Fonts.regular,
-    fontSize: 14,
-    padding: 12,
-  },
-  trainerPicker: {
-    backgroundColor: Colors.bg,
-    color: Colors.black,
-    fontFamily: Fonts.regular,
-    fontSize: 14,
-  },
-  pickerBlack: {
-    width: '100%', 
-    backgroundColor: Colors.black,
-    borderRadius: 10,
-  },
-  trashIcon: {
-    alignSelf: 'flex-end',
-    marginTop: 0,
-    flexGrow: 0,
-  },
-  ratingHeader: {
-    color: Colors.white,
-    fontFamily: Fonts.regular,
-    fontSize: 14,
-    padding: 12,
-  },
-  ratingPicker: {
-    backgroundColor: Colors.black,
-    color: Colors.white,
-    fontFamily: Fonts.regular,
-    fontSize: 14,
   },
 });
 

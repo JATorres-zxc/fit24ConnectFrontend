@@ -6,13 +6,15 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 
 type CreateMealPlanButtonProps = {
   setViewState: (view: string) => void;
+  setMealPlan: (mealPlan: null) => void; // Add this to clear mealPlan
 };
 
-export default function CreateMealPlanButton({ setViewState }: CreateMealPlanButtonProps) {
+export default function CreateMealPlanButton({ setViewState, setMealPlan }: CreateMealPlanButtonProps) {
 
   const handlePress = () => {
+    setMealPlan(null); // Clear selected mealPlan when navigating back
+    setViewState(""); 
     router.push('/(trainer)/mealplan');
-    setViewState("");
   };
 
   return (

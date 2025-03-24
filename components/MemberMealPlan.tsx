@@ -21,29 +21,30 @@ interface MealPlan {
     member_id: string;
     trainer_id: string;
     mealplan_name: string;
-    fitnessGoal: string;
+    fitness_goal: string;
     calorie_intake: number;
     protein: number;
     carbs: number;
-    weightGoal: number;
+    weight_goal: number;
     allergens: string;
     instructions: string;
 }
 
 interface MemberMealPlanProps {
     mealPlan: MealPlan;
+    requesteeName: string;  // Add this prop
     onEditPress: () => void;
 }
 
-const MemberMealPlan: React.FC<MemberMealPlanProps> = ({ mealPlan, onEditPress }) => {
+const MemberMealPlan: React.FC<MemberMealPlanProps> = ({ mealPlan, requesteeName, onEditPress }) => {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <Image source={{ uri: 'https://via.placeholder.com/90' }} style={styles.image} />
                 <View style={styles.textContainer}>
-                    <Text style={styles.title}>Member's Meal Plan</Text>
+                    <Text style={styles.title}>{requesteeName}'s Meal Plan</Text>
                     <Text style={styles.subtitle}>Working on:</Text>
-                    <Text style={styles.fitnessGoal}>{mealPlan.fitnessGoal}</Text>
+                    <Text style={styles.fitnessGoal}>{mealPlan.fitness_goal}</Text>
                 </View>
                 <TouchableOpacity style={styles.editIcon} onPress={onEditPress}>
                     <FontAwesome name="pencil" size={24} color={Colors.black} />
