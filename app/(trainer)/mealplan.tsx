@@ -215,7 +215,7 @@ const MealPlanScreen = () => {
   }, []);
 
   const handlePublish = async (currentMealPlan?: MealPlan) => {
-    const plan = currentMealPlan || mealPlan; // Use the passed meal plan or fallback to mealPlan
+    const plan = currentMealPlan; // Use the current meal plan state
   
     if (!plan || !plan.meals || Array.from(plan.meals).some(meal => !meal.meal_name?.trim())) {
       Toast.show({
@@ -295,6 +295,7 @@ const MealPlanScreen = () => {
             //     instructions: plan.instructions,
             //   }),
             // });
+            
             console.log("Meal plan updated successfully!");
           } else {
             throw new Error("Simulated update failed!");
@@ -515,7 +516,7 @@ const MealPlanScreen = () => {
                 <>
                   <EditMPHeader setViewState={setViewState} setMealPlan={setMealPlan} />
                   <MealPlanForm
-                    meals={mealPlan?.meals || []} // Use newMealPlan if changes exist, fallback to selected mealPlan
+                    meals={mealPlan?.meals || []}
                     onChangeMeal={(index: number, key: keyof Meal, value: string | number) => {
                       setMealPlan((prevMealPlan) => {
                         if (!prevMealPlan) return prevMealPlan; // Prevent null state
@@ -550,12 +551,19 @@ const MealPlanScreen = () => {
                         meals: [...(prevMealPlan?.meals || []), newMeal],
                       }));
                     }}
-                    actionLabel="Save"
+                    actionLabel="Add Meal"
                   />
 
                   {/* External Button for Publishing Meal Plan */}
-                  <TouchableOpacity style={styles.submitButton} onPress={() => handlePublish(mealPlan)}>
-                    <Text style={styles.buttonText}>Publish Meal Plan</Text>
+                  <TouchableOpacity
+                    style={styles.submitButton}
+                    onPress={() => {
+                      if (!mealPlan) return; // Prevent passing null
+                      console.log("Meal Plan to publish:", mealPlan);
+                      handlePublish(mealPlan);
+                    }}
+                  >
+                    <Text style={styles.buttonText}>Save</Text>
                   </TouchableOpacity>
                 </>
               ) : (
