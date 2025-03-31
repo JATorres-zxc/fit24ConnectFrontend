@@ -60,9 +60,8 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             const API_BASE_URL =
                 Platform.OS === 'web'
                     ? 'http://127.0.0.1:8000' // Web uses localhost
-                    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
+                    : 'http://172.16.15.51:8000'; // Mobile uses local network IP
 
-            // Commented out API call for testing
             const response = await fetch(`${API_BASE_URL}/api/account/login/`, {
                 method: 'POST',
                 headers: {
@@ -76,25 +75,37 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
             const result = await response.json();
 
-            if (response.ok && result.tokens.access) {
+            if (response.ok && result.success && result.tokens.access) {
                 // Store the token and user ID securely for future use
                 await AsyncStorage.setItem('authToken', result.tokens.access);
-                await AsyncStorage.setItem('userID', result.user.id);
+                await AsyncStorage.setItem('userID', result.user.id.toString());
 
-                // Navigate to the home screen
-                router.push({
-                    pathname: '/(tabs)/home',
-                    params: { showToast: 'true', full_name: result.user.full_name }  // Pass parameters to home screen
-                });
+                // Navigate based on user role
+                if (result.user.role === 'trainer') {
+                    router.push({
+                        pathname: '/(trainer)/home',
+                        params: { showToast: 'true', full_name: result.user.full_name || 'Trainer' }
+                    });
+                } else if (result.user.role === 'admin') {
+                    router.push({
+                        pathname: '/(admin)/home',
+                        params: { showToast: 'true', full_name: result.user.full_name || 'Admin' }
+                    });
+                } else {
+                    router.push({
+                        pathname: '/(tabs)/home',
+                        params: { showToast: 'true', full_name: result.user.full_name || 'User' }
+                    });
+                }
             } else {
                 Toast.show({
                     type: 'error',
                     text1: 'Login Failed',
-                    text2: 'Invalid username or password.',
+                    text2: result.message || 'Invalid username or password.',
                     visibilityTime: 1500,
                     position: 'bottom'
                 });
-                setError('Invalid username or password.');
+                setError(result.message || 'Invalid username or password.');
             }
         } catch (error) {
             Toast.show({

@@ -176,25 +176,46 @@ const MealPlanScreen = () => {
     }
     
     try {
-      // // Replace with actual API call
-      // To central feedback and request database
+      // Fetch member data from the profile API
+      const profileResponse = await fetch(`${API_BASE_URL}/api/profile/${userID}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-      // const response = await fetch('https://api.example.com/submitMealPlan', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     trainer,
-      //     fitnessGoal,
-      //     weightGoal,
-      //     allergens,
-      //     feedback,
-      //     rating,
-      //   }),
-      // });
+      if (!profileResponse.ok) {
+        throw new Error(`Profile API error! status: ${profileResponse.status}`);
+      }
 
-      // const result = await response.json();
+      const profileData = await profileResponse.json();
+      const { height, weight, age } = profileData;
+      profileData.user_ID = userID; // Add user_ID to profile data
+
+      // Fetch request data from the requests-feedback API
+      const requestResponse = await fetch(`${API_BASE_URL}/api/requests-feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userID,
+          trainer,
+          fitnessGoal,
+          weightGoal,
+          allergens,
+          height,
+          weight,
+          age,
+        }),
+      });
+
+      if (!requestResponse.ok) {
+        throw new Error(`Requests API error! status: ${requestResponse.status}`);
+      }
+
+      const requestData = await requestResponse.json();
       
       // // Temporary Success Placeholder
       const temp_response = true;

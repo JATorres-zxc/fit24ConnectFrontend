@@ -1,9 +1,27 @@
 import { Text, View, StyleSheet } from 'react-native';
 
+import Header from '@/components/HistoryHeader';
+import { Colors } from '@/constants/Colors';
+import AccessLogsContainer from '@/components/AccessLogsContainer';
+import { accessLogs } from '@/context/accessLogs';
+
 export default function HistoryScreen() {
+  const sortedLogs = [...accessLogs].sort((a, b) => {
+    // Combine date and time for comparison
+    const dateTimeA = new Date(`${a.date} ${a.time}`).getTime();
+    const dateTimeB = new Date(`${b.date} ${b.time}`).getTime();
+    
+    // Sort in descending order (most recent first)
+    return dateTimeB - dateTimeA;
+  });
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>History screen</Text>
+      <Header />
+
+      <View style={styles.logsContainer}>
+        <AccessLogsContainer accessLogs={sortedLogs} />
+      </View>
     </View>
   );
 }
@@ -11,11 +29,12 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
-    justifyContent: 'center',
+    backgroundColor: Colors.bg,
     alignItems: 'center',
   },
-  text: {
-    color: '#fff',
+  logsContainer: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
   },
 });
