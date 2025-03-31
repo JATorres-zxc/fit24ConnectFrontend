@@ -26,6 +26,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmationPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const [is_trainer, setIsTrainer] = useState(false); // Add state for is_trainer
 
     const sanitizeInput = (input: string) => {
         return input.replace(/[^a-zA-Z0-9@.]/g, '');
@@ -102,6 +103,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     email: sanitizedEmail,
                     password: sanitizedPassword,
                     confirm_password: sanitizedConfirmPassword,
+                    is_trainer: is_trainer,
                 }),
             });
 
@@ -168,6 +170,24 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                         value={confirmPassword}
                         onChangeText={setConfirmationPassword}
                     />
+
+                    <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
+                        <TouchableOpacity
+                            onPress={() => setIsTrainer(!is_trainer)}
+                            style={{
+                                width: 20,
+                                height: 20,
+                                borderRadius: 4,
+                                borderWidth: 1,
+                                borderColor: Colors.border,
+                                backgroundColor: is_trainer ? Colors.gold : "transparent",
+                                marginRight: 10,
+                            }}
+                        />
+                        <Text style={{ fontFamily: Fonts.regular, color: Colors.linkText }}>
+                            Register as Trainer
+                        </Text>
+                    </View>
 
                     <TouchableOpacity style={styles.button} onPress={handleRegister}>
                         <Text style={styles.buttonText}>

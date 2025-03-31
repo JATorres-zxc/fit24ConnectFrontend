@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { 
   View, Text, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, 
   TextInput
@@ -38,6 +38,7 @@ interface Workout {
   exercises: Exercise[];
   visibleTo: "everyone" | "userEmail" | string;
   feedbacks: Feedback[];
+  member_id?: string; // Added member_id property
 }
 
 const API_BASE_URL =
@@ -91,68 +92,68 @@ const WorkoutScreen = () => {
 
   // Fetching Workout from API
   
-  // useEffect(() => {
-  //   const fetchWorkout = async () => {
-  //     try {
-  //       token = await AsyncStorage.getItem('authToken');
-  //       userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+  useEffect(() => {
+    const fetchWorkout = async () => {
+      try {
+        token = await AsyncStorage.getItem('authToken');
+        userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
 
-  //       const workoutsResponse = await fetch(`${API_BASE_URL}/api/workout/workouts`, {
-  //         headers: {
-  //           'Accept': 'application/json',
-  //           'Authorization': `Bearer ${token}`,
-  //         },
-  //       });
+        const response = await fetch(`${API_BASE_URL}/api/workout/workouts/`, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
 
-  //       if (!workoutsResponse.ok) {
-  //         throw new Error(`HTTP error! status: ${workoutsResponse.status}`);
-  //       }
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-  //       const workoutsData = await workoutsResponse.json();
-  //       const userWorkout = workoutsData.find((workout: Workout) => workout.member_id === userID);
+        const programsData = await response.json();
+        const userProgram = programsData.find((program: any) => program.trainer === userID || program.program_type === "free");
 
-  //       if (!userWorkout) {
-  //         throw new Error('No workout found for the user');
-  //       }
+        if (!userProgram) {
+          throw new Error('No program found for the user');
+        }
 
-  //       workout_id = userWorkout.id;
+        const formattedWorkout: Workout = {
+          id: userProgram.id.toString(),
+          title: userProgram.program_name,
+          fitnessGoal: userProgram.fitness_goal,
+          intensityLevel: userProgram.intensity_level,
+          trainer: userProgram.trainer || "N/A",
+          exercises: userProgram.workout_exercises.map((exercise: any) => ({
+            id: exercise.id.toString(),
+            name: exercise.exercise_details.name,
+            description: exercise.exercise_details.description,
+            image: "", // Add image URL if available in the backend
+            sets: exercise.sets,
+            reps: exercise.reps,
+            restTime: exercise.rest_time,
+            durationPerSet: exercise.duration_per_set,
+            notes: exercise.notes,
+          })),
+          visibleTo: userProgram.program_type === "free" ? "everyone" : userID || "unknown",
+          feedbacks: [], // Adjust if feedback data is available in the backend
+        };
 
-  //       if (!token) {
-  //         throw new Error('No token found');
-  //       }
+        setWorkout(formattedWorkout);
+        setWorkouts((prevWorkouts) => [...prevWorkouts, formattedWorkout]); // Add to the entire set of workouts
+      } catch (error) {
+        console.error('Error fetching workout:', error);
 
-  //       const response = await fetch(`${API_BASE_URL}/api/workout/workouts/${workout_id}`, {
-  //         headers: {
-  //           'Accept': 'application/json',
-  //           'Authorization': `Bearer ${token}`,
-  //         },
-  //       });
+        if (error instanceof Error) {
+          if (error.message.includes('NetworkError')) {
+            console.error('Network error: Please check if the server is running and accessible.');
+          } else if (error.message.includes('CORS')) {
+            console.error('CORS error: Please ensure your server allows requests from your frontend.');
+          }
+        }
+      }
+    };
 
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-
-  //       if (response.status === 404) {
-  //         setWorkout(null);
-  //       } else {
-  //         const data = await response.json();
-  //         setWorkout(data);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching workout:', error);
-
-  //       if (error instanceof Error) {
-  //         if (error.message.includes('NetworkError')) {
-  //           console.error('Network error: Please check if the server is running and accessible.');
-  //         } else if (error.message.includes('CORS')) {
-  //           console.error('CORS error: Please ensure your server allows requests from your frontend.');
-  //         }
-  //       }
-  //     }
-  //   };
-
-  //   fetchWorkout();
-  // }, []);
+    fetchWorkout();
+  }, []);
 
   const [workouts, setWorkouts] = useState<Workout[]>([
     {
@@ -189,19 +190,17 @@ const WorkoutScreen = () => {
 
   const handleDelete = async (workout: Workout) => {
     try {
-      // Uncomment and replace with actual API call
-      // const response = await fetch(`https://api.example.com/deleteWorkout/${workout.title}`, {
-      //   method: 'DELETE',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      // });
-      
-      const temp_response = true;
+      token = await AsyncStorage.getItem('authToken');
 
-      // response.ok
+      const response = await fetch(`${API_BASE_URL}/api/workout/workouts/${workout.id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-      if (temp_response) {
+      if (response.ok) {
         Toast.show({
           type: 'success',
           text1: 'Workout Deleted',
@@ -209,10 +208,13 @@ const WorkoutScreen = () => {
           position: 'bottom'
         });
 
-        // TEMPORARY: DELETE SNIPPET WHEN API IS AVAILABLE.
         setWorkouts((prevWorkouts) => prevWorkouts.filter(w => w.id !== workout.id)); // Remove the workout from the list
-        setSelectedWorkout(null); // Set workoutToDelete to null
-        setWorkout(null); // Set workout to null
+        if (workout.id === selectedWorkout?.id) {
+          setSelectedWorkout(null); // Clear selected workout if it matches the deleted one
+        }
+        if (workout.id === workout?.id) {
+          setWorkout(null); // Clear current workout if it matches the deleted one
+        }
 
         setViewState("plan");
       } else {
