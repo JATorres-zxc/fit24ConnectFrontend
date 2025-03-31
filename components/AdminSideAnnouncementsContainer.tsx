@@ -18,13 +18,23 @@ interface Announcement {
 interface Props {
   announcements: Announcement[];
   onDelete: (id:string) => void; // function to handle deletion
+  isLoading?: boolean;
 }
 
-export default function AdminAnnouncements({ announcements, onDelete }: Props) {
+export default function AdminAnnouncements({ announcements, onDelete, isLoading }: Props) {
   const router = useRouter();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Add loading state handling
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading announcements...</Text>
+      </View>
+    );
+  }
 
   const handleDeletePress = (id: string) => {
     setSelectedId(id);
@@ -111,6 +121,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: '85%',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+    color: Colors.textSecondary,
   },
   listContainer: {
     paddingBottom: 10,
