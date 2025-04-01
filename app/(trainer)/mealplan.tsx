@@ -402,6 +402,7 @@ const MealPlanScreen = () => {
         )
       );
       setMealPlan(null); // Clear view state
+      setSelectedMemberData(null); // Clear selected member data
   
       Toast.show({
         type: 'info',
@@ -444,7 +445,10 @@ const MealPlanScreen = () => {
             // Request Meal Plan View
             <View>
               <MealPlanRequestHeader setViewState={setViewState} />
-
+              <Text style={{ ...styles.subtitle2, marginBottom: 10, lineHeight: 20 }}>
+                <Text style={{ fontFamily: Fonts.semiboldItalic }}>Note:</Text> Creating a Meal Plan for 
+                these Requestees will only set that meal plan to be visible to them.
+              </Text>
               {/* Render Member Requests List */}
               {memberData.map((request) => (
                 <TouchableOpacity key={request.requesteeID}>
@@ -463,7 +467,7 @@ const MealPlanScreen = () => {
             </View>
             ) : viewState === "createMP" ? (
             <>
-              <CreateMPHeader setViewState={setViewState} setMealPlan={setNewMealPlan} />
+              <CreateMPHeader setViewState={setViewState} setMealPlan={setNewMealPlan} setSelectedMemberData = {setSelectedMemberData}/>
               <View>
               <Text style={styles.infoTitle}>Fitness Goal:</Text>
               <Text style={styles.infoText}>{selectedMemberData?.fitnessGoal || 'No fitness goal'}</Text>
@@ -531,7 +535,7 @@ const MealPlanScreen = () => {
             <>
               {mealPlan && mealPlan.meals ? (
                 <>
-                  <EditMPHeader setViewState={setViewState} setMealPlan={setMealPlan} />
+                  <EditMPHeader setViewState={setViewState} setMealPlan={setMealPlan} setSelectedMemberData = {setSelectedMemberData}/>
                   <MealPlanForm
                     meals={mealPlan?.meals || []}
                     onChangeMeal={(index: number, key: keyof Meal, value: string | number) => {

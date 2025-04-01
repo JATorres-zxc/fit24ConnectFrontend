@@ -115,7 +115,11 @@ const WorkoutScreen = () => {
     feedbacks: [],
     member_id: selectedMemberData?.requesteeID || '', // Added member_id property
   });
-  
+
+  // Add this useEffect to monitor changes to newWorkout and log the visibility
+  useEffect(() => {
+    console.log("Visibility of this workout plan:", newWorkout?.visibleTo || "Not Set");
+  }, [newWorkout?.visibleTo]); // Only trigger when visibleTo changes
 
   // Fetching trainers from API
 
@@ -422,6 +426,7 @@ const WorkoutScreen = () => {
         )
       );
       setWorkout(null); // Clear view state
+      setSelectedMemberData(null); // Clear selected member data
   
       Toast.show({
         type: 'info',
@@ -511,6 +516,12 @@ const WorkoutScreen = () => {
             // Request Workout Plan View
             <View style={styles.planContainer}>
               <WorkoutRequestHeader setViewState={setViewState} />
+              <Text style={{ ...styles.subtitle2, marginBottom: 10, lineHeight: 20 }}>
+                <Text style={{ fontFamily: Fonts.semiboldItalic }}>Note:</Text> Creating a Workout Plan for 
+                this Requestee will only set that workout to be visible to them.
+                {"\n"}Please use the 'Create Workout' button in the main menu to
+                create a workout plan visible to everyone.
+              </Text>
               {/* Render Member Requests List */}
               {memberData.map((request) => (
                 <TouchableOpacity key={request.requesteeID}>
@@ -529,7 +540,7 @@ const WorkoutScreen = () => {
           </View>
             ) : viewState === "createWO" ? (
             <>
-              <CreateWOHeader setViewState={setViewState} setWorkout={setNewWorkout} />
+              <CreateWOHeader setViewState={setViewState} setWorkout={setNewWorkout} setSelectedMemberData = {setSelectedMemberData} />
               <WorkoutForm
                 workoutTitle={newWorkout?.title || ""}
                 onChangeWorkoutTitle={(text) =>
@@ -566,7 +577,10 @@ const WorkoutScreen = () => {
                     ...prevWorkout!,
                     exercises: [...(prevWorkout?.exercises || []), newExercise],
                     trainer_id: userID?.toString() || "", // Assign trainer
-                    member_id: selectedMemberData ? selectedMemberData.requesteeID : '', // Assign member
+                    member_id: selectedMemberData ? selectedMemberData.requesteeID : '',
+                    visibleTo: selectedMemberData && selectedMemberData.requesteeID !== '' 
+                              ? selectedMemberData.requesteeName 
+                              : 'everyone', // Set visibility based on selected member
                   }));
                 }}
                 actionLabel="Add Exercise"
@@ -588,7 +602,7 @@ const WorkoutScreen = () => {
             <>
               {workout && workout.exercises ? (
                 <>
-                  <EditWOHeader setViewState={setViewState} setWorkout={setWorkout} />
+                  <EditWOHeader setViewState={setViewState} setWorkout={setWorkout} setSelectedMemberData = {setSelectedMemberData}/>
                   <WorkoutForm
                     exercises={workout?.exercises || []}
                     workoutTitle={workout?.title || ""}

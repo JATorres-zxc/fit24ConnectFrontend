@@ -44,6 +44,7 @@ interface MealPlan {
   weight_goal: number;
   allergens: string;
   instructions: string;
+  visibleTo: string;
 }
 
 const API_BASE_URL =

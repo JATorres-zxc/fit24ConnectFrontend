@@ -96,27 +96,36 @@ const WorkoutScreen = () => {
   useEffect(() => {
     const fetchWorkout = async () => {
       try {
-        token = await AsyncStorage.getItem('authToken');
-        userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
+        const token = await AsyncStorage.getItem('authToken');
+        const userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+  
         const response = await fetch(`${API_BASE_URL}/api/workout/workouts/`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
-
+  
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+  
         const programsData = await response.json();
-        const userProgram = programsData.find((program: any) => program.trainer === userID || program.program_type === "free");
-
-        if (!userProgram) {
-          throw new Error('No program found for the user');
+        
+        // Filter workout programs based on visibleTo field
+        const filteredPrograms = programsData.filter((program: any) => 
+          program.visibleTo === userID || program.visibleTo === "everyone"
+        );
+  
+        console.log('Filtered Programs:', filteredPrograms);
+  
+        if (filteredPrograms.length === 0) {
+          throw new Error('No workouts available for the user');
         }
-
+  
+        // Assuming you want to select the first available workout program
+        const userProgram = filteredPrograms[0]; // Get the first matching program (this can be adjusted)
+  
         const formattedWorkout: Workout = {
           id: userProgram.id.toString(),
           title: userProgram.program_name,
@@ -134,15 +143,15 @@ const WorkoutScreen = () => {
             durationPerSet: exercise.duration_per_set,
             notes: exercise.notes,
           })),
-          visibleTo: userProgram.program_type === "free" ? "everyone" : userID || "unknown",
+          visibleTo: userProgram.visibleTo || "everyone",
           feedbacks: [], // Adjust if feedback data is available in the backend
         };
-
+  
         setWorkout(formattedWorkout);
         setWorkouts((prevWorkouts) => [...prevWorkouts, formattedWorkout]); // Add to the entire set of workouts
       } catch (error) {
         console.error('Error fetching workout:', error);
-
+  
         if (error instanceof Error) {
           if (error.message.includes('NetworkError')) {
             console.error('Network error: Please check if the server is running and accessible.');
@@ -152,9 +161,9 @@ const WorkoutScreen = () => {
         }
       }
     };
-
+  
     fetchWorkout();
-  }, []);
+  }, []);  
 
   const [workouts, setWorkouts] = useState<Workout[]>([
     {
