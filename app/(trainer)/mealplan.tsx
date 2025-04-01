@@ -51,6 +51,24 @@ interface MealPlan {
   instructions: string;
 }
 
+interface SelectedMemberData {
+  requesteeID: string;
+  requesteeName: string;
+  height: string;
+  weight: string;
+  age: string;
+  fitnessGoal: string;
+  weightGoal: string;
+  allergens: string;
+}
+
+interface RequestData {
+  requesteeID: string;
+  fitnessGoal: string;
+  weightGoal: string;
+  allergens: string;
+}
+
 const API_BASE_URL =
   Platform.OS === 'web'
     ? 'http://127.0.0.1:8000' // Web uses localhost
@@ -72,20 +90,35 @@ const MealPlanScreen = () => {
   const [allergens, setAllergens] = useState(""); // State to store allergens
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
-  const [memberData, setMemberData] = useState({
-    requesteeID: '2',
-    requesteeName: 'John Daks',
-    height: '170',
-    weight: '65',
-    age: '25',
-    fitnessGoal: 'Gain Weight',
-    weightGoal: '60',
-    allergens: 'Peanuts, Dairy',
-  });
+  const [memberData, setMemberData] = useState<SelectedMemberData[]>([
+    {
+      requesteeID: '2',
+      requesteeName: 'John Daks',
+      height: '170',
+      weight: '65',
+      age: '25',
+      fitnessGoal: 'Gain Weight',
+      weightGoal: '60',
+      allergens: 'Peanuts, Dairy',
+    },
+    {
+      requesteeID: '3',
+      requesteeName: 'Jane Smith',
+      height: '165',
+      weight: '55',
+      age: '28',
+      fitnessGoal: 'Lose Fat',
+      weightGoal: '50',
+      allergens: 'Shellfish',
+    },
+    // You can add more members in this list as needed
+  ]);
+  const [selectedMemberData, setSelectedMemberData] = useState<SelectedMemberData | null>(null); // Default to the first member in the list
+  
   const [newMealPlan, setNewMealPlan] = useState<MealPlan | null>({
     mealplan_id: Date.now(),
     meals: [], // Ensures `meals` is always defined
-    member_id: memberData.requesteeID,
+    member_id: selectedMemberData?.requesteeID || '',
     trainer_id: userID?.toString() || "",
     mealplan_name: "",
     fitness_goal: "",
@@ -126,64 +159,70 @@ const MealPlanScreen = () => {
   
   //   fetchTrainers();
   // }, []);
+ 
+  // Fetch only mealplan requests and retrieve corresponding member profiles
+  
+  // useEffect(() => {
+  //   const fetchMealplanRequests = async () => {
+  //     try {
+  //       const token = await AsyncStorage.getItem("authToken");
+  //       if (!token) throw new Error("Token not found");
 
-  // Fetch member data and request data from different APIs
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Retrieve token and userID from AsyncStorage
-        const token = await AsyncStorage.getItem('authToken');
-        const userID = await AsyncStorage.getItem('userID'); // Logged-in user's ID
+  //       // Fetch requests data filtered by type: 'mealplan'
+  //       const requestsResponse = await fetch(`${API_BASE_URL}/api/requests-feedback?type=mealplan`, {
+  //         method: "GET",
+  //         headers: {
+  //           Accept: "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       });
 
-        // Fetch height, weight, and age from the first API
-        const profileResponse = await fetch(`${API_BASE_URL}/api/profile/`, {
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+  //       if (!requestsResponse.ok) {
+  //         throw new Error(`Requests API error! Status: ${requestsResponse.status}`);
+  //       }
 
-        if (!profileResponse.ok) {
-          throw new Error(`Profile API error! status: ${profileResponse.status}`);
-        }
+  //       const requestsData = await requestsResponse.json();
 
-        const profileData = await profileResponse.json();
-        const { requesteeID, height, weight, age, requesteeName } = profileData;
+  //       const requesteeIDs = requestsData.map((request: { requesteeID: string }) => request.requesteeID);
 
-        // // Fetch requests from a different API
-        // const requestResponse = await fetch(`${API_BASE_URL}/api/requests-feedback`, {
-        //   method: 'GET',
-        //   headers: {
-        //     'Accept': 'application/json',
-        //     'Authorization': `Bearer ${token}`,
-        //   },
-        // });
+  //       // Fetch profiles for each requesteeID using the same structure as your memberData
+  //       const memberDataPromises = requesteeIDs.map(async (requesteeID: string) => {
+  //         const profileResponse = await fetch(`${API_BASE_URL}/api/profile/${requesteeID}`, {
+  //           method: "GET",
+  //           headers: {
+  //             Accept: "application/json",
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         });
 
-        // if (!requestResponse.ok) {
-        //   throw new Error(`Requests API error! status: ${requestResponse.status}`);
-        // }
+  //         if (!profileResponse.ok) {
+  //           throw new Error(`Profile API error for ID ${requesteeID}! Status: ${profileResponse.status}`);
+  //         }
 
-        // const requestData = await requestResponse.json();
-        // const { fitnessGoal, weightGoal, allergens } = requestData;
+  //         const profileData = await profileResponse.json();
 
-        // Update state with both sets of data
-        setMemberData({
-          requesteeID,
-          requesteeName,
-          height,
-          weight,
-          age,
-          fitnessGoal,
-          weightGoal,
-          allergens,
-        });
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+  //         return {
+  //           requesteeID: profileData.requesteeID || requesteeID,
+  //           requesteeName: profileData.requesteeName || "Unknown",
+  //           height: profileData.height || "N/A",
+  //           weight: profileData.weight || "N/A",
+  //           age: profileData.age || "N/A",
+  //           fitnessGoal: profileData.fitnessGoal || "Not Specified",
+  //           weightGoal: profileData.weightGoal || "Not Specified",
+  //           allergens: profileData.allergens || "None",
+  //         };
+  //       });
 
-    fetchData();
-  }, []);
+  //       const resolvedMemberDataList = await Promise.all(memberDataPromises);
+
+  //       setMemberData(resolvedMemberDataList);
+  //     } catch (error) {
+  //       console.error("Error fetching mealplan requests and profiles:", error);
+  //     }
+  //   };
+
+  //   fetchMealplanRequests();
+  // }, []); // Empty dependency array ensures this effect runs once when the component mounts
 
   // Fetching Meal Plan from API
   
@@ -249,7 +288,7 @@ const MealPlanScreen = () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       const trainerID = await AsyncStorage.getItem('userID'); // Logged-in trainer's ID
-      const requesteeID = memberData?.requesteeID; // Member's ID from the state
+      const requesteeID = selectedMemberData ? selectedMemberData.requesteeID : ''; // Safely access member's ID
   
       if (!requesteeID) {
         Toast.show({
@@ -387,6 +426,13 @@ const MealPlanScreen = () => {
     setViewState("editMP");
   };
 
+  const handleRequestSelect = (request: SelectedMemberData) => {
+    // Update selectedMemberData to the request that was selected
+    setSelectedMemberData(request);
+    // Change view state to "createMP" to allow editing the selected request
+    setViewState("createMP");
+  };
+
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === "ios" ? "padding" : "height"} 
@@ -396,23 +442,37 @@ const MealPlanScreen = () => {
         <View style={styles.container}>
           {viewState === "requests" ? (
             // Request Meal Plan View
-            <View style={styles.planContainer}>
+            <View>
               <MealPlanRequestHeader setViewState={setViewState} />
-              <MealPlanRequest
-                  setViewState={setViewState}
-                  memberName={memberData.requesteeName || ''}
-                  fitnessGoal={memberData.fitnessGoal || ''}
-                  weightGoal={memberData.weightGoal || ''}
-                  allergens={memberData.allergens || ''}
-                  height={memberData.height || ''}
-                  weight={memberData.weight || ''}
-                  age={memberData.age || ''}
-                  onEditPress={() => setViewState("createMP")}
-              />
-          </View>
+
+              {/* Render Member Requests List */}
+              {memberData.map((request) => (
+                <TouchableOpacity key={request.requesteeID}>
+                  <MealPlanRequest 
+                    memberName={request.requesteeName}
+                    fitnessGoal={request.fitnessGoal}
+                    weightGoal={request.weightGoal}
+                    allergens={request.allergens}
+                    height={request.height}
+                    weight={request.weight}
+                    age={request.age}
+                    onEditPress={() => handleRequestSelect(request)} // Trigger edit for the selected request
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
             ) : viewState === "createMP" ? (
             <>
               <CreateMPHeader setViewState={setViewState} setMealPlan={setNewMealPlan} />
+              <View>
+              <Text style={styles.infoTitle}>Fitness Goal:</Text>
+              <Text style={styles.infoText}>{selectedMemberData?.fitnessGoal || 'No fitness goal'}</Text>
+              <Text style={styles.infoTitle}>Weight Goal:</Text>
+              <Text style={styles.infoText}>{weightGoal || 'No weight goal'}</Text>
+              <Text style={styles.infoTitle}>Allergen/s:</Text>
+              <Text style={styles.infoText}>{allergens || 'No allergens'}</Text>
+
+              </View>
               <MealPlanForm
                 meals={newMealPlan?.meals || []} // Use newMealPlan for unconfirmed changes
                 onChangeMeal={(index: number, key: keyof Meal, value: string | number) => {
@@ -449,7 +509,7 @@ const MealPlanScreen = () => {
                     ...prevMealPlan!,
                     meals: [...(prevMealPlan?.meals || []), newMeal],
                     trainer_id: userID?.toString() || "", // Assign trainer
-                    member_id: memberData.requesteeID, // Assign member
+                    member_id: selectedMemberData ? selectedMemberData.requesteeID : '', // Assign member ID safely
                   }));
                 }}
                 actionLabel="Add Meal"
@@ -542,7 +602,7 @@ const MealPlanScreen = () => {
                 <TouchableOpacity key={plan.mealplan_id} onPress={() => handleMealPlanSelect(plan)}>
                   <MemberMealPlan 
                     mealPlan={plan} 
-                    requesteeName={memberData.requesteeName}  // Pass the prop here
+                    requesteeName={selectedMemberData ? selectedMemberData.requesteeName : ''}  // Pass the prop here
                     onEditPress={() => handleMealPlanSelect(plan)} 
                   />
                 </TouchableOpacity>
@@ -684,6 +744,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
+  },
+
+  // For Meal Plan Form member info styles
+  infoTitle: {
+      fontSize: 14,
+      fontFamily: Fonts.italic,
+      color: Colors.textSecondary,
+      marginBottom: 5,
+  },
+  infoText: {
+      fontSize: 14,
+      fontFamily: Fonts.semibold,
+      color: Colors.black,
+      marginBottom: 15,
   },
 });
 

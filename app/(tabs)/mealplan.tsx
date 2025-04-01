@@ -208,6 +208,7 @@ const MealPlanScreen = () => {
           height,
           weight,
           age,
+          type: "mealplan",
         }),
       });
 
@@ -270,8 +271,11 @@ const MealPlanScreen = () => {
       //     'Content-Type': 'application/json',
       //   },
       //   body: JSON.stringify({
-      //     feedback,
-      //     rating,
+      //     memberId: userID,
+      //     type: "mealplan",
+      //     mealPlanId: mealPlan_id,
+      //     feedback: feedback,
+      //     rating: rating,
       //   }),
       // });
 

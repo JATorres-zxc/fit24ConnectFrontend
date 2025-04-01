@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { 
   View, Text, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, 
-  TextInput
+  TextInput,
+  ImageSourcePropType
 } from "react-native";
 import RNPickerSelect from 'react-native-picker-select';
 import Header from '@/components/WorkoutHeader';
@@ -20,7 +21,7 @@ interface Exercise {
   id: string;
   name: string;
   description: string;
-  image: string;
+  image: ImageSourcePropType | null;
 }
 interface Feedback {
   id: string;
@@ -163,8 +164,8 @@ const WorkoutScreen = () => {
       intensityLevel: "High",
       trainer: "Trainer A",
       exercises: [
-        { id: "EX1", name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: "https://example.com/pushups.jpg" },
-        { id: "EX2", name: "Squats", description: "Perform squats to work on lower body strength.", image: "https://example.com/squats.jpg" },
+        { id: "EX1", name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: require("@/assets/images/icon.png") },
+        { id: "EX2", name: "Squats", description: "Perform squats to work on lower body strength.", image: require("@/assets/images/icon.png") },
       ],
       visibleTo: "everyone",
       feedbacks: [
@@ -264,9 +265,11 @@ const WorkoutScreen = () => {
     //     'Content-Type': 'application/json',
     //   },
     //   body: JSON.stringify({
+    //     memberId: userID,
     //     workoutId: selectedWorkout?.id,
-    //     feedback,
-    //     rating: parseInt(rating),
+    //     type: "workout",
+    //     feedback: feedback,
+    //     rating: rating,
     //   }),
     // });
 
@@ -309,47 +312,74 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Missing Fields',
         text2: 'Please fill out all fields before submitting.',
-        position: 'bottom'
+        position: 'bottom',
       });
       return;
     }
-
+  
     try {
-      // Replace with actual API call
-      // const response = await fetch('https://api.example.com/submitWorkout', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     trainer,
-      //     fitnessGoal,
-      //     intensityLevel,
-      //   }),
-      // });
-
-      // const result = await response.json();
-
+      // Fetch member data from the profile API
+      const profileResponse = await fetch(`${API_BASE_URL}/api/profile/${userID}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+  
+      if (!profileResponse.ok) {
+        throw new Error(`Profile API error! Status: ${profileResponse.status}`);
+      }
+  
+      const profileData = await profileResponse.json();
+      const { height, weight, age } = profileData;
+      profileData.user_ID = userID; // Add user_ID to profile data
+  
+      // Fetch request data from the requests-feedback API
+      const requestResponse = await fetch(`${API_BASE_URL}/api/requests-feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userID,
+          trainer,
+          fitnessGoal,
+          intensityLevel,
+          height,
+          weight,
+          age,
+          type: "workout",
+        }),
+      });
+  
+      if (!requestResponse.ok) {
+        throw new Error(`Requests API error! Status: ${requestResponse.status}`);
+      }
+  
+      const requestData = await requestResponse.json();
+  
       // Temporary Success Placeholder
       const temp_response = true;
-
+  
       if (temp_response) {
         Toast.show({
           type: 'success',
           text1: 'Request Submitted',
           text2: 'Your workout request has been submitted successfully.',
-          position: 'bottom'
+          position: 'bottom',
         });
+  
         setTimeout(() => {
-          setViewState("plan");
-          // setWorkout(result); // Update workout with the new data
+          setViewState('plan');
+          // setWorkout(requestData); // Update workout with the new data
         }, 2000); // 2-second delay
       } else {
         Toast.show({
           type: 'error',
           text1: 'Request Failed',
           text2: 'There was an error with your workout request.',
-          position: 'bottom'
+          position: 'bottom',
         });
       }
     } catch (error) {
@@ -357,10 +387,10 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Request Failed',
         text2: 'There was an error with your workout request.',
-        position: 'bottom'
+        position: 'bottom',
       });
     }
-  };
+  };  
 
   return (
     <KeyboardAvoidingView 

@@ -13,10 +13,9 @@ interface MealPlanRequestProps {
     weight: string;
     age: string;
     onEditPress: () => void;
-    setViewState: (viewState: string) => void;
 }
 
-const MealPlanRequest: React.FC<MealPlanRequestProps> = ({ memberName, fitnessGoal, weightGoal, allergens, height, weight, age, onEditPress, setViewState }) => {
+const MealPlanRequest: React.FC<MealPlanRequestProps> = ({ memberName, fitnessGoal, weightGoal, allergens, height, weight, age, onEditPress}) => {
     return (
         <ScrollView>
             <View style={styles.container}>

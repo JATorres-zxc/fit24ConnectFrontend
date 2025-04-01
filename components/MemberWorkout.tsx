@@ -1,6 +1,6 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
-import { FontAwesome } from '@expo/vector-icons';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ImageSourcePropType } from "react-native";
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
@@ -8,7 +8,7 @@ interface Exercise {
     id: string;
     name: string;
     description: string;
-    image: string;
+    image: ImageSourcePropType | null; // Accepts an image or null if not set
   }
 
   interface Feedback {
@@ -34,20 +34,27 @@ interface MemberWorkoutProps {
     workout: Workout;
     requesteeName: string;  // Add this prop
     onEditPress: () => void;
+    onTrashPress: () => void;
 }
 
-const MemberWorkout: React.FC<MemberWorkoutProps> = ({ workout, requesteeName, onEditPress }) => {
+const MemberWorkout: React.FC<MemberWorkoutProps> = ({ workout, requesteeName, onEditPress, onTrashPress }) => {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Image source={{ uri: 'https://via.placeholder.com/90' }} style={styles.image} />
+                <Image
+                    source={workout.exercises[0].image ? { uri: workout.exercises[0].image } : require("@/assets/images/icon.png")}
+                    style={styles.image}
+                />
                 <View style={styles.textContainer}>
-                    <Text style={styles.title}>{requesteeName}'s Workout</Text>
-                    <Text style={styles.subtitle}>Working on:</Text>
-                    <Text style={styles.fitnessGoal}>{workout.fitnessGoal}</Text>
+                    <Text style={styles.title}>{workout.title}</Text>
+                    <Text style={styles.subtitle}>Accessible by:</Text>
+                    <Text style={styles.accessibleTo}>{workout.visibleTo}</Text>
                 </View>
                 <TouchableOpacity style={styles.editIcon} onPress={onEditPress}>
                     <FontAwesome name="pencil" size={24} color={Colors.black} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => {onTrashPress}} style={styles.trashIcon}>
+                    <Ionicons name="trash-outline" size={24} color="red" />
                 </TouchableOpacity>
             </View>
             <View style={styles.horizontalLine} />
@@ -112,7 +119,7 @@ const styles = StyleSheet.create({
         color: Colors.textSecondary,
         marginBottom: 5,
     },
-    fitnessGoal: {
+    accessibleTo: {
         fontSize: 14,
         fontFamily: Fonts.semiboldItalic,
         color: Colors.black,
@@ -138,6 +145,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: Fonts.regular,
         color: Colors.textSecondary,
+    },
+    trashIcon: {
+        alignSelf: 'flex-end', // Aligns the trash icon to the right
+        marginLeft: 'auto', // Ensures it pushes to the end
     },
 });
 
