@@ -65,39 +65,40 @@ const TrainerWorkoutForm: React.FC<TrainerWorkoutFormProps> = ({
       />
       
       {exercises.map((exercise, index) => (
-        <View key={exercise.id || index} style={styles.exerciseItem}>
-          <View style={styles.imageContainer}>
-            {exercise.image ? (
-              <Image source={exercise.image} style={styles.imagePreview} />
-            ) : (
-              <TouchableOpacity onPress={() => handlePickImage(index)}>
-                <Ionicons name="image" size={50} color={Colors.textPrimary} />
+        <View>
+          <View key={exercise.id || index} style={styles.exerciseItem}>
+            <View style={styles.imageContainer}>
+              {exercise.image ? (
+                <Image source={exercise.image} style={styles.imagePreview} />
+              ) : (
+                <TouchableOpacity onPress={() => handlePickImage(index)}>
+                  <Ionicons name="image" size={50} color={Colors.textPrimary} />
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={styles.exerciseDetails}>
+              <TextInput
+                style={styles.exerciseTitleInput}
+                placeholder={`Exercise ${index + 1}`}
+                defaultValue={exercise.name}
+                onChangeText={(text) => onChangeExercise(index, 'name', text)}
+              />
+              <Text style={styles.label}>Description</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={"Enter Description for Exercise"}
+                placeholderTextColor={Colors.textSecondary}
+                defaultValue={exercise.description}
+                onChangeText={(text) => onChangeExercise(index, 'description', text)}
+              />
+              <TouchableOpacity onPress={() => onDeleteExercise(index)} style={styles.trashIcon}>
+                <Ionicons name="trash-outline" size={24} color="red" />
               </TouchableOpacity>
-            )}
+            </View>
           </View>
-          <View style={styles.exerciseDetails}>
-            <TextInput
-              style={styles.exerciseTitleInput}
-              placeholder={`Exercise ${index + 1}`}
-              defaultValue={exercise.name}
-              onChangeText={(text) => onChangeExercise(index, 'name', text)}
-            />
-            <Text style={styles.label}>Description</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={"Enter Description for Exercise"}
-              placeholderTextColor={Colors.textSecondary}
-              defaultValue={exercise.description}
-              onChangeText={(text) => onChangeExercise(index, 'description', text)}
-            />
-            <TouchableOpacity onPress={() => onDeleteExercise(index)} style={styles.trashIcon}>
-              <Ionicons name="trash-outline" size={24} color="red" />
-            </TouchableOpacity>
-          </View>
+          <View style={styles.horizontalLine} />
         </View>
       ))}
-
-      <View style={styles.horizontalLine} />
       
       {/* Action Button */}
       <TouchableOpacity style={styles.buttonAction} onPress={onAction}>
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 15,
     borderWidth: 1,
-    borderColor: Colors.black,
+    borderColor: Colors.border,
   },
   imagePreview: {
     width: "100%",

@@ -146,7 +146,7 @@ const WorkoutScreen = () => {
   //   fetchTrainers();
   // }, []);
 
-  
+
   // Fetch only workout requests
   useEffect(() => {
     const fetchWorkoutRequests = async () => {
@@ -497,7 +497,7 @@ const WorkoutScreen = () => {
     // Update selectedMemberData to the request that was selected
     setSelectedMemberData(request);
     // Change view state to "createMP" to allow editing the selected request
-    setViewState("createMP");
+    setViewState("createWO");
   };
 
   return (
@@ -569,7 +569,7 @@ const WorkoutScreen = () => {
                     member_id: selectedMemberData ? selectedMemberData.requesteeID : '', // Assign member
                   }));
                 }}
-                actionLabel="+ Add Exercise"
+                actionLabel="Add Exercise"
               />
 
               {/* External Button for Publishing Workout Plan */}
@@ -658,7 +658,7 @@ const WorkoutScreen = () => {
                 You're going to permanently delete your workout. Are you sure?
               </Text>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
+                <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("")}>
                   <Text style={styles.buttonText}>NO</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.buttonGreen} onPress={() => selectedWorkout && handleDelete(selectedWorkout)}> 
@@ -683,7 +683,7 @@ const WorkoutScreen = () => {
                   />
                 </TouchableOpacity>
               ))}
-              <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("requests")}>
+              <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("createWO")}>
                 <Text style={styles.buttonText}>Create New Program</Text>
               </TouchableOpacity>
             </View>

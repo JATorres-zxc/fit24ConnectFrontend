@@ -729,23 +729,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mediumItalic,
   },
 
-  // Delete confirmation dialog container
-  deleteContainer: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -150 }, { translateY: -100 }],
-    width: 300,
-    padding: 20,
-    backgroundColor: Colors.bg,
-    borderRadius: 10,
-    shadowColor: Colors.shadowColor,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
-  },
-
   // For Meal Plan Form member info styles
   infoTitle: {
       fontSize: 14,
