@@ -50,12 +50,14 @@ const MemberWorkout: React.FC<MemberWorkoutProps> = ({ workout, requesteeName, o
                     <Text style={styles.subtitle}>Accessible by:</Text>
                     <Text style={styles.accessibleTo}>{workout.visibleTo}</Text>
                 </View>
-                <TouchableOpacity style={styles.editIcon} onPress={onEditPress}>
-                    <FontAwesome name="pencil" size={24} color={Colors.black} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => {onTrashPress}} style={styles.trashIcon}>
-                    <Ionicons name="trash-outline" size={24} color="red" />
-                </TouchableOpacity>
+                <View style={styles.iconContainer}>
+                    <TouchableOpacity style={styles.editIcon} onPress={onEditPress}>
+                        <FontAwesome name="pencil" size={24} color={Colors.black} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={onTrashPress} style={styles.trashIcon}>
+                        <Ionicons name="trash-outline" size={24} color="red" />
+                    </TouchableOpacity>
+                </View>
             </View>
             <View style={styles.horizontalLine} />
             {/* <View style={styles.mealContainer}>
@@ -78,15 +80,17 @@ const styles = StyleSheet.create({
         marginTop: 15,
     },
     editIcon: {
-        alignSelf: 'flex-start',
-        justifyContent: 'flex-end',
-        marginTop: 5,
-        marginLeft: 20,
-        marginBottom: 10,
+        alignSelf: "flex-end",
+        marginBottom: "auto", // Pushes it to the top
     },
+    iconContainer: {
+        flexDirection: "column",  // Stack icons vertically
+        alignItems: "stretch",  // Center icons horizontally
+        justifyContent: "space-evenly", // Distribute space between icons
+        marginLeft: 15, // Add some spacing from text container
+    },    
     header: {
         flexDirection: 'row',
-        alignItems: 'center',
         marginBottom: 20,
     },
     horizontalLine: {
@@ -101,11 +105,12 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: Colors.black,
+        borderColor: Colors.border,
         marginRight: 16,
     },
     textContainer: {
         flex: 1,
+        justifyContent: "center",
     },
     title: {
         fontSize: 18,
@@ -147,8 +152,8 @@ const styles = StyleSheet.create({
         color: Colors.textSecondary,
     },
     trashIcon: {
-        alignSelf: 'flex-end', // Aligns the trash icon to the right
-        marginLeft: 'auto', // Ensures it pushes to the end
+        alignSelf: "flex-end",
+        marginTop: "auto", // Pushes it to the bottom
     },
 });
 

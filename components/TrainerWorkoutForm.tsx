@@ -17,6 +17,7 @@ interface Exercise {
 interface TrainerWorkoutFormProps {
   exercises: Exercise[];
   workoutTitle: string;
+  visibleTo: string;
   onChangeWorkoutTitle: (text: string) => void;
   onChangeExercise: (index: number, key: keyof Exercise, value: string | number) => void;
   onDeleteExercise: (index: number) => void;
@@ -27,6 +28,7 @@ interface TrainerWorkoutFormProps {
 const TrainerWorkoutForm: React.FC<TrainerWorkoutFormProps> = ({
   exercises,
   workoutTitle,
+  visibleTo,
   onChangeWorkoutTitle,
   onChangeExercise,
   onDeleteExercise,
@@ -53,7 +55,10 @@ const TrainerWorkoutForm: React.FC<TrainerWorkoutFormProps> = ({
       <Text style={styles.headerSubtitle}>
         Create structured routines to guide your members effectively.
       </Text>
-      
+      <Text style={styles.headerSubtitle}>
+        Visible to: <Text style={{ fontFamily: Fonts.semiboldItalic }}>{visibleTo}</Text>
+      </Text>
+
       {/* Program Title */}
       <Text style={styles.label}>Program Title</Text>
       <TextInput 

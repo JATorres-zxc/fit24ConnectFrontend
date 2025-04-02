@@ -547,6 +547,10 @@ const WorkoutScreen = () => {
                   setNewWorkout((prev) => ({ ...prev!, title: text }))
                 }
                 exercises={newWorkout?.exercises || []} // Use newWorkout for unconfirmed changes
+                visibleTo={selectedMemberData?.requesteeID && selectedMemberData.requesteeID !== ''
+                  ? selectedMemberData.requesteeName
+                  : 'everyone' // Set initial visibleTo based on the member
+                }
                 onChangeExercise={(index: number, key: keyof Exercise, value: string | number) => {
                   setNewWorkout((prevWorkout) => {
                     if (!prevWorkout) return prevWorkout; // Prevent null reference
@@ -578,9 +582,6 @@ const WorkoutScreen = () => {
                     exercises: [...(prevWorkout?.exercises || []), newExercise],
                     trainer_id: userID?.toString() || "", // Assign trainer
                     member_id: selectedMemberData ? selectedMemberData.requesteeID : '',
-                    visibleTo: selectedMemberData && selectedMemberData.requesteeID !== '' 
-                              ? selectedMemberData.requesteeName 
-                              : 'everyone', // Set visibility based on selected member
                   }));
                 }}
                 actionLabel="Add Exercise"
@@ -640,6 +641,7 @@ const WorkoutScreen = () => {
                         exercises: [...(prevWorkout?.exercises || []), newExercise],
                       }));
                     }}
+                    visibleTo={workout?.visibleTo || "everyone"} // Pass visibleTo prop
                     actionLabel="Add Exercise"
                   />
 

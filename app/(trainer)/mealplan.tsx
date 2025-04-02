@@ -602,18 +602,22 @@ const MealPlanScreen = () => {
               <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("requests")}>
               <Text style={styles.buttonText}>Meal Plan Requests</Text>
               </TouchableOpacity>
-              {mealPlans.map((plan) => (
-                <TouchableOpacity key={plan.mealplan_id} onPress={() => handleMealPlanSelect(plan)}>
-                  <MemberMealPlan 
-                    mealPlan={plan} 
-                    requesteeName={selectedMemberData ? selectedMemberData.requesteeName : ''}  // Pass the prop here
-                    onEditPress={() => handleMealPlanSelect(plan)} 
-                  />
-                </TouchableOpacity>
-              ))}
+              {mealPlans.map((plan) => {
+                // Find the corresponding member data based on the member_id
+                const member = memberData.find((data) => data.requesteeID === plan.member_id.toString()); // Assuming member_id is a number or string
+
+                return (
+                  <TouchableOpacity key={plan.mealplan_id} onPress={() => handleMealPlanSelect(plan)}>
+                    <MemberMealPlan 
+                      mealPlan={plan} 
+                      requesteeName={member ? member.requesteeName : 'Unknown'}  // Use the matched requesteeName
+                      onEditPress={() => handleMealPlanSelect(plan)} 
+                    />
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
-          
         </View>
       </ScrollView>
       <Toast />
