@@ -97,6 +97,13 @@ export default function RootLayout() {
       />
 
       <Tabs.Screen 
+        name="generate-report" 
+        options={{ 
+          href: null,
+        }} 
+      />
+
+      <Tabs.Screen 
         name="+not-found" 
         options={{ 
           href: null 
