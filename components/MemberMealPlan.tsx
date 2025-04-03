@@ -40,7 +40,7 @@ const MemberMealPlan: React.FC<MemberMealPlanProps> = ({ mealPlan, requesteeName
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Image source={{ uri: 'https://via.placeholder.com/90' }} style={styles.image} />
+                <Image source={require('@/assets/images/icon.png')} style={styles.image} />
                 <View style={styles.textContainer}>
                     <Text style={styles.title}>{requesteeName}'s Meal Plan</Text>
                     <Text style={styles.subtitle}>Working on:</Text>
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: Colors.black,
+        borderColor: Colors.border,
         marginRight: 16,
     },
     textContainer: {

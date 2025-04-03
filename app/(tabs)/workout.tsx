@@ -112,9 +112,10 @@ const WorkoutScreen = () => {
   
         const programsData = await response.json();
         
-        // Filter workout programs based on visibleTo field
+        // Based on backend, the program_type contains the userID or "everyone" that it is visible to.
+        // Filter workout programs based on program_type matching userID or "everyone" visibleTo
         const filteredPrograms = programsData.filter((program: any) => 
-          program.visibleTo === userID || program.visibleTo === "everyone"
+          (program.program_type === userID || program.visibleTo === "everyone")
         );
   
         console.log('Filtered Programs:', filteredPrograms);
@@ -163,7 +164,7 @@ const WorkoutScreen = () => {
     };
   
     fetchWorkout();
-  }, []);  
+  }, []);    
 
   const [workouts, setWorkouts] = useState<Workout[]>([
     {
@@ -191,7 +192,7 @@ const WorkoutScreen = () => {
         { id: "EX3", name: "Jumping Jacks", description: "Perform jumping jacks to get your heart rate up.", image: "https://example.com/jumpingjacks.jpg" },
         { id: "EX4", name: "Burpees", description: "Perform burpees to improve endurance.", image: "https://example.com/burpees.jpg" },
       ],
-      visibleTo: "userEmail",
+      visibleTo: "1",
       feedbacks: [
         { id: "feedback2", feedback: "Intense but effective!", rating: 4, createdAt: new Date() },
       ],

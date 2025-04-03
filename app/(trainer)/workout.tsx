@@ -68,7 +68,7 @@ const API_BASE_URL =
 
 let token: string | null = null;
 let userID: string | null = null;
-let Workout_id: number | null = null;
+let workout_id: number | null = null;
 
 const WorkoutScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
@@ -109,7 +109,7 @@ const WorkoutScreen = () => {
     title: "",
     fitnessGoal: "",
     intensityLevel: "",
-    trainer: userID?.toString() || "",
+    trainer: userID || "",
     exercises: [],
     visibleTo: "everyone",
     feedbacks: [],
@@ -219,33 +219,40 @@ const WorkoutScreen = () => {
   useEffect(() => {
     const fetchWorkout = async () => {
       try {
-        token = await AsyncStorage.getItem('authToken');
-        userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
+        const token = await AsyncStorage.getItem("authToken");
+        const userID = await AsyncStorage.getItem("userID"); // Ensure userID is a string
+  
         const response = await fetch(`${API_BASE_URL}/api/workout/workouts/`, {
           headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
-
+  
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+  
         const programsData = await response.json();
-        const userProgram = programsData.find((program: any) => program.trainer === userID || program.program_type === "free");
-
-        if (!userProgram) {
-          throw new Error('No program found for the user');
+  
+        // Get all programs where the user is the trainer OR it's a free program
+        const userPrograms = programsData.filter(
+          (program: any) =>
+            String(program.trainer) === String(userID) || program.program_type === "free"
+        );
+  
+        if (!userPrograms.length) {
+          console.warn("No programs found for the user");
+          return;
         }
-
-        const formattedWorkout: Workout = {
+  
+        // Convert each workout program into the required format
+        const formattedWorkouts = userPrograms.map((userProgram: any) => ({
           id: userProgram.id.toString(),
           title: userProgram.program_name,
           fitnessGoal: userProgram.fitness_goal,
           intensityLevel: userProgram.intensity_level,
-          trainer: userProgram.trainer || "N/A",
+          trainer: userProgram.trainer ? userProgram.trainer.toString() : "N/A",
           exercises: userProgram.workout_exercises.map((exercise: any) => ({
             id: exercise.id.toString(),
             name: exercise.exercise_details.name,
@@ -257,27 +264,36 @@ const WorkoutScreen = () => {
             durationPerSet: exercise.duration_per_set,
             notes: exercise.notes,
           })),
-          visibleTo: userProgram.program_type === "free" ? "everyone" : userID || "unknown",
+          // program_type from backend is treated as the userID or "everyone" it is visible to.
+          visibleTo: userProgram.program_type === "everyone" 
+            ? "everyone" 
+            : memberData.find((member) => member.requesteeID === userProgram.program_type)?.requesteeName || "unknown",
           feedbacks: [], // Adjust if feedback data is available in the backend
-        };
-
-        setWorkout(formattedWorkout);
-        setWorkouts((prevWorkouts) => [...prevWorkouts, formattedWorkout]); // Add to the entire set of workouts
+        }));
+  
+        // Update the state with all matching workouts
+        setWorkouts((prevWorkouts) => {
+          const newWorkouts = formattedWorkouts.filter(
+            (workout: Workout) => !prevWorkouts.some((w: Workout) => w.id === workout.id)
+          );          
+          return [...prevWorkouts, ...newWorkouts];
+        });
+  
       } catch (error) {
-        console.error('Error fetching workout:', error);
-
+        console.error("Error fetching workout:", error);
+  
         if (error instanceof Error) {
-          if (error.message.includes('NetworkError')) {
-            console.error('Network error: Please check if the server is running and accessible.');
-          } else if (error.message.includes('CORS')) {
-            console.error('CORS error: Please ensure your server allows requests from your frontend.');
+          if (error.message.includes("NetworkError")) {
+            console.error("Network error: Please check if the server is running and accessible.");
+          } else if (error.message.includes("CORS")) {
+            console.error("CORS error: Please ensure your server allows requests from your frontend.");
           }
         }
       }
     };
-
+  
     fetchWorkout();
-  }, []);
+  }, []);  
 
   const [workouts, setWorkouts] = useState<Workout[]>([]); // State to store all workouts]);
 
@@ -313,7 +329,7 @@ const WorkoutScreen = () => {
       const token = await AsyncStorage.getItem('authToken');
       const trainerID = await AsyncStorage.getItem('userID'); // Logged-in trainer's ID
       const requesteeID = selectedMemberData?.requesteeID; // Member's ID from the state
-  
+    
       if (!requesteeID) {
         Toast.show({
           type: 'error',
@@ -323,18 +339,18 @@ const WorkoutScreen = () => {
         });
         return;
       }
-  
+    
       // Simulated responses for now
       const temp_response = {
         searchResponse: true,
         updateResponse: true,
         createResponse: true,
       };
-  
+    
       let WorkoutId: number;
-  
+    
       if (temp_response.searchResponse) { // REMOVE IF API AVAILABLE
-        // const searchResponse = await fetch(`${API_BASE_URL}/api/workouts?member_id=${requesteeID}`, {
+        // const searchResponse = await fetch(`${API_BASE_URL}/api/workouts?program_type=${requesteeID}`, {
         //   method: 'GET',
         //   headers: {
         //     'Accept': 'application/json',
@@ -347,7 +363,7 @@ const WorkoutScreen = () => {
         const existingWorkouts = [{ Workout_id: 1 }]; // Placeholder for simulated response: await searchResponse.json();
         if (existingWorkouts.length > 0) {
           WorkoutId = existingWorkouts[0].Workout_id;
-  
+    
           if (temp_response.updateResponse) { // REMOVE IF API AVAILABLE
             // const updateResponse = await fetch(`${API_BASE_URL}/api/workouts/${WorkoutId}`, {
             //   method: 'PUT',
@@ -356,7 +372,7 @@ const WorkoutScreen = () => {
             //     'Authorization': `Bearer ${token}`,
             //   },
             //   body: JSON.stringify({
-            //     member_id: requesteeID,
+            //     program_type: requesteeID, // Match program_type with requesteeID
             //     trainer_id: trainerID,
             //     workouts: plan.workouts.map(workout => ({
             //       id: workout.id,
@@ -377,7 +393,7 @@ const WorkoutScreen = () => {
             //     instructions: plan.instructions,
             //   }),
             // });
-            
+    
             console.log("Workout plan updated successfully!");
           } else {
             throw new Error("Simulated update failed!");
@@ -391,7 +407,7 @@ const WorkoutScreen = () => {
             //     'Authorization': `Bearer ${token}`,
             //   },
             //   body: JSON.stringify({
-            //     member_id: requesteeID,
+            //     program_type: requesteeID, // Match program_type with requesteeID
             //     trainer_id: trainerID,
             //     workouts: plan.workouts.map(workout => ({
             //       workout_name: workout.workout_name,
@@ -474,7 +490,7 @@ const WorkoutScreen = () => {
             setWorkout(null); // Clear current workout if it matches the deleted one
           }
   
-          setViewState("plan");
+          setViewState("");
         } else {
           Toast.show({
             type: 'error',
@@ -496,6 +512,11 @@ const WorkoutScreen = () => {
   const handleWorkoutSelect = (selectedWorkout: Workout) => {
     setWorkout(selectedWorkout); // Set the selected workout plan
     setViewState("editWO");
+  };
+
+  const handleWorkoutDelete = (selectedWorkout: Workout) => {
+    setWorkout(selectedWorkout); // Set the selected workout plan
+    setViewState("delete");
   };
 
   const handleRequestSelect = (request: SelectedMemberData) => {
@@ -580,7 +601,7 @@ const WorkoutScreen = () => {
                   setNewWorkout((prevWorkout) => ({
                     ...prevWorkout!,
                     exercises: [...(prevWorkout?.exercises || []), newExercise],
-                    trainer_id: userID?.toString() || "", // Assign trainer
+                    trainer: userID || "", // Assign trainer
                     member_id: selectedMemberData ? selectedMemberData.requesteeID : '',
                   }));
                 }}
@@ -677,7 +698,7 @@ const WorkoutScreen = () => {
                 <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("")}>
                   <Text style={styles.buttonText}>NO</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonGreen} onPress={() => selectedWorkout && handleDelete(selectedWorkout)}> 
+                <TouchableOpacity style={styles.buttonGreen} onPress={() => workout && handleDelete(workout)}> 
                   {/* short-circuited potential null workout */}
                   <Text style={styles.buttonText}>YES</Text>
                 </TouchableOpacity>
@@ -695,7 +716,7 @@ const WorkoutScreen = () => {
                     workout={plan} 
                     requesteeName={selectedMemberData ? selectedMemberData.requesteeName : ''}  // Pass the prop here
                     onEditPress={() => handleWorkoutSelect(plan)}
-                    onTrashPress={() => setViewState("delete")} 
+                    onTrashPress={() => handleWorkoutDelete(plan)} 
                   />
                 </TouchableOpacity>
               ))}
