@@ -27,7 +27,7 @@ export default function Header({ screen }: HeaderProps) {
         </View>
 
         <View style={styles.headerIcon}>
-          <FontAwesome name='bell-o' color={'black'} size={24} onPress={() => router.push('/notifications')} />
+          <FontAwesome name='bell-o' color={'black'} size={24} onPress={() => router.push('/(admin)/notifications')} />
         </View>
       </View>
     </SafeAreaView>
