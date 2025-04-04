@@ -13,6 +13,7 @@ import WorkoutsContainer from '@/components/WorkoutsContainer';
 import ExerciseContainer from '@/components/ExerciseContainer';
 import RequestWorkoutHeader from '@/components/RequestHeaderWO';
 import SendFeedbackHeader from '@/components/SendFeedbackHeaderWO';
+import PersonalWorkoutsHeader from '@/components/MemberPersonalWOHeader';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -37,7 +38,7 @@ interface Workout {
   intensityLevel: string;
   trainer: string;
   exercises: Exercise[];
-  visibleTo: "everyone" | "userEmail" | string;
+  visibleTo: string;
   feedbacks: Feedback[];
   member_id?: string; // Added member_id property
 }
@@ -96,9 +97,9 @@ const WorkoutScreen = () => {
   useEffect(() => {
     const fetchWorkout = async () => {
       try {
-        const token = await AsyncStorage.getItem('authToken');
-        const userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-  
+        token = await AsyncStorage.getItem('authToken');
+        userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+        
         const response = await fetch(`${API_BASE_URL}/api/workout/workouts/`, {
           headers: {
             'Accept': 'application/json',
@@ -115,7 +116,7 @@ const WorkoutScreen = () => {
         // Based on backend, the program_type contains the userID or "everyone" that it is visible to.
         // Filter workout programs based on program_type matching userID or "everyone" visibleTo
         const filteredPrograms = programsData.filter((program: any) => 
-          (program.program_type === userID || program.visibleTo === "everyone")
+          (program.program_type === userID || program.program_type === "everyone")
         );
   
         console.log('Filtered Programs:', filteredPrograms);
@@ -124,10 +125,8 @@ const WorkoutScreen = () => {
           throw new Error('No workouts available for the user');
         }
   
-        // Assuming you want to select the first available workout program
-        const userProgram = filteredPrograms[0]; // Get the first matching program (this can be adjusted)
-  
-        const formattedWorkout: Workout = {
+        // Map all filtered programs to Workout objects
+        const formattedWorkouts: Workout[] = filteredPrograms.map((userProgram: any) => ({
           id: userProgram.id.toString(),
           title: userProgram.program_name,
           fitnessGoal: userProgram.fitness_goal,
@@ -137,19 +136,18 @@ const WorkoutScreen = () => {
             id: exercise.id.toString(),
             name: exercise.exercise_details.name,
             description: exercise.exercise_details.description,
-            image: "", // Add image URL if available in the backend
+            image: "", // Add image URL if available
             sets: exercise.sets,
             reps: exercise.reps,
             restTime: exercise.rest_time,
             durationPerSet: exercise.duration_per_set,
             notes: exercise.notes,
           })),
-          visibleTo: userProgram.visibleTo || "everyone",
-          feedbacks: [], // Adjust if feedback data is available in the backend
-        };
+          visibleTo: userProgram.program_type,
+          feedbacks: [], // Adjust if feedback is available
+        }));
   
-        setWorkout(formattedWorkout);
-        setWorkouts((prevWorkouts) => [...prevWorkouts, formattedWorkout]); // Add to the entire set of workouts
+        setWorkouts((prevWorkouts) => [...prevWorkouts, ...formattedWorkouts]);
       } catch (error) {
         console.error('Error fetching workout:', error);
   
@@ -532,30 +530,44 @@ const WorkoutScreen = () => {
                 </TouchableOpacity>
               </View>
             </View>
-          ) : (
+          ) : viewState === "personalWO" ? (
             <>
-            { workouts.length > 0 ? (
               <View style={styles.planContainer}>
-                <Header />
+                <PersonalWorkoutsHeader setViewState={setViewState}/>
                 <WorkoutsContainer
-                  workouts={workouts}
+                  workouts={workouts.filter(w => w.visibleTo === userID)}
                   onWorkoutPress={handleWorkoutPress}
                   onTrashPress={handleTrashPress}
                 />
               </View>
-            ) : (
-              <View>
-                <Header />
-                <View style={styles.centerContainer}>
-                  <Text style={styles.subtitle2}>You have no existing workout plan.</Text>
-                  <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
-                    <Text style={styles.buttonText}>Request Workout Plan</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
             </>
-          )}
+          ) : (
+            <>
+              {workouts.filter(w => w.visibleTo === "everyone").length > 0 ? (
+                <View style={styles.planContainer}>
+                  <Header />
+                  <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("personalWO")}>
+                    <Text style={styles.buttonText}>Personal Workout Programs</Text>
+                  </TouchableOpacity>
+                  <WorkoutsContainer
+                    workouts={workouts.filter(w => w.visibleTo === "everyone")}
+                    onWorkoutPress={handleWorkoutPress}
+                    onTrashPress={handleTrashPress}
+                  />
+                </View>
+              ) : (
+                <View>
+                  <Header />
+                  <View style={styles.centerContainer}>
+                    <Text style={styles.subtitle2}>You have no existing workout plan.</Text>
+                    <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
+                      <Text style={styles.buttonText}>Request Workout Plan</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </>
+          )}          
         </View>
       </ScrollView>
       <Toast />

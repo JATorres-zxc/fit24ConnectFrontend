@@ -38,7 +38,7 @@ interface Workout {
   intensityLevel: string;
   trainer: string;
   exercises: Exercise[];
-  visibleTo: "everyone" | "userEmail" | string;
+  visibleTo: string;
   feedbacks: Feedback[];
   member_id?: string; // Added member_id property
 }
@@ -219,8 +219,8 @@ const WorkoutScreen = () => {
   useEffect(() => {
     const fetchWorkout = async () => {
       try {
-        const token = await AsyncStorage.getItem("authToken");
-        const userID = await AsyncStorage.getItem("userID"); // Ensure userID is a string
+        token = await AsyncStorage.getItem("authToken");
+        userID = await AsyncStorage.getItem("userID"); // Ensure userID is a string
   
         const response = await fetch(`${API_BASE_URL}/api/workout/workouts/`, {
           headers: {
@@ -238,7 +238,7 @@ const WorkoutScreen = () => {
         // Get all programs where the user is the trainer OR it's a free program
         const userPrograms = programsData.filter(
           (program: any) =>
-            String(program.trainer) === String(userID) || program.program_type === "free"
+            String(program.trainer) === String(userID) || program.program_type === "everyone"
         );
   
         if (!userPrograms.length) {

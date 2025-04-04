@@ -45,6 +45,8 @@ interface MealPlan {
   allergens: string;
   instructions: string;
   visibleTo: string;
+  requestee_id: string;
+  requestee: string;
 }
 
 const API_BASE_URL =
@@ -167,15 +169,15 @@ const MealPlanScreen = () => {
 
   const handleSubmit = async () => {
     if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
-      Toast.show({
-        type: 'error',
-        text1: 'Missing Fields',
-        text2: 'Please fill out all fields before submitting.',
-        position: 'bottom'
-      });
-      return;
+        Toast.show({
+            type: 'error',
+            text1: 'Missing Fields',
+            text2: 'Please fill out all fields before submitting.',
+            position: 'bottom'
+        });
+        return;
     }
-    
+
     try {
       // Fetch member data from the profile API
       const profileResponse = await fetch(`${API_BASE_URL}/api/profile/${userID}`, {
@@ -191,62 +193,50 @@ const MealPlanScreen = () => {
 
       const profileData = await profileResponse.json();
       const { height, weight, age } = profileData;
-      profileData.user_ID = userID; // Add user_ID to profile data
 
-      // Fetch request data from the requests-feedback API
-      const requestResponse = await fetch(`${API_BASE_URL}/api/requests-feedback`, {
+      // Create an empty meal plan request (meals are added by the trainer)
+      const requestResponse = await fetch(`${API_BASE_URL}/api/mealplans`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userID,
-          trainer,
-          fitnessGoal,
-          weightGoal,
+          member_id: userID,
+          trainer_id: trainer,
+          fitness_goal: fitnessGoal,
+          weight_goal: weightGoal,
           allergens,
           height,
           weight,
           age,
-          type: "mealplan",
+          meals: [],  // Empty meals (trainer will add them later)
+          instructions: "",  // Optional, can be updated later
+          status: "pending", // Optional status for tracking
         }),
       });
 
       if (!requestResponse.ok) {
-        throw new Error(`Requests API error! status: ${requestResponse.status}`);
+        throw new Error(`Meal Plan API error! status: ${requestResponse.status}`);
       }
 
-      const requestData = await requestResponse.json();
-      
-      // // Temporary Success Placeholder
-      const temp_response = true;
+      Toast.show({
+        type: 'success',
+        text1: 'Request Submitted',
+        text2: 'Your meal plan request has been submitted successfully.',
+        position: 'bottom'
+      });
 
-      if (temp_response) {
-        Toast.show({
-          type: 'success',
-          text1: 'Request Submitted',
-          text2: 'Your meal plan request has been submitted successfully.',
-          position: 'bottom'
-        });
-        setTimeout(() => {
-          setViewState("plan");
-          // setMealPlan("result"); // Update meal plan with the new data
-        }, 2000); // 2-second delay
-      } else {
-        Toast.show({
+      setTimeout(() => {
+        setViewState("plan");
+      }, 2000);
+
+    } catch (error) {
+      Toast.show({
           type: 'error',
           text1: 'Request Failed',
           text2: 'There was an error with your meal plan request.',
           position: 'bottom'
-        });
-      }
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Request Failed',
-        text2: 'There was an error with your meal plan request.',
-        position: 'bottom'
       });
     }
   };

@@ -55,8 +55,6 @@ const WorkoutsContainer: React.FC<WorkoutsContainerProps> = ({ workouts, onWorko
                   <Text style={{fontFamily: Fonts.semiboldItalic, marginBottom: 15}}>{workout.fitnessGoal}</Text>
                   <Text style={styles.intensityLevel}>Intensity Level:</Text>
                   <Text style={{fontFamily: Fonts.semiboldItalic}}>{workout.intensityLevel}</Text>
-                  <Text style={styles.intensityLevel}>Accessible to:</Text>
-                  <Text style={{fontFamily: Fonts.semiboldItalic}}>{workout.visibleTo}</Text>
                 </View>
                 <TouchableOpacity style={styles.trashIcon} onPress={() => onTrashPress(workout)}>
                   <FontAwesome name="trash" size={24} color={Colors.black} />

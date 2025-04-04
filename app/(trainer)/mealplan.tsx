@@ -49,6 +49,8 @@ interface MealPlan {
   weight_goal: number;
   allergens: string;
   instructions: string;
+  requestee_id: string;
+  requestee: string;
 }
 
 interface SelectedMemberData {
@@ -62,7 +64,7 @@ interface SelectedMemberData {
   allergens: string;
 }
 
-interface RequestData {
+interface MemberProfile {
   requesteeID: string;
   fitnessGoal: string;
   weightGoal: string;
@@ -76,6 +78,8 @@ const API_BASE_URL =
 
 let token: string | null = null;
 let userID: string | null = null;
+let trainerID: string | null = null;
+let requesteeID: string | null = null;
 let mealPlan_id: number | null = null;
 
 const MealPlanScreen = () => {
@@ -128,6 +132,8 @@ const MealPlanScreen = () => {
     weight_goal: 0,
     allergens: "",
     instructions: "",
+    requestee_id: selectedMemberData?.requesteeID || '', // Default to the first member's ID
+    requestee: selectedMemberData?.requesteeName || '', // Default to the first member's name
   });
   
 
@@ -162,68 +168,76 @@ const MealPlanScreen = () => {
  
   // Fetch only mealplan requests and retrieve corresponding member profiles
   
-  // useEffect(() => {
-  //   const fetchMealplanRequests = async () => {
-  //     try {
-  //       const token = await AsyncStorage.getItem("authToken");
-  //       if (!token) throw new Error("Token not found");
-
-  //       // Fetch requests data filtered by type: 'mealplan'
-  //       const requestsResponse = await fetch(`${API_BASE_URL}/api/requests-feedback?type=mealplan`, {
-  //         method: "GET",
-  //         headers: {
-  //           Accept: "application/json",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       });
-
-  //       if (!requestsResponse.ok) {
-  //         throw new Error(`Requests API error! Status: ${requestsResponse.status}`);
-  //       }
-
-  //       const requestsData = await requestsResponse.json();
-
-  //       const requesteeIDs = requestsData.map((request: { requesteeID: string }) => request.requesteeID);
-
-  //       // Fetch profiles for each requesteeID using the same structure as your memberData
-  //       const memberDataPromises = requesteeIDs.map(async (requesteeID: string) => {
-  //         const profileResponse = await fetch(`${API_BASE_URL}/api/profile/${requesteeID}`, {
-  //           method: "GET",
-  //           headers: {
-  //             Accept: "application/json",
-  //             Authorization: `Bearer ${token}`,
-  //           },
-  //         });
-
-  //         if (!profileResponse.ok) {
-  //           throw new Error(`Profile API error for ID ${requesteeID}! Status: ${profileResponse.status}`);
-  //         }
-
-  //         const profileData = await profileResponse.json();
-
-  //         return {
-  //           requesteeID: profileData.requesteeID || requesteeID,
-  //           requesteeName: profileData.requesteeName || "Unknown",
-  //           height: profileData.height || "N/A",
-  //           weight: profileData.weight || "N/A",
-  //           age: profileData.age || "N/A",
-  //           fitnessGoal: profileData.fitnessGoal || "Not Specified",
-  //           weightGoal: profileData.weightGoal || "Not Specified",
-  //           allergens: profileData.allergens || "None",
-  //         };
-  //       });
-
-  //       const resolvedMemberDataList = await Promise.all(memberDataPromises);
-
-  //       setMemberData(resolvedMemberDataList);
-  //     } catch (error) {
-  //       console.error("Error fetching mealplan requests and profiles:", error);
-  //     }
-  //   };
-
-  //   fetchMealplanRequests();
-  // }, []); // Empty dependency array ensures this effect runs once when the component mounts
-
+  useEffect(() => {
+    const fetchMealplanRequests = async () => {
+      try {
+        token = await AsyncStorage.getItem("authToken");
+        if (!token) throw new Error("Token not found");
+  
+        // Fetch requests data filtered by type: 'mealplan'
+        const requestsResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        if (!requestsResponse.ok) {
+          throw new Error(`Requests API error! Status: ${requestsResponse.status}`);
+        }
+  
+        const requestsData = await requestsResponse.json();
+  
+        // Map to extract requesteeIDs
+        const requesteeIDs = requestsData.map((request: MealPlan) => request.requestee_id);
+  
+        // Fetch profiles for each requesteeID
+        const memberDataPromises: Promise<SelectedMemberData>[] = requesteeIDs.map(async (requesteeID: string) => {
+          const profileResponse = await fetch(`${API_BASE_URL}/api/profile/${requesteeID}`, {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+  
+          if (!profileResponse.ok) {
+            throw new Error(`Profile API error for ID ${requesteeID}! Status: ${profileResponse.status}`);
+          }
+  
+          const profileData = await profileResponse.json();
+  
+          // Find the matching request from requestsData based on requesteeID
+          const request = requestsData.find((req: MealPlan) => req.requestee_id === profileData.id);
+  
+          // Mapping MemberProfile to SelectedMemberData
+          return {
+            requesteeID: profileData.id || requesteeID, // profileData.id corresponds to the member's id
+            requesteeName: profileData.requesteeName || "Unknown", // Ensure requesteeName exists
+            height: profileData.height || "N/A", // Ensure height exists
+            weight: profileData.weight || "N/A", // Ensure weight exists
+            age: profileData.age || "N/A", // Ensure age exists
+            fitnessGoal: request?.fitnessGoal || "Not Specified", // Merging from requests API
+            weightGoal: request?.weightGoal || "Not Specified", // Merging from requests API
+            allergens: request?.allergens || "None", // Merging from requests API
+          };
+        });
+  
+        // Resolve all promises before setting state
+        const resolvedMemberDataList: SelectedMemberData[] = await Promise.all(memberDataPromises);
+  
+        // Set the state with the resolved data
+        setMemberData(resolvedMemberDataList);
+  
+      } catch (error) {
+        console.error("Error fetching mealplan requests and profiles:", error);
+      }
+    };
+  
+    fetchMealplanRequests();
+  }, []); // Empty dependency array ensures this effect runs once when the component mounts
+  
   // Fetching Meal Plan from API
   
   useEffect(() => {
@@ -254,42 +268,40 @@ const MealPlanScreen = () => {
   }, []);
 
   const handlePublish = async (currentMealPlan?: MealPlan) => {
-    const plan = currentMealPlan; // Use the current meal plan state
-
-    if (!plan || !plan.meals || plan.meals.length === 0) {
+    if (!currentMealPlan || !currentMealPlan.meals || currentMealPlan.meals.length === 0) {
         Toast.show({
             type: 'error',
             text1: 'Empty Meal Plan',
-            text2: 'You must have at least one meal before publishing the meal plan.',
+            text2: 'You must add at least one meal before publishing the meal plan.',
             position: 'bottom',
         });
         return;
     }
 
-    const invalidMeals = plan.meals.filter(meal => 
-        !meal.meal_name?.trim() || 
-        !meal.meal_type?.trim() || 
-        !meal.description?.trim() || 
-        !meal.calories || 
-        !meal.protein || 
-        !meal.carbs
+    const invalidMeals = currentMealPlan.meals.filter(meal => 
+      !meal.meal_name?.trim() || 
+      !meal.meal_type?.trim() || 
+      !meal.description?.trim() || 
+      !meal.calories || 
+      !meal.protein || 
+      !meal.carbs
     );
 
     if (invalidMeals.length > 0) {
-        Toast.show({
-            type: 'error',
-            text1: 'Missing Fields',
-            text2: `Please fill out all fields for ${invalidMeals.length} meal(s).`,
-            position: 'bottom',
-        });
-        return;
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Fields',
+        text2: `Please fill out all fields for ${invalidMeals.length} meal(s).`,
+        position: 'bottom',
+      });
+      return;
     }
-  
+
     try {
-      const token = await AsyncStorage.getItem('authToken');
-      const trainerID = await AsyncStorage.getItem('userID'); // Logged-in trainer's ID
-      const requesteeID = selectedMemberData ? selectedMemberData.requesteeID : ''; // Safely access member's ID
-  
+      token = await AsyncStorage.getItem('authToken');
+      trainerID = await AsyncStorage.getItem('userID'); // Logged-in trainer's ID
+      requesteeID = selectedMemberData?.requesteeID || ''; // Get member ID safely
+
       if (!requesteeID) {
         Toast.show({
           type: 'error',
@@ -299,106 +311,61 @@ const MealPlanScreen = () => {
         });
         return;
       }
-  
-      // Simulated responses for now
-      const temp_response = {
-        searchResponse: true,
-        updateResponse: true,
-        createResponse: true,
-      };
-  
-      let mealPlanId: number;
-  
-      if (temp_response.searchResponse) { // REMOVE IF API AVAILABLE
-        // const searchResponse = await fetch(`${API_BASE_URL}/api/mealplans?member_id=${requesteeID}`, {
-        //   method: 'GET',
-        //   headers: {
-        //     'Accept': 'application/json',
-        //     'Authorization': `Bearer ${token}`,
-        //   },
-        // });
-        // if (!searchResponse.ok) {
-        //   throw new Error(`Search API error! status: ${searchResponse.status}`);
-        // }
-        const existingMealPlans = [{ mealplan_id: 1 }]; // Placeholder for simulated response: await searchResponse.json();
-        if (existingMealPlans.length > 0) {
-          mealPlanId = existingMealPlans[0].mealplan_id;
-  
-          if (temp_response.updateResponse) { // REMOVE IF API AVAILABLE
-            // const updateResponse = await fetch(`${API_BASE_URL}/api/mealplans/${mealPlanId}`, {
-            //   method: 'PUT',
-            //   headers: {
-            //     'Content-Type': 'application/json',
-            //     'Authorization': `Bearer ${token}`,
-            //   },
-            //   body: JSON.stringify({
-            //     member_id: requesteeID,
-            //     trainer_id: trainerID,
-            //     meals: plan.meals.map(meal => ({
-            //       id: meal.id,
-            //       meal_name: meal.meal_name,
-            //       description: meal.description,
-            //       meal_type: meal.meal_type,
-            //       calories: meal.calories,
-            //       protein: meal.protein,
-            //       carbs: meal.carbs,
-            //       mealplan: mealPlanId,
-            //     })),
-            //     mealplan_name: plan.mealplan_name,
-            //     fitness_goal: fitnessGoal,
-            //     calorie_intake: plan.calorie_intake,
-            //     protein: plan.protein,
-            //     carbs: plan.carbs,
-            //     weight_goal: weightGoal,
-            //     instructions: plan.instructions,
-            //   }),
-            // });
-            
-            console.log("Meal plan updated successfully!");
-          } else {
-            throw new Error("Simulated update failed!");
-          }
-        } else {
-          if (temp_response.createResponse) { // REMOVE IF API AVAILABLE
-            // const createResponse = await fetch(`${API_BASE_URL}/api/mealplans`, {
-            //   method: 'POST',
-            //   headers: {
-            //     'Content-Type': 'application/json',
-            //     'Authorization': `Bearer ${token}`,
-            //   },
-            //   body: JSON.stringify({
-            //     member_id: requesteeID,
-            //     trainer_id: trainerID,
-            //     meals: plan.meals.map(meal => ({
-            //       meal_name: meal.meal_name,
-            //       description: meal.description,
-            //       meal_type: meal.meal_type,
-            //       calories: meal.calories,
-            //       protein: meal.protein,
-            //       carbs: meal.carbs,
-            //     })),
-            //     mealplan_name: "New Meal Plan",
-            //     fitness_goal: fitnessGoal,
-            //     calorie_intake: plan.calorie_intake,
-            //     protein: plan.protein,
-            //     carbs: plan.carbs,
-            //     weight_goal: weightGoal,
-            //     instructions: plan.instructions,
-            //   }),
-            // });
-            console.log("New meal plan created successfully!");
-          } else {
-            throw new Error("Simulated creation failed!");
-          }
-        }
-      } else {
-        throw new Error("Simulated search failed!");
+
+      // Fetch existing meal plan for this member
+      const searchResponse = await fetch(`${API_BASE_URL}/api/mealplans?member_id=${requesteeID}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!searchResponse.ok) {
+        throw new Error(`Search API error! status: ${searchResponse.status}`);
       }
+
+      const existingMealPlans = await searchResponse.json();
+      let mealPlanId = existingMealPlans[0]?.mealplan_id;
+
+      if (!mealPlanId) {
+        throw new Error("No existing meal plan found for this member.");
+      }
+
+      // Update the existing meal plan
+      const updateResponse = await fetch(`${API_BASE_URL}/api/mealplans/${mealPlanId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          member_id: requesteeID,
+          trainer_id: trainerID,
+          meals: currentMealPlan.meals.map(meal => ({
+            id: meal.id, // Include meal ID if applicable
+            meal_name: meal.meal_name,
+            description: meal.description,
+            meal_type: meal.meal_type,
+            calories: meal.calories,
+            protein: meal.protein,
+            carbs: meal.carbs,
+          })),
+          mealplan_name: currentMealPlan.mealplan_name,
+          fitness_goal: currentMealPlan.fitness_goal,
+          calorie_intake: currentMealPlan.calorie_intake,
+          protein: currentMealPlan.protein,
+          carbs: currentMealPlan.carbs,
+          weight_goal: currentMealPlan.weight_goal,
+          instructions: currentMealPlan.instructions,
+          status: "published", // Mark as published
+        }),
+      });
   
       // Update state after successful publish
       setMealPlans((prevMealPlans) =>
         prevMealPlans.map((p) =>
-          p.mealplan_id === mealPlanId ? { ...plan, mealplan_id: mealPlanId } : p
+          p.mealplan_id === mealPlanId ? { ...currentMealPlan, mealplan_id: mealPlanId } : p
         )
       );
       setMealPlan(null); // Clear view state
