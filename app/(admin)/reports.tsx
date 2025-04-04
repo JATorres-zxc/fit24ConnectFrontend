@@ -6,40 +6,48 @@ import { Fonts } from '@/constants/Fonts';
 import { router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-const reports = [
-  {id: "1", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
-];
-
 export default function HistoryScreen() {
   const [reports, setReports] = useState([
-    {id: "1", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"}
+    {id: "1", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
+    {id: "2", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
+    {id: "3", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
+    {id: "4", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
+    {id: "5", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
   ]); // Replace with actual data fetching logic
 
   return (
     <View style={styles.container}>
       <Header screen='Reports' />
       {reports.length > 0 ? (
-        <FlatList
-          style={styles.reportList}
-          data={reports}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.headerLabel}>Report Type:{' '}
-                  <Text style={styles.headerValue}>{item.reportType}</Text>
-                </Text>
-                <MaterialCommunityIcons name="export" size={24} color="black" />
+        <>
+          <TouchableOpacity style={styles.topButton} onPress={() => {router.push('/(admin)/generate-report')}}>
+            <Text style={styles.buttonText}>Generate Report</Text>
+          </TouchableOpacity>
+
+          <FlatList
+            style={styles.reportList}
+            data={reports}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.headerLabel}>Report Type:{' '}
+                    <Text style={styles.headerValue}>{item.reportType}</Text>
+                  </Text>
+                  <MaterialCommunityIcons name="export" size={24} color="black" />
+                </View>
+                <View style={styles.cardContent}>
+                  <Text style={styles.label}>Date Interval:{' '}
+                    <Text style={styles.value}>{item.startDate} to {item.endDate}</Text>
+                  </Text>
+                  <Text style={styles.label}>Generated on:{' '}
+                  <Text style={styles.value}>{item.generatedDate}</Text>
+                  </Text>
+                </View>
               </View>
-              <Text style={styles.label}>Date Interval:{' '}
-                <Text style={styles.value}>{item.startDate} to {item.endDate}</Text>
-              </Text>
-              <Text style={styles.label}>Generated on:{' '}
-              <Text style={styles.value}>{item.generatedDate}</Text>
-              </Text>
-            </View>
-          )}
-        />
+            )}
+          />
+        </>
       ) : (
         <View style={styles.emptyContainer}>
           <Text style={styles.message}>You have not generated any report.</Text>
@@ -56,6 +64,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.bg,
+    alignItems: 'center',
+  },
+  topButton: {
+    backgroundColor: Colors.gold,
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 15,
+    width: '85%',
     alignItems: 'center',
   },
   emptyContainer: {
@@ -76,6 +92,8 @@ const styles = StyleSheet.create({
   },
   card: {
     padding: 10,
+    paddingBottom: 20,
+    marginBottom: 15,
     borderBottomWidth: 1,
     borderBottomColor: Colors.black,
   },
@@ -87,7 +105,7 @@ const styles = StyleSheet.create({
   },
   headerLabel: {
     fontSize: 16,
-    fontFamily: Fonts.medium,
+    fontFamily: Fonts.semibold,
     color: Colors.black,
   },
   headerValue: {
@@ -95,10 +113,14 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: Colors.textSecondary,
   },
+  cardContent: {
+    marginTop: 10,
+  },
   label: {
     fontSize: 12,
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.medium,
     color: Colors.black,
+    marginBottom: 5,
   },
   value: {
     fontSize: 12,
@@ -111,6 +133,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   buttonText: {
+    fontSize: 16,
     color: Colors.white,
     textAlign: 'center',
     fontFamily: Fonts.medium,

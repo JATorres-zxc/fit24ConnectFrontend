@@ -1,6 +1,6 @@
 import { Text, View, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
-import DatePicker from 'react-native-date-picker';
+import RNDateTimePicker from '@react-native-community/datetimepicker';
 
 import Header from '@/components/NavigateBackHeader';
 import { Colors } from '@/constants/Colors';
@@ -10,8 +10,8 @@ import { useState } from 'react';
 
 export default function ReportsFormScreen() {
   const [trainer, setTrainer] = useState<string | number | undefined>('');
-  const [date, setDate] = useState(new Date())
-  const [open, setOpen] = useState(false)
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
 
   return (
     <View style={styles.container}>
@@ -40,38 +40,22 @@ export default function ReportsFormScreen() {
 
         <Text style={styles.formHeader}> Start Date </Text>
         <View style={styles.datePicker}>
-          <DatePicker
-            modal
-            open={open}
-            date={date}
-            onConfirm={(date) => {
-              setOpen(false)
-              setDate(date)
-            }}
-            onCancel={() => {
-              setOpen(false)
-            }}
+          <RNDateTimePicker
+            mode="date"
+            display="default"
+            themeVariant="light"
+            value={startDate || new Date()}
           />
         </View>
 
         <Text style={styles.formHeader}> End Date </Text>
         <View style={styles.datePicker}>
-          <RNPickerSelect
-            onValueChange={(value) => setTrainer(value)}
-            items={[
-              { label: 'Memberships', value: 'memberships' },
-              { label: 'Access History', value: 'history' },
-            ]}
-            style={trainerpickerSelectStyles}
-            value={trainer}
-            placeholder={{ label: 'Choose End Date', value: null }}
-            useNativeAndroidPickerStyle={false}
-            Icon={() =>
-              Platform.OS === "ios" ? (
-                <Ionicons name="chevron-down" size={20} color="gray" />
-              ) : null
-            }
-            />
+          <RNDateTimePicker
+            mode="date"
+            display="default"
+            themeVariant="light"
+            value={endDate || new Date()}
+          />
         </View>
 
         <TouchableOpacity style={styles.generateButton}>
@@ -110,19 +94,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   datePicker: {
-    backgroundColor: Colors.white,
-    borderWidth: 1,
-    borderRadius: 10,
-    width: '100%',
+    alignSelf: "flex-start",
     marginBottom: 20,
-    fontFamily: Fonts.regular,
-    fontSize: 14,
   },
   generateButton: {
     backgroundColor: Colors.gold,
     padding: 12,
     borderRadius: 10,
     alignSelf: "center",
+    marginTop: 20,
     width: "50%",
   },
   buttonText: {
