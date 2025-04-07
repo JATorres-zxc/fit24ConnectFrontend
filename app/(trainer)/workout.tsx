@@ -68,7 +68,7 @@ const API_BASE_URL =
 
 let token: string | null = null;
 let userID: string | null = null;
-let workout_id: number | null = null;
+let requestee_id: string | null = null;
 
 const WorkoutScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
@@ -155,11 +155,11 @@ const WorkoutScreen = () => {
   useEffect(() => {
     const fetchWorkoutRequests = async () => {
       try {
-        const token = await AsyncStorage.getItem("authToken");
-        if (!token) throw new Error("Token not found");
+        token = await AsyncStorage.getItem('authToken');
+        requestee_id = selectedMemberData?.requesteeID || ''; // Get member ID safely
 
         // Fetch requests data filtered by type: 'workout'
-        const requestsResponse = await fetch(`${API_BASE_URL}/api/requests-feedback?type=workout`, {
+        const requestsResponse = await fetch(`${API_BASE_URL}/api/workout/workouts`, {
           method: "GET",
           headers: {
             Accept: "application/json",
@@ -173,7 +173,10 @@ const WorkoutScreen = () => {
 
         const requestsData = await requestsResponse.json();
 
-        const requesteeIDs = requestsData.map((request: { requesteeID: string }) => request.requesteeID);
+        // Only take IDs with pending status for workouts
+        const requesteeIDs = requestsData
+          .filter((request: { status: string }) => request.status === "pending")
+          .map((request: { requesteeID: string }) => request.requesteeID);
 
         // Fetch profiles for each requesteeID using the same structure as your memberData
         const memberDataPromises = requesteeIDs.map(async (requesteeID: string) => {
@@ -235,10 +238,11 @@ const WorkoutScreen = () => {
   
         const programsData = await response.json();
   
-        // Get all programs where the user is the trainer OR it's a free program
+        // Get all published programs where the user is the trainer OR it's a free program
         const userPrograms = programsData.filter(
           (program: any) =>
-            String(program.trainer) === String(userID) || program.program_type === "everyone"
+            program.status === "published" &&
+            (String(program.trainer) === String(userID) || program.program_type === "everyone")
         );
   
         if (!userPrograms.length) {
@@ -255,15 +259,16 @@ const WorkoutScreen = () => {
           trainer: userProgram.trainer ? userProgram.trainer.toString() : "N/A",
           exercises: userProgram.workout_exercises.map((exercise: any) => ({
             id: exercise.id.toString(),
-            name: exercise.exercise_details.name,
-            description: exercise.exercise_details.description,
+            name: exercise.name,
+            description: exercise.description,
             image: "", // Add image URL if available in the backend
-            sets: exercise.sets,
-            reps: exercise.reps,
-            restTime: exercise.rest_time,
-            durationPerSet: exercise.duration_per_set,
-            notes: exercise.notes,
+            // sets: exercise.sets,
+            // reps: exercise.reps,
+            // restTime: exercise.rest_time,
+            // durationPerSet: exercise.duration_per_set,
+            // notes: exercise.notes,
           })),
+          status: userProgram.status,
           // program_type from backend is treated as the userID or "everyone" it is visible to.
           visibleTo: userProgram.program_type === "everyone" 
             ? "everyone" 
@@ -301,35 +306,35 @@ const WorkoutScreen = () => {
     const plan = currentWorkout; // Use the current workout state
   
     if (!plan || !plan.exercises || plan.exercises.length === 0) {
-        Toast.show({
-            type: 'error',
-            text1: 'Empty Workout',
-            text2: 'You must have at least one exercise before publishing the workout.',
-            position: 'bottom',
-        });
-        return;
+      Toast.show({
+        type: 'error',
+        text1: 'Empty Workout',
+        text2: 'You must have at least one exercise before publishing the workout.',
+        position: 'bottom',
+      });
+      return;
     }
-
-    const invalidExercises = plan.exercises.filter(exercise => 
-        !exercise.name?.trim() || 
-        !exercise.description?.trim()
+  
+    const invalidExercises = plan.exercises.filter(exercise =>
+      !exercise.name?.trim() ||
+      !exercise.description?.trim()
     );
-
+  
     if (invalidExercises.length > 0) {
-        Toast.show({
-            type: 'error',
-            text1: 'Missing Fields',
-            text2: `Please fill out all fields for ${invalidExercises.length} exercise(s).`,
-            position: 'bottom',
-        });
-        return;
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Fields',
+        text2: `Please fill out all fields for ${invalidExercises.length} exercise(s).`,
+        position: 'bottom',
+      });
+      return;
     }
-
+  
     try {
       const token = await AsyncStorage.getItem('authToken');
-      const trainerID = await AsyncStorage.getItem('userID'); // Logged-in trainer's ID
-      const requesteeID = selectedMemberData?.requesteeID; // Member's ID from the state
-    
+      const trainerID = await AsyncStorage.getItem('userID');
+      const requesteeID = selectedMemberData?.requesteeID;
+  
       if (!requesteeID) {
         Toast.show({
           type: 'error',
@@ -339,110 +344,94 @@ const WorkoutScreen = () => {
         });
         return;
       }
-    
-      // Simulated responses for now
-      const temp_response = {
-        searchResponse: true,
-        updateResponse: true,
-        createResponse: true,
-      };
-    
+      
       let WorkoutId: number;
-    
-      if (temp_response.searchResponse) { // REMOVE IF API AVAILABLE
-        // const searchResponse = await fetch(`${API_BASE_URL}/api/workouts?program_type=${requesteeID}`, {
-        //   method: 'GET',
-        //   headers: {
-        //     'Accept': 'application/json',
-        //     'Authorization': `Bearer ${token}`,
-        //   },
-        // });
-        // if (!searchResponse.ok) {
-        //   throw new Error(`Search API error! status: ${searchResponse.status}`);
-        // }
-        const existingWorkouts = [{ Workout_id: 1 }]; // Placeholder for simulated response: await searchResponse.json();
-        if (existingWorkouts.length > 0) {
-          WorkoutId = existingWorkouts[0].Workout_id;
-    
-          if (temp_response.updateResponse) { // REMOVE IF API AVAILABLE
-            // const updateResponse = await fetch(`${API_BASE_URL}/api/workouts/${WorkoutId}`, {
-            //   method: 'PUT',
-            //   headers: {
-            //     'Content-Type': 'application/json',
-            //     'Authorization': `Bearer ${token}`,
-            //   },
-            //   body: JSON.stringify({
-            //     program_type: requesteeID, // Match program_type with requesteeID
-            //     trainer_id: trainerID,
-            //     workouts: plan.workouts.map(workout => ({
-            //       id: workout.id,
-            //       workout_name: workout.workout_name,
-            //       description: workout.description,
-            //       workout_type: workout.workout_type,
-            //       calories: workout.calories,
-            //       protein: workout.protein,
-            //       carbs: workout.carbs,
-            //       Workout: WorkoutId,
-            //     })),
-            //     workout_name: plan.Workout_name,
-            //     fitness_goal: fitnessGoal,
-            //     calorie_intake: plan.calorie_intake,
-            //     protein: plan.protein,
-            //     carbs: plan.carbs,
-            //     weight_goal: weightGoal,
-            //     instructions: plan.instructions,
-            //   }),
-            // });
-    
-            console.log("Workout plan updated successfully!");
-          } else {
-            throw new Error("Simulated update failed!");
-          }
-        } else {
-          if (temp_response.createResponse) { // REMOVE IF API AVAILABLE
-            // const createResponse = await fetch(`${API_BASE_URL}/api/workouts`, {
-            //   method: 'POST',
-            //   headers: {
-            //     'Content-Type': 'application/json',
-            //     'Authorization': `Bearer ${token}`,
-            //   },
-            //   body: JSON.stringify({
-            //     program_type: requesteeID, // Match program_type with requesteeID
-            //     trainer_id: trainerID,
-            //     workouts: plan.workouts.map(workout => ({
-            //       workout_name: workout.workout_name,
-            //       description: workout.description,
-            //       workout_type: workout.workout_type,
-            //       calories: workout.calories,
-            //       protein: workout.protein,
-            //       carbs: workout.carbs,
-            //     })),
-            //     workout_name: "New workout Plan",
-            //     fitness_goal: fitnessGoal,
-            //     calorie_intake: plan.calorie_intake,
-            //     protein: plan.protein,
-            //     carbs: plan.carbs,
-            //     weight_goal: weightGoal,
-            //     instructions: plan.instructions,
-            //   }),
-            // });
-            console.log("New workout created successfully!");
-          } else {
-            throw new Error("Simulated creation failed!");
-          }
-        }
-      } else {
-        throw new Error("Simulated search failed!");
+  
+      // Search for existing workout plans
+      const searchResponse = await fetch(`${API_BASE_URL}/api/workouts?program_type=${requesteeID}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+  
+      if (!searchResponse.ok) {
+        throw new Error(`Search API error! status: ${searchResponse.status}`);
       }
   
-      // Update state after successful publish
-      setWorkouts((prevWorkouts) =>
-        prevWorkouts.map((p) =>
-          p.id === WorkoutId.toString() ? { ...plan, Workout_id: WorkoutId } : p
+      const existingWorkouts = await searchResponse.json();
+  
+      if (existingWorkouts.length > 0) {
+        WorkoutId = existingWorkouts[0].Workout_id;
+  
+        // Update existing workout plan
+        const updateResponse = await fetch(`${API_BASE_URL}/api/workouts/${WorkoutId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            id: plan.id,
+            program_type: requesteeID,
+            trainer_id: trainerID,
+            workouts: plan.exercises.map(exercise => ({
+              id: exercise.id.toString(),
+              name: exercise.name,
+              description: exercise.description,
+              image: "", // Add image URL if available in the backend
+            })),
+            workout_name: plan.title,
+            fitness_goal: plan.fitnessGoal,
+            intensity_level: plan.intensityLevel,
+          }),
+        });
+  
+        if (!updateResponse.ok) {
+          throw new Error(`Meal Plan API error! status: ${updateResponse.status}`);
+        }
+  
+        console.log("Workout plan updated successfully!");
+      } else {
+        // Create new workout plan if none exists
+        const createResponse = await fetch(`${API_BASE_URL}/api/workouts`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            program_type: requesteeID,
+            trainer_id: trainerID,
+            workouts: plan.exercises.map(exercise => ({
+              id: exercise.id.toString(),
+              name: exercise.name,
+              description: exercise.description,
+              image: "", // Add image URL if available in the backend
+            })),
+            workout_name: plan.title,
+            fitness_goal: plan.fitnessGoal,
+            intensity_level: plan.intensityLevel,
+          }),
+        });
+  
+        if (!createResponse.ok) {
+          throw new Error(`Create API error! status: ${createResponse.status}`);
+        }
+  
+        console.log("New workout created successfully!");
+      }
+  
+      // Update state with new or updated workout
+      setWorkouts(prevWorkouts =>
+        prevWorkouts.map(p =>
+          p.id === plan.id ? { ...plan, Workout_id: WorkoutId } : p
         )
       );
-      setWorkout(null); // Clear view state
-      setSelectedMemberData(null); // Clear selected member data
+  
+      setWorkout(null);
+      setSelectedMemberData(null);
   
       Toast.show({
         type: 'info',
@@ -450,6 +439,7 @@ const WorkoutScreen = () => {
         text2: 'Your workout plan has been published successfully.',
         position: 'bottom',
       });
+  
       setViewState('');
     } catch (error) {
       console.error("Error handling workout plan:", error);
@@ -460,7 +450,7 @@ const WorkoutScreen = () => {
         position: "bottom",
       });
     }
-  };
+  };  
 
   const handleDelete = async (workout: Workout) => {
       try {

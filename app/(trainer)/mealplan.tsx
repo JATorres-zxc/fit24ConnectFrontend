@@ -51,6 +51,7 @@ interface MealPlan {
   instructions: string;
   requestee_id: string;
   requestee: string;
+  status: string;
 }
 
 interface SelectedMemberData {
@@ -59,13 +60,6 @@ interface SelectedMemberData {
   height: string;
   weight: string;
   age: string;
-  fitnessGoal: string;
-  weightGoal: string;
-  allergens: string;
-}
-
-interface MemberProfile {
-  requesteeID: string;
   fitnessGoal: string;
   weightGoal: string;
   allergens: string;
@@ -133,7 +127,8 @@ const MealPlanScreen = () => {
     allergens: "",
     instructions: "",
     requestee_id: selectedMemberData?.requesteeID || '', // Default to the first member's ID
-    requestee: selectedMemberData?.requesteeName || '', // Default to the first member's name
+    requestee: selectedMemberData?.requesteeID || '', // Default to the first member's ID
+    status: "pending", // Default status
   });
   
 
@@ -189,8 +184,10 @@ const MealPlanScreen = () => {
   
         const requestsData = await requestsResponse.json();
   
-        // Map to extract requesteeIDs
-        const requesteeIDs = requestsData.map((request: MealPlan) => request.requestee_id);
+        // Map to extract requesteeIDs for only pending meal plans
+        const requesteeIDs = requestsData
+          .filter((request: MealPlan) => request.status === "pending")
+          .map((request: MealPlan) => request.requestee_id);
   
         // Fetch profiles for each requesteeID
         const memberDataPromises: Promise<SelectedMemberData>[] = requesteeIDs.map(async (requesteeID: string) => {
@@ -245,27 +242,33 @@ const MealPlanScreen = () => {
       try {
         token = await AsyncStorage.getItem('authToken');
         userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
+  
         const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
-
+  
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+  
         const mealPlansData = await response.json();
-        setMealPlans(mealPlansData); // Store all meal plans
+  
+        // Filter meal plans with status "published"
+        const publishedMealPlans = mealPlansData.filter(
+          (plan: MealPlan) => plan.status === 'published'
+        );
+  
+        setMealPlans(publishedMealPlans); // Store only published meal plans
       } catch (error) {
         console.error('Error fetching meal plans:', error);
       }
     };
-
+  
     fetchMealPlans();
-  }, []);
+  }, []);  
 
   const handlePublish = async (currentMealPlan?: MealPlan) => {
     if (!currentMealPlan || !currentMealPlan.meals || currentMealPlan.meals.length === 0) {
@@ -370,7 +373,11 @@ const MealPlanScreen = () => {
       );
       setMealPlan(null); // Clear view state
       setSelectedMemberData(null); // Clear selected member data
-  
+      
+      if (!updateResponse.ok) {
+        throw new Error(`Meal Plan API error! status: ${updateResponse.status}`);
+      }
+
       Toast.show({
         type: 'info',
         text1: 'Meal Plan Published',

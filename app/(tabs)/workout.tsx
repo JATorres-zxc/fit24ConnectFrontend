@@ -114,8 +114,9 @@ const WorkoutScreen = () => {
         const programsData = await response.json();
         
         // Based on backend, the program_type contains the userID or "everyone" that it is visible to.
-        // Filter workout programs based on program_type matching userID or "everyone" visibleTo
+        // Filter workout programs based on program_type matching userID or "everyone" and status is published
         const filteredPrograms = programsData.filter((program: any) => 
+          program.status === "published" &&
           (program.program_type === userID || program.program_type === "everyone")
         );
   
@@ -266,27 +267,20 @@ const WorkoutScreen = () => {
       return;
     }
 
-    // Uncomment and replace with actual API call
-    // const response = await fetch('https://api.example.com/submitFeedback', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     memberId: userID,
-    //     workoutId: selectedWorkout?.id,
-    //     type: "workout",
-    //     feedback: feedback,
-    //     rating: rating,
-    //   }),
-    // });
-
-    // const result = await response.json();
+    const response = await fetch(`${API_BASE_URL}/api/workout/feedbacks`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        mealplan: workout_id,
+        comment: feedback,
+        rating: rating,
+      }),
+    });
 
     try {
-      const temp_response = true;
-
-      if (temp_response) {
+      if (response.ok) {
         Toast.show({
           type: 'info',
           text1: 'Feedback Sent',
@@ -343,7 +337,7 @@ const WorkoutScreen = () => {
       profileData.user_ID = userID; // Add user_ID to profile data
   
       // Fetch request data from the requests-feedback API
-      const requestResponse = await fetch(`${API_BASE_URL}/api/requests-feedback`, {
+      const requestResponse = await fetch(`${API_BASE_URL}/api/workouts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -357,7 +351,9 @@ const WorkoutScreen = () => {
           height,
           weight,
           age,
-          type: "workout",
+          status: "pending", // Optional status for tracking
+          requestee_id: userID,
+          requestee: userID, // Assuming the requestee is the same as the member
         }),
       });
   

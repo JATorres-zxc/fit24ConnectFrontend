@@ -213,6 +213,8 @@ const MealPlanScreen = () => {
           meals: [],  // Empty meals (trainer will add them later)
           instructions: "",  // Optional, can be updated later
           status: "pending", // Optional status for tracking
+          requestee_id: userID,
+          requestee: userID, // Assuming the requestee is the same as the member
         }),
       });
 
@@ -253,26 +255,21 @@ const MealPlanScreen = () => {
     }
 
     try {
-      // Uncomment and replace with actual API call,
       // This is in line with an agreed central feedback and request database.
 
-      // const response = await fetch('https://api.example.com/submitFeedback', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     memberId: userID,
-      //     type: "mealplan",
-      //     mealPlanId: mealPlan_id,
-      //     feedback: feedback,
-      //     rating: rating,
-      //   }),
-      // });
+      const response = await fetch(`${API_BASE_URL}/api/mealplan/feedbacks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mealplan: mealPlan_id,
+          comment: feedback,
+          rating: rating,
+        }),
+      });
 
-      const temp_response = true;
-      // // response.ok
-      if (temp_response) {
+      if (response.ok) {
         Toast.show({
           type: 'info',
           text1: 'Feedback Sent',
