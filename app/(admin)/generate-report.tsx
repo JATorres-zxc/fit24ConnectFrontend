@@ -1,17 +1,67 @@
 import { Text, View, StyleSheet, Platform, TouchableOpacity } from 'react-native';
+import { useState } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
+import Toast from 'react-native-toast-message';
 
 import Header from '@/components/NavigateBackHeader';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
 
 export default function ReportsFormScreen() {
-  const [trainer, setTrainer] = useState<string | number | undefined>('');
+  const [reportType, setReportType] = useState<string | number | undefined>('');
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+
+  // Handle date change for start date
+  const handleStartDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || startDate;
+    setStartDate(currentDate);
+  };
+
+  // Handle date change for end date
+  const handleEndDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || endDate;
+    setEndDate(currentDate);
+  };
+
+  const handleGenerateReport = () => {
+    if (!reportType || !startDate || !endDate) {
+      Toast.show({
+        type: 'error',
+        text1: 'Incomplete Fields',
+        text2: 'Please select a report type',
+        topOffset: 100,
+      });
+      return;
+    }
+
+    if (!startDate || !endDate) {
+      Toast.show({
+        type: 'error',
+        text1: 'Incomplete Fields',
+        text2: 'Please select both dates.',
+      });
+      return;
+    }
+  
+    if (endDate < startDate) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Date Range',
+        text2: 'End date cannot be earlier than start date.',
+      });
+      return;
+    }
+  
+    // Proceed to generate report
+    Toast.show({
+      type: 'success',
+      text1: 'Generating Report',
+      text2: 'Your report is being processed...',
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -21,13 +71,13 @@ export default function ReportsFormScreen() {
         <Text style={styles.formHeader}> Report Type </Text>
         <View style={styles.reportPicker}>
           <RNPickerSelect
-            onValueChange={(value) => setTrainer(value)}
+            onValueChange={(value) => setReportType(value)}
             items={[
               { label: 'Memberships', value: 'memberships' },
               { label: 'Access History', value: 'history' },
             ]}
             style={trainerpickerSelectStyles}
-            value={trainer}
+            value={reportType}
             placeholder={{ label: 'Select Desired Report Type', value: null }}
             useNativeAndroidPickerStyle={false}
             Icon={() =>
@@ -37,28 +87,34 @@ export default function ReportsFormScreen() {
             }
             />
         </View>
-
-        <Text style={styles.formHeader}> Start Date </Text>
-        <View style={styles.datePicker}>
-          <RNDateTimePicker
-            mode="date"
-            display="default"
-            themeVariant="light"
-            value={startDate || new Date()}
-          />
+        
+        <View style={styles.dateForm}>
+          <Text style={styles.dateHeader}> Start Date </Text>
+          <View style={styles.datePicker}>
+            <RNDateTimePicker
+              mode="date"
+              display="default"
+              themeVariant="light"
+              value={startDate || new Date()}
+              onChange={handleStartDateChange}
+            />
+          </View>
+        </View>
+        
+        <View style={styles.dateForm}>
+          <Text style={styles.dateHeader}> End Date </Text>
+          <View style={styles.datePicker}>
+            <RNDateTimePicker
+              mode="date"
+              display="default"
+              themeVariant="light"
+              value={endDate || new Date()}
+              onChange={handleEndDateChange}
+            />
+          </View>
         </View>
 
-        <Text style={styles.formHeader}> End Date </Text>
-        <View style={styles.datePicker}>
-          <RNDateTimePicker
-            mode="date"
-            display="default"
-            themeVariant="light"
-            value={endDate || new Date()}
-          />
-        </View>
-
-        <TouchableOpacity style={styles.generateButton}>
+        <TouchableOpacity style={styles.generateButton} onPress={handleGenerateReport}>
           <Text style={styles.buttonText}>Generate Report</Text>
         </TouchableOpacity>
       </View>
@@ -92,6 +148,18 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontFamily: Fonts.regular,
     fontSize: 14,
+  },
+  dateHeader: {
+    fontSize: 16,
+    textAlign: "left",
+    fontFamily: Fonts.semibold,
+    paddingTop: 8,
+  },
+  dateForm: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 20,
   },
   datePicker: {
     alignSelf: "flex-start",
