@@ -16,7 +16,7 @@ interface Meal {
 }
 
 interface MealPlan {
-    mealplan_id: number;
+    mealplan_id: string;
     meals: Meal[];
     member_id: string;
     trainer_id: string;

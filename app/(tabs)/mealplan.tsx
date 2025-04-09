@@ -212,7 +212,7 @@ const MealPlanScreen = () => {
           age,
           meals: [],  // Empty meals (trainer will add them later)
           instructions: "",  // Optional, can be updated later
-          status: "pending", // Optional status for tracking
+          status: "in_progress", // Optional status for tracking
           requestee_id: userID,
           requestee: userID, // Assuming the requestee is the same as the member
         }),

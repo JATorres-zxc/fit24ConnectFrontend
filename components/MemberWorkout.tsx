@@ -21,11 +21,12 @@ interface Exercise {
   interface Workout {
     id: string;
     title: string;
+    duration: number; // in days
     fitnessGoal: string;
     intensityLevel: string;
     trainer: string;
     exercises: Exercise[];
-    visibleTo: "everyone" | "userEmail" | string;
+    visibleTo: string;
     feedbacks: Feedback[];
     member_id?: string; // Added member_id property
   }

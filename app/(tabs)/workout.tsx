@@ -114,9 +114,9 @@ const WorkoutScreen = () => {
         const programsData = await response.json();
         
         // Based on backend, the program_type contains the userID or "everyone" that it is visible to.
-        // Filter workout programs based on program_type matching userID or "everyone" and status is published
+        // Filter workout programs based on program_type matching userID or "everyone" and status is completed
         const filteredPrograms = programsData.filter((program: any) => 
-          program.status === "published" &&
+          program.status === "completed" &&
           (program.program_type === userID || program.program_type === "everyone")
         );
   
@@ -351,7 +351,7 @@ const WorkoutScreen = () => {
           height,
           weight,
           age,
-          status: "pending", // Optional status for tracking
+          status: "in_progress", // Optional status for tracking
           requestee_id: userID,
           requestee: userID, // Assuming the requestee is the same as the member
         }),

@@ -17,6 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MemberMealPlan from "@/components/MemberMealPlan";
 import MealPlanRequest from "@/components/MealPlanRequest";
 import TrainerMPHeader from "@/components/TrainerMPHeader";
+import { nanoid } from 'nanoid';
 
 interface Meal {
   id: string;
@@ -37,7 +38,7 @@ interface Feedback {
 }
 
 interface MealPlan {
-  mealplan_id: number;
+  mealplan_id: string;
   meals: Meal[];
   member_id: string;
   trainer_id: string;
@@ -114,7 +115,7 @@ const MealPlanScreen = () => {
   const [selectedMemberData, setSelectedMemberData] = useState<SelectedMemberData | null>(null); // Default to the first member in the list
   
   const [newMealPlan, setNewMealPlan] = useState<MealPlan | null>({
-    mealplan_id: Date.now(),
+    mealplan_id: nanoid(), // Generate a unique ID for the new workout
     meals: [], // Ensures `meals` is always defined
     member_id: selectedMemberData?.requesteeID || '',
     trainer_id: userID?.toString() || "",
@@ -128,7 +129,7 @@ const MealPlanScreen = () => {
     instructions: "",
     requestee_id: selectedMemberData?.requesteeID || '', // Default to the first member's ID
     requestee: selectedMemberData?.requesteeID || '', // Default to the first member's ID
-    status: "pending", // Default status
+    status: "in_progress", // Default status
   });
   
 
@@ -184,9 +185,9 @@ const MealPlanScreen = () => {
   
         const requestsData = await requestsResponse.json();
   
-        // Map to extract requesteeIDs for only pending meal plans
+        // Map to extract requesteeIDs for only in_progress meal plans
         const requesteeIDs = requestsData
-          .filter((request: MealPlan) => request.status === "pending")
+          .filter((request: MealPlan) => request.status === "in_progress")
           .map((request: MealPlan) => request.requestee_id);
   
         // Fetch profiles for each requesteeID
@@ -256,9 +257,9 @@ const MealPlanScreen = () => {
   
         const mealPlansData = await response.json();
   
-        // Filter meal plans with status "published"
+        // Filter meal plans with status "completed"
         const publishedMealPlans = mealPlansData.filter(
-          (plan: MealPlan) => plan.status === 'published'
+          (plan: MealPlan) => plan.status === 'completed'
         );
   
         setMealPlans(publishedMealPlans); // Store only published meal plans
@@ -361,7 +362,7 @@ const MealPlanScreen = () => {
           carbs: currentMealPlan.carbs,
           weight_goal: currentMealPlan.weight_goal,
           instructions: currentMealPlan.instructions,
-          status: "published", // Mark as published
+          status: "completed", // Mark as completed
         }),
       });
   
@@ -473,7 +474,7 @@ const MealPlanScreen = () => {
                 }}
                 onAction={() => {
                   const newMeal: Meal = {
-                    id: Date.now().toString(),
+                    id: nanoid(), // Generate a unique ID for the new workout
                     mealplan: "0", // Placeholder, may need an updated value
                     meal_name: `Meal ${(newMealPlan?.meals?.length || 0) + 1}`, // Safely handle undefined
                     meal_type: "",
@@ -532,7 +533,7 @@ const MealPlanScreen = () => {
                     }}
                     onAction={() => {
                       const newMeal: Meal = {
-                        id: Date.now().toString(),
+                        id: nanoid(), // Generate a unique ID for the new workout
                         mealplan: mealPlan?.mealplan_id?.toString() || "", // Use selected meal plan ID
                         meal_name: `Meal ${mealPlan?.meals.length + 1}`, // Dynamically set meal name
                         meal_type: "",
