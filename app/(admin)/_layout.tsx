@@ -76,6 +76,13 @@ export default function RootLayout() {
       />
 
       <Tabs.Screen 
+        name="notifications" 
+        options={{ 
+          href: null,
+        }} 
+      />
+
+      <Tabs.Screen 
         name="create-announcement" 
         options={{ 
           href: null,
@@ -91,6 +98,13 @@ export default function RootLayout() {
 
       <Tabs.Screen 
         name="edit-password" 
+        options={{ 
+          href: null,
+        }} 
+      />
+
+      <Tabs.Screen 
+        name="generate-report" 
         options={{ 
           href: null,
         }} 
