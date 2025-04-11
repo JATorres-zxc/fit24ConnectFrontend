@@ -24,6 +24,13 @@ interface Meal {
   carbs: number;
 }
 
+interface Trainer{
+  id: string;
+  name: string;
+  experience?: string;
+  contact?: string;
+}
+
 interface Feedback {
   id: string;
   feedback: string;
@@ -61,8 +68,8 @@ let mealPlan_id: number | null = null;
 const MealPlanScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State to store meal plan
-  const [trainer, setTrainer] = useState<string | number | undefined>('');
-  const [trainers, setTrainers] = useState([]);
+  const [trainer, setTrainer] = useState<Trainer | null>(null);
+  const [trainers, setTrainers] = useState<Trainer[]>([]); // State to store trainers
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
   const [allergens, setAllergens] = useState(""); // State to store allergens
@@ -71,32 +78,38 @@ const MealPlanScreen = () => {
 
   // Fetching trainers from API
 
-  // useEffect(() => {
-  //   const fetchTrainers = async () => {
-  //     try {
-  //       token = await AsyncStorage.getItem('authToken');
-  //       userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
-  //       const response = await fetch(`${API_BASE_URL}/api/mealplan/trainers`, {
-  //         headers: {
-  //           'Accept': 'application/json',
-  //           'Authorization': `Bearer ${token}`,
-  //         },
-  //       });
-
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-
-  //       const data = await response.json();
-  //       setTrainers(data);
-  //     } catch (error) {
-  //       console.error('Error fetching trainers:', error);
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchTrainers = async () => {
+      try {
+        const token = await AsyncStorage.getItem('authToken');
+        const trainerResponse = await fetch(`${API_BASE_URL}/api/account/trainers/`, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
   
-  //   fetchTrainers();
-  // }, []);
+        if (!trainerResponse.ok) {
+          throw new Error(`Trainer fetch error! Status: ${trainerResponse.status}`);
+        }
+  
+        const trainerList = await trainerResponse.json();
+  
+        const resolvedTrainers = trainerList.map((trainer: Trainer) => ({
+          id: trainer.id,
+          name: trainer.name || "Unknown Trainer",
+          experience: trainer.experience || "Not Specified",
+          contact: trainer.contact || "Not Available",
+        }));
+  
+        setTrainers(resolvedTrainers);
+      } catch (error) {
+        console.error('Error fetching trainers:', error);
+      }
+    };
+  
+    fetchTrainers();
+  }, []);
 
   // Fetching Meal Plan from API
   
@@ -180,7 +193,7 @@ const MealPlanScreen = () => {
 
     try {
       // Fetch member data from the profile API
-      const profileResponse = await fetch(`${API_BASE_URL}/api/profile/${userID}`, {
+      const profileResponse = await fetch(`${API_BASE_URL}/api/profilee/profile/${userID}`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -360,11 +373,10 @@ const MealPlanScreen = () => {
                 <View style={styles.pickerTrainer}>
                   <RNPickerSelect
                     onValueChange={(value) => setTrainer(value)}
-                    items={[
-                      { label: 'Trainer A', value: 'trainerA' },
-                      { label: 'Trainer B', value: 'trainerB' },
-                      { label: 'Trainer C', value: 'trainerC' },
-                    ]}
+                    items={trainers.map((trainer) => ({
+                      label: trainer.name,
+                      value: trainer.id,
+                    }))}
                     style={trainerpickerSelectStyles}
                     value={trainer}
                     placeholder={{ label: 'Select Trainer', value: null }}

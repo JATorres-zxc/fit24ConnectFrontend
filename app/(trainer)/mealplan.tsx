@@ -82,8 +82,6 @@ const MealPlanScreen = () => {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]); // State for multiple meal plans
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State for singular meal plan
   const [updateMealPlan, setUpdateMealPlan] = useState<MealPlan | null>(null);
-  const [trainer, setTrainer] = useState<string | number | undefined>('');
-  const [trainers, setTrainers] = useState([]);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
   const [allergens, setAllergens] = useState(""); // State to store allergens
@@ -131,36 +129,6 @@ const MealPlanScreen = () => {
     requestee: selectedMemberData?.requesteeID || '', // Default to the first member's ID
     status: "in_progress", // Default status
   });
-  
-
-  // Fetching trainers from API
-
-  // useEffect(() => {
-  //   const fetchTrainers = async () => {
-  //     try {
-  //       token = await AsyncStorage.getItem('authToken');
-  //       userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
-  //       const response = await fetch(`${API_BASE_URL}/api/mealplan/trainers`, {
-  //         headers: {
-  //           'Accept': 'application/json',
-  //           'Authorization': `Bearer ${token}`,
-  //         },
-  //       });
-
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-
-  //       const data = await response.json();
-  //       setTrainers(data);
-  //     } catch (error) {
-  //       console.error('Error fetching trainers:', error);
-  //     }
-  //   };
-  
-  //   fetchTrainers();
-  // }, []);
  
   // Fetch only mealplan requests and retrieve corresponding member profiles
   
@@ -192,7 +160,7 @@ const MealPlanScreen = () => {
   
         // Fetch profiles for each requesteeID
         const memberDataPromises: Promise<SelectedMemberData>[] = requesteeIDs.map(async (requesteeID: string) => {
-          const profileResponse = await fetch(`${API_BASE_URL}/api/profile/${requesteeID}`, {
+          const profileResponse = await fetch(`${API_BASE_URL}/api/profilee/profile/${requesteeID}`, {
             method: "GET",
             headers: {
               Accept: "application/json",

@@ -74,8 +74,6 @@ let requestee_id: string | null = null;
 
 const WorkoutScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
-  const [trainer, setTrainer] = useState(""); // State to store selected trainer
-  const [trainers, setTrainers] = useState([]);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [intensityLevel, setIntensityLevel] = useState(""); // State to store intensity level
   const [feedback, setFeedback] = useState(""); // State to store feedback
@@ -124,36 +122,6 @@ const WorkoutScreen = () => {
     console.log("Visibility of this workout plan:", newWorkout?.visibleTo || "Not Set");
   }, [newWorkout?.visibleTo]); // Only trigger when visibleTo changes
 
-  // Fetching trainers from API
-
-  // useEffect(() => {
-  //   const fetchTrainers = async () => {
-  //     try {
-  //       token = await AsyncStorage.getItem('authToken');
-  //       userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
-  //       const response = await fetch(`${API_BASE_URL}/api/Workout/trainers`, {
-  //         headers: {
-  //           'Accept': 'application/json',
-  //           'Authorization': `Bearer ${token}`,
-  //         },
-  //       });
-
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-
-  //       const data = await response.json();
-  //       setTrainers(data);
-  //     } catch (error) {
-  //       console.error('Error fetching trainers:', error);
-  //     }
-  //   };
-  
-  //   fetchTrainers();
-  // }, []);
-
-
   // Fetch only workout requests
   useEffect(() => {
     const fetchWorkoutRequests = async () => {
@@ -180,7 +148,7 @@ const WorkoutScreen = () => {
           .map((request: { requesteeID: string }) => request.requesteeID);
   
         const memberDataPromises = requesteeIDs.map(async (requesteeID: string) => {
-          const profileResponse = await fetch(`${API_BASE_URL}/api/profile/${requesteeID}/`, {
+          const profileResponse = await fetch(`${API_BASE_URL}/api/profilee/profile/${requesteeID}/`, {
             method: "GET",
             headers: {
               Accept: "application/json",
