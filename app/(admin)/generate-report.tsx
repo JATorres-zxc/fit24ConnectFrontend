@@ -1,5 +1,5 @@
 import { Text, View, StyleSheet, Platform, TouchableOpacity } from 'react-native';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import Toast from 'react-native-toast-message';
@@ -17,12 +17,13 @@ export default function ReportsFormScreen() {
   const [endDate, setEndDate] = useState(new Date());
 
   // Reset state when the screen is focused
-  useFocusEffect(() => {
-    // Reset the form fields to initial values when coming back to this screen
-    setReportType('');
-    setStartDate(new Date());
-    setEndDate(new Date());
-  });
+  useFocusEffect(
+    useCallback(() => {
+      setReportType('');
+      setStartDate(new Date());
+      setEndDate(new Date());
+    }, [])
+  );
 
   // Handle date change for start date
   const handleStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date | null) => {
@@ -62,6 +63,18 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Invalid Date Range',
         text2: 'End date cannot be earlier than start date.',
+        topOffset: 100,
+      });
+      return;
+    }
+
+    const today = new Date();
+
+    if (endDate > today) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid End Date',
+        text2: 'End date cannot be later than today.',
         topOffset: 100,
       });
       return;
