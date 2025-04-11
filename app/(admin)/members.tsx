@@ -1,10 +1,24 @@
-import { View, StyleSheet, TextInput } from 'react-native';
+import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList } from 'react-native';
 import { useState } from 'react';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
+
+// mock members data
+const Members = [
+  { memberID: "1", name: 'John' },
+  { memberID: "2", name: 'Alexis' },
+  { memberID: "3", name: 'Ezra' },
+  { memberID: "4", name: 'Ruel' },
+  { memberID: "5", name: 'Matthew' },
+  { memberID: "6", name: 'Samuel' },
+  { memberID: "7", name: 'Mark' },
+  { memberID: "8", name: 'Paul' },
+  { memberID: "9", name: 'Andres' },
+  { memberID: "10", name: 'Lovely' },
+];
 
 export default function HistoryScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,8 +37,34 @@ export default function HistoryScreen() {
             onChangeText={setSearchQuery}
           />
           <AntDesign name="search1" size={20} color={Colors.white} style={styles.searchIcon} />
-            </View>
         </View>
+      </View>
+
+      <FlatList
+        data={Members}
+        keyExtractor={(item) => item.memberID}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            {/* Left Section - Member Name */}
+            <View style={styles.leftSection}>
+              <Text style={styles.name}>{item.name}</Text>
+            </View>
+
+            {/* Right Section - Icons */}
+            <View style={styles.rightSection}>
+              <MaterialCommunityIcons name="medal-outline" size={24} color="black" />
+              <MaterialCommunityIcons name="credit-card-edit-outline" size={24} color="black"  />
+            </View>
+          </View>
+        )}
+        contentContainerStyle={styles.listContainer}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No members found</Text>
+          </View>
+        }
+      />
+
     </View>
   );
 }
@@ -54,5 +94,46 @@ const styles = StyleSheet.create({
   },
   searchIcon: {
     marginLeft: 10, 
+  },
+  listContainer: {
+    width: '85%',
+    alignSelf: 'center',
+    paddingBottom: 20,
+  },
+  card: {
+    backgroundColor: Colors.white,
+    borderColor: Colors.border,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 5,
+    width: '100%',
+  },
+  leftSection: {
+    paddingRight: 10,
+  },
+  name: {
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+  },
+  rightSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 5,
+    paddingLeft: 10,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontFamily: Fonts.regular,
+    color: Colors.black,
+    fontSize: 16,
   },
 });
