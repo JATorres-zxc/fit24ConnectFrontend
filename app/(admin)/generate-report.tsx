@@ -1,27 +1,37 @@
 import { Text, View, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
-import RNDateTimePicker from '@react-native-community/datetimepicker';
+import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import Toast from 'react-native-toast-message';
+import { router } from 'expo-router';
 
 import Header from '@/components/NavigateBackHeader';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function ReportsFormScreen() {
   const [reportType, setReportType] = useState<string | number | undefined>('');
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
+  // Reset state when the screen is focused
+  useFocusEffect(() => {
+    // Reset the form fields to initial values when coming back to this screen
+    setReportType('');
+    setStartDate(new Date());
+    setEndDate(new Date());
+  });
+
   // Handle date change for start date
-  const handleStartDateChange = (event, selectedDate) => {
+  const handleStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date | null) => {
     const currentDate = selectedDate || startDate;
     setStartDate(currentDate);
   };
 
   // Handle date change for end date
-  const handleEndDateChange = (event, selectedDate) => {
+  const handleEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date | null) => {
     const currentDate = selectedDate || endDate;
     setEndDate(currentDate);
   };
@@ -42,6 +52,7 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Incomplete Fields',
         text2: 'Please select both dates.',
+        topOffset: 100,
       });
       return;
     }
@@ -51,6 +62,7 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Invalid Date Range',
         text2: 'End date cannot be earlier than start date.',
+        topOffset: 100,
       });
       return;
     }
@@ -60,6 +72,10 @@ export default function ReportsFormScreen() {
       type: 'success',
       text1: 'Generating Report',
       text2: 'Your report is being processed...',
+      topOffset: 100,
+      visibilityTime: 2000,
+      autoHide: true,
+      onHide: () => router.push('/(admin)/reports')
     });
   };
 
