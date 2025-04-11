@@ -47,7 +47,7 @@ interface MealPlan {
   calorie_intake: number;
   protein: number;
   carbs: number;
-  weight_goal: number;
+  weight_goal: string;
   allergens: string;
   instructions: string;
   requestee_id: string;
@@ -89,7 +89,7 @@ const MealPlanScreen = () => {
   const [rating, setRating] = useState<string | number | undefined>('');
   const [memberData, setMemberData] = useState<SelectedMemberData[]>([
     {
-      requesteeID: '2',
+      requesteeID: '1',
       requesteeName: 'John Daks',
       height: '170',
       weight: '65',
@@ -116,13 +116,13 @@ const MealPlanScreen = () => {
     mealplan_id: nanoid(), // Generate a unique ID for the new workout
     meals: [], // Ensures `meals` is always defined
     member_id: selectedMemberData?.requesteeID || '',
-    trainer_id: userID?.toString() || "",
+    trainer_id: userID || "",
     mealplan_name: "",
     fitness_goal: "",
     calorie_intake: 0,
     protein: 0,
     carbs: 0,
-    weight_goal: 0,
+    weight_goal: "",
     allergens: "",
     instructions: "",
     requestee_id: selectedMemberData?.requesteeID || '', // Default to the first member's ID
@@ -135,10 +135,10 @@ const MealPlanScreen = () => {
   useEffect(() => {
     const fetchMealplanRequests = async () => {
       try {
-        token = await AsyncStorage.getItem("authToken");
+        const token = await AsyncStorage.getItem("authToken");
         if (!token) throw new Error("Token not found");
   
-        // Fetch requests data filtered by type: 'mealplan'
+        // Fetch all meal plan requests
         const requestsResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
           method: "GET",
           headers: {
@@ -152,50 +152,57 @@ const MealPlanScreen = () => {
         }
   
         const requestsData = await requestsResponse.json();
-  
-        // Map to extract requesteeIDs for only in_progress meal plans
-        const requesteeIDs = requestsData
-          .filter((request: MealPlan) => request.status === "in_progress")
-          .map((request: MealPlan) => request.requestee_id);
-  
-        // Fetch profiles for each requesteeID
-        const memberDataPromises: Promise<SelectedMemberData>[] = requesteeIDs.map(async (requesteeID: string) => {
-          const profileResponse = await fetch(`${API_BASE_URL}/api/profilee/profile/${requesteeID}`, {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
-  
-          if (!profileResponse.ok) {
-            throw new Error(`Profile API error for ID ${requesteeID}! Status: ${profileResponse.status}`);
-          }
-  
-          const profileData = await profileResponse.json();
-  
-          // Find the matching request from requestsData based on requesteeID
-          const request = requestsData.find((req: MealPlan) => req.requestee_id === profileData.id);
-  
-          // Mapping MemberProfile to SelectedMemberData
-          return {
-            requesteeID: profileData.id || requesteeID, // profileData.id corresponds to the member's id
-            requesteeName: profileData.requesteeName || "Unknown", // Ensure requesteeName exists
-            height: profileData.height || "N/A", // Ensure height exists
-            weight: profileData.weight || "N/A", // Ensure weight exists
-            age: profileData.age || "N/A", // Ensure age exists
-            fitnessGoal: request?.fitnessGoal || "Not Specified", // Merging from requests API
-            weightGoal: request?.weightGoal || "Not Specified", // Merging from requests API
-            allergens: request?.allergens || "None", // Merging from requests API
-          };
+
+        // Filter meal plans with 'in_progress' status
+        const inProgressRequests = requestsData.filter((request: any) => request.status === "in_progress");
+
+        // Extract requestee IDs from in-progress meal plans
+        const requesteeIDs = inProgressRequests.map((request: any) => request.requestee);
+
+        // Fetch all members first
+        const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         });
   
-        // Resolve all promises before setting state
-        const resolvedMemberDataList: SelectedMemberData[] = await Promise.all(memberDataPromises);
+        if (!allMembersResponse.ok) {
+          throw new Error(`Failed to fetch all members! Status: ${allMembersResponse.status}`);
+        }
   
-        // Set the state with the resolved data
-        setMemberData(resolvedMemberDataList);
+        const allMembers = await allMembersResponse.json();
   
+        // Map to combine the requests and profiles
+        const memberDataList = requesteeIDs.map((requesteeID: string) => {
+          const profileData = allMembers.find((member: any) => String(member.id) === String(requesteeID));
+  
+          if (!profileData) {
+            return null; // If no matching profile found, return null
+          }
+          
+          // Find the matching request for this member
+          const request = inProgressRequests.find((request: any) => {
+            return request.requestee === profileData.id;
+          });
+
+          // Return combined profile and request data
+          return {
+            requesteeID: request?.requestee.toString() || "Unknown",
+            requesteeName: profileData?.full_name || "Unknown",
+            height: profileData?.height || "N/A",
+            weight: profileData?.weight || "N/A",
+            age: profileData?.age || "N/A",
+            fitnessGoal: request?.fitness_goal || "Not Specified",
+            weightGoal: request?.weight_goal || "Not Specified",
+            allergens: request?.allergens || "None",
+          };
+        }).filter((data: any) => data !== null); // Filter out null values (if any member had no matching profile)
+
+        // Append to previous data (assuming setMemberData updates the state)
+        setMemberData((prev) => [...prev, ...memberDataList]);
+
       } catch (error) {
         console.error("Error fetching mealplan requests and profiles:", error);
       }
@@ -209,10 +216,10 @@ const MealPlanScreen = () => {
   useEffect(() => {
     const fetchMealPlans = async () => {
       try {
-        token = await AsyncStorage.getItem('authToken');
-        userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+        const token = await AsyncStorage.getItem('authToken');
+        const userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
   
-        const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
+        const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
@@ -225,19 +232,22 @@ const MealPlanScreen = () => {
   
         const mealPlansData = await response.json();
   
-        // Filter meal plans with status "completed"
-        const publishedMealPlans = mealPlansData.filter(
-          (plan: MealPlan) => plan.status === 'completed'
+        // Filter meal plans where trainer_id matches userID
+        const trainerMealPlans = mealPlansData.filter(
+          (plan: any) => (
+            plan.status === "in_progress" && // Only include in_progress meal plans
+            plan.trainer_id.toString() === userID
+          )
         );
   
-        setMealPlans(publishedMealPlans); // Store only published meal plans
+        setMealPlans(trainerMealPlans); // Store only meal plans where trainer_id === userID
       } catch (error) {
         console.error('Error fetching meal plans:', error);
       }
     };
   
     fetchMealPlans();
-  }, []);  
+  }, []);    
 
   const handlePublish = async (currentMealPlan?: MealPlan) => {
     if (!currentMealPlan || !currentMealPlan.meals || currentMealPlan.meals.length === 0) {
@@ -455,7 +465,7 @@ const MealPlanScreen = () => {
                   setNewMealPlan((prevMealPlan) => ({
                     ...prevMealPlan!,
                     meals: [...(prevMealPlan?.meals || []), newMeal],
-                    trainer_id: userID?.toString() || "", // Assign trainer
+                    trainer_id: userID || "", // Assign trainer
                     member_id: selectedMemberData ? selectedMemberData.requesteeID : '', // Assign member ID safely
                   }));
                 }}

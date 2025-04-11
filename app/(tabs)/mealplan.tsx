@@ -59,6 +59,7 @@ interface MealPlan {
   visibleTo: string;
   requestee_id: string;
   requestee: string;
+  status: string;
 }
 
 const API_BASE_URL =
@@ -125,48 +126,53 @@ const MealPlanScreen = () => {
   useEffect(() => {
     const fetchMealPlan = async () => {
       try {
-        token = await AsyncStorage.getItem('authToken');
-        userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
+        const token = await AsyncStorage.getItem('authToken');
+        const userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+  
         const mealPlansResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
-
+  
         if (!mealPlansResponse.ok) {
           throw new Error(`HTTP error! status: ${mealPlansResponse.status}`);
         }
-
+  
         const mealPlansData = await mealPlansResponse.json();
-        const memberIds = mealPlansData.map((plan: MealPlan) => plan.member_id.toString());
-        console.log('member_ids:', memberIds);
-        console.log('userID:', userID);
-        const userMealPlan = mealPlansData.find((plan: MealPlan) => memberIds.includes(plan.member_id.toString()));
-        console.log('User Meal Plan:', userMealPlan);
-
-        if (!userMealPlan) {
-          throw new Error('No meal plan found for the user');
+  
+        // Filter meal plans to only include those with status "completed"
+        const completedMealPlans = mealPlansData.filter((plan: MealPlan) => plan.status === 'completed');
+  
+        if (completedMealPlans.length === 0) {
+          throw new Error('No completed meal plan found for the user');
         }
-
-        mealPlan_id = userMealPlan.mealplan_id;
-
+  
+        const memberIds = completedMealPlans.map((plan: MealPlan) => plan.member_id.toString());
+        const userMealPlan = completedMealPlans.find((plan: MealPlan) => memberIds.includes(plan.member_id.toString()));
+  
+        if (!userMealPlan) {
+          throw new Error('No completed meal plan found for the user');
+        }
+  
+        const mealPlan_id = userMealPlan.mealplan_id;
+  
         if (!token) {
           throw new Error('No token found');
         }
-
+  
         const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
-
+  
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+  
         if (response.status === 404) {
           setMealPlan(null);
         } else {
@@ -175,7 +181,7 @@ const MealPlanScreen = () => {
         }
       } catch (error) {
         console.error('Error fetching meal plan:', error);
-
+  
         if (error instanceof Error) {
           if (error.message.includes('NetworkError')) {
             console.error('Network error: Please check if the server is running and accessible.');
@@ -185,9 +191,9 @@ const MealPlanScreen = () => {
         }
       }
     };
-
+  
     fetchMealPlan();
-  }, []);  
+  }, []);    
 
   const handleSubmit = async () => {
     if (!trainer || !fitnessGoal || !weightGoal || !allergens) {

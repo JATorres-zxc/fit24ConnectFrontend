@@ -374,7 +374,7 @@ const WorkoutScreen = () => {
           height,
           weight,
           age,
-          status: "in_progress", // Optional status for tracking
+          status: "pending", // Optional status for tracking
           requestee_id: userID,
           requestee: userID, // Assuming the requestee is the same as the member
         }),

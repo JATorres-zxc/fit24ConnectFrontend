@@ -25,9 +25,10 @@ interface MealPlan {
     calorie_intake: number;
     protein: number;
     carbs: number;
-    weight_goal: number;
+    weight_goal: string;
     allergens: string;
     instructions: string;
+    status: string;
 }
 
 interface MemberMealPlanProps {
