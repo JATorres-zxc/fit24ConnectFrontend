@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { 
   View, Text, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, 
-  TextInput
+  TextInput,
+  ImageSourcePropType
 } from "react-native";
 import RNPickerSelect from 'react-native-picker-select';
 import Header from '@/components/WorkoutHeader';
@@ -12,6 +13,7 @@ import WorkoutsContainer from '@/components/WorkoutsContainer';
 import ExerciseContainer from '@/components/ExerciseContainer';
 import RequestWorkoutHeader from '@/components/RequestHeaderWO';
 import SendFeedbackHeader from '@/components/SendFeedbackHeaderWO';
+import PersonalWorkoutsHeader from '@/components/MemberPersonalWOHeader';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,7 +22,20 @@ interface Exercise {
   id: string;
   name: string;
   description: string;
-  image: string;
+  image: ImageSourcePropType | null;
+}
+
+interface User{
+  id: string;
+  email: string;
+  full_name: string;
+}
+interface Trainer{
+  id: string;
+  name: string;
+  user: User;
+  experience?: string;
+  contact?: string;
 }
 interface Feedback {
   id: string;
@@ -36,7 +51,7 @@ interface Workout {
   intensityLevel: string;
   trainer: string;
   exercises: Exercise[];
-  visibleTo: "everyone" | "userEmail" | string;
+  visibleTo: string;
   feedbacks: Feedback[];
   member_id?: string; // Added member_id property
 }
@@ -52,8 +67,8 @@ let workout_id: string | null = null;
 
 const WorkoutScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
-  const [trainer, setTrainer] = useState(""); // State to store selected trainer
-  const [trainers, setTrainers] = useState([]);
+  const [trainer, setTrainer] = useState<Trainer | null>(null);
+  const [trainers, setTrainers] = useState<Trainer[]>([]); // State to store trainers
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [intensityLevel, setIntensityLevel] = useState(""); // State to store intensity level
   const [feedback, setFeedback] = useState(""); // State to store feedback
@@ -63,32 +78,42 @@ const WorkoutScreen = () => {
 
   // Fetching trainers from API
 
-  // useEffect(() => {
-  //   const fetchTrainers = async () => {
-  //     try {
-  //       token = await AsyncStorage.getItem('authToken');
-  //       userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
-  //       const response = await fetch(`${API_BASE_URL}/api/workout/trainers`, {
-  //         headers: {
-  //           'Accept': 'application/json',
-  //           'Authorization': `Bearer ${token}`,
-  //         },
-  //       });
-
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-
-  //       const data = await response.json();
-  //       setTrainers(data);
-  //     } catch (error) {
-  //       console.error('Error fetching trainers:', error);
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchTrainers = async () => {
+      try {
+        const token = await AsyncStorage.getItem('authToken');
+        const trainerResponse = await fetch(`${API_BASE_URL}/api/account/trainers/`, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
   
-  //   fetchTrainers();
-  // }, []);
+        if (!trainerResponse.ok) {
+          throw new Error(`Trainer fetch error! Status: ${trainerResponse.status}`);
+        }
+  
+        const trainerList = await trainerResponse.json();
+  
+        const resolvedTrainers = trainerList.map((trainer: Trainer) => ({
+          id: trainer.id,
+          user: {
+            id: trainer.user?.id || null,
+            email: trainer.user?.email || "No email",
+            full_name: trainer.user?.full_name || "Unknown Trainer",
+          },
+          experience: trainer.experience?.trim() || "Not Specified",
+          contact: trainer.contact?.trim() || "Not Available",
+        }));
+  
+        setTrainers(resolvedTrainers);
+      } catch (error) {
+        console.error('Error fetching trainers:', error);
+      }
+    };
+  
+    fetchTrainers();
+  }, []);
 
   // Fetching Workout from API
   
@@ -97,26 +122,35 @@ const WorkoutScreen = () => {
       try {
         token = await AsyncStorage.getItem('authToken');
         userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
+        
         const response = await fetch(`${API_BASE_URL}/api/workout/workouts/`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
-
+  
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+  
         const programsData = await response.json();
-        const userProgram = programsData.find((program: any) => program.trainer === userID || program.program_type === "free");
-
-        if (!userProgram) {
-          throw new Error('No program found for the user');
+        
+        // Based on backend, the requestee contains the userID or "everyone" that it is visible to.
+        // Filter workout programs based on requestee matching userID or "everyone" and status is completed
+        const filteredPrograms = programsData.filter((program: any) => 
+          program.status === "completed" &&
+          (program.requestee === userID || program.requestee === null) // means that it is visible to everyone
+        );
+  
+        console.log('Filtered Programs:', filteredPrograms);
+  
+        if (filteredPrograms.length === 0) {
+          throw new Error('No workouts available for the user');
         }
-
-        const formattedWorkout: Workout = {
+  
+        // Map all filtered programs to Workout objects
+        const formattedWorkouts: Workout[] = filteredPrograms.map((userProgram: any) => ({
           id: userProgram.id.toString(),
           title: userProgram.program_name,
           fitnessGoal: userProgram.fitness_goal,
@@ -126,22 +160,21 @@ const WorkoutScreen = () => {
             id: exercise.id.toString(),
             name: exercise.exercise_details.name,
             description: exercise.exercise_details.description,
-            image: "", // Add image URL if available in the backend
+            image: "", // Add image URL if available
             sets: exercise.sets,
             reps: exercise.reps,
             restTime: exercise.rest_time,
             durationPerSet: exercise.duration_per_set,
             notes: exercise.notes,
           })),
-          visibleTo: userProgram.program_type === "free" ? "everyone" : userID || "unknown",
-          feedbacks: [], // Adjust if feedback data is available in the backend
-        };
-
-        setWorkout(formattedWorkout);
-        setWorkouts((prevWorkouts) => [...prevWorkouts, formattedWorkout]); // Add to the entire set of workouts
+          visibleTo: userProgram.requestee || "everyone",
+          feedbacks: [], // Adjust if feedback is available
+        }));
+  
+        setWorkouts((prevWorkouts) => [...prevWorkouts, ...formattedWorkouts]);
       } catch (error) {
         console.error('Error fetching workout:', error);
-
+  
         if (error instanceof Error) {
           if (error.message.includes('NetworkError')) {
             console.error('Network error: Please check if the server is running and accessible.');
@@ -151,9 +184,9 @@ const WorkoutScreen = () => {
         }
       }
     };
-
+  
     fetchWorkout();
-  }, []);
+  }, []);    
 
   const [workouts, setWorkouts] = useState<Workout[]>([
     {
@@ -163,8 +196,8 @@ const WorkoutScreen = () => {
       intensityLevel: "High",
       trainer: "Trainer A",
       exercises: [
-        { id: "EX1", name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: "https://example.com/pushups.jpg" },
-        { id: "EX2", name: "Squats", description: "Perform squats to work on lower body strength.", image: "https://example.com/squats.jpg" },
+        { id: "EX1", name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: require("@/assets/images/icon.png") },
+        { id: "EX2", name: "Squats", description: "Perform squats to work on lower body strength.", image: require("@/assets/images/icon.png") },
       ],
       visibleTo: "everyone",
       feedbacks: [
@@ -181,7 +214,7 @@ const WorkoutScreen = () => {
         { id: "EX3", name: "Jumping Jacks", description: "Perform jumping jacks to get your heart rate up.", image: "https://example.com/jumpingjacks.jpg" },
         { id: "EX4", name: "Burpees", description: "Perform burpees to improve endurance.", image: "https://example.com/burpees.jpg" },
       ],
-      visibleTo: "userEmail",
+      visibleTo: "1",
       feedbacks: [
         { id: "feedback2", feedback: "Intense but effective!", rating: 4, createdAt: new Date() },
       ],
@@ -257,25 +290,20 @@ const WorkoutScreen = () => {
       return;
     }
 
-    // Uncomment and replace with actual API call
-    // const response = await fetch('https://api.example.com/submitFeedback', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     workoutId: selectedWorkout?.id,
-    //     feedback,
-    //     rating: parseInt(rating),
-    //   }),
-    // });
-
-    // const result = await response.json();
+    const response = await fetch(`${API_BASE_URL}/api/workout/feedbacks`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        mealplan: workout_id,
+        comment: feedback,
+        rating: rating,
+      }),
+    });
 
     try {
-      const temp_response = true;
-
-      if (temp_response) {
+      if (response.ok) {
         Toast.show({
           type: 'info',
           text1: 'Feedback Sent',
@@ -309,47 +337,76 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Missing Fields',
         text2: 'Please fill out all fields before submitting.',
-        position: 'bottom'
+        position: 'bottom',
       });
       return;
     }
-
+  
     try {
-      // Replace with actual API call
-      // const response = await fetch('https://api.example.com/submitWorkout', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     trainer,
-      //     fitnessGoal,
-      //     intensityLevel,
-      //   }),
-      // });
-
-      // const result = await response.json();
-
+      // Fetch member data from the profile API
+      const profileResponse = await fetch(`${API_BASE_URL}/api/profilee/profile/${userID}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+  
+      if (!profileResponse.ok) {
+        throw new Error(`Profile API error! Status: ${profileResponse.status}`);
+      }
+  
+      const profileData = await profileResponse.json();
+      const { height, weight, age } = profileData;
+      profileData.user_ID = userID; // Add user_ID to profile data
+  
+      // Fetch request data from the requests-feedback API
+      const requestResponse = await fetch(`${API_BASE_URL}/api/workouts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userID,
+          trainer,
+          fitnessGoal,
+          intensityLevel,
+          height,
+          weight,
+          age,
+          status: "pending", // Optional status for tracking
+          requestee_id: userID,
+          requestee: userID, // Assuming the requestee is the same as the member
+        }),
+      });
+  
+      if (!requestResponse.ok) {
+        throw new Error(`Requests API error! Status: ${requestResponse.status}`);
+      }
+  
+      const requestData = await requestResponse.json();
+  
       // Temporary Success Placeholder
       const temp_response = true;
-
+  
       if (temp_response) {
         Toast.show({
           type: 'success',
           text1: 'Request Submitted',
           text2: 'Your workout request has been submitted successfully.',
-          position: 'bottom'
+          position: 'bottom',
         });
+  
         setTimeout(() => {
-          setViewState("plan");
-          // setWorkout(result); // Update workout with the new data
+          setViewState('plan');
+          // setWorkout(requestData); // Update workout with the new data
         }, 2000); // 2-second delay
       } else {
         Toast.show({
           type: 'error',
           text1: 'Request Failed',
           text2: 'There was an error with your workout request.',
-          position: 'bottom'
+          position: 'bottom',
         });
       }
     } catch (error) {
@@ -357,10 +414,10 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Request Failed',
         text2: 'There was an error with your workout request.',
-        position: 'bottom'
+        position: 'bottom',
       });
     }
-  };
+  };  
 
   return (
     <KeyboardAvoidingView 
@@ -380,11 +437,10 @@ const WorkoutScreen = () => {
                 <View style={styles.pickerTrainer}>
                   <RNPickerSelect
                     onValueChange={(value) => setTrainer(value)}
-                    items={[
-                      { label: 'Trainer A', value: 'trainerA' },
-                      { label: 'Trainer B', value: 'trainerB' },
-                      { label: 'Trainer C', value: 'trainerC' },
-                    ]}
+                    items={trainers.map((trainer) => ({
+                      label: trainer.user.full_name,
+                      value: trainer.id,
+                    }))}
                     style={trainerpickerSelectStyles}
                     value={trainer}
                     placeholder={{ label: 'Select Trainer', value: null }}
@@ -492,30 +548,44 @@ const WorkoutScreen = () => {
                 </TouchableOpacity>
               </View>
             </View>
-          ) : (
+          ) : viewState === "personalWO" ? (
             <>
-            { workouts.length > 0 ? (
               <View style={styles.planContainer}>
-                <Header />
+                <PersonalWorkoutsHeader setViewState={setViewState}/>
                 <WorkoutsContainer
-                  workouts={workouts}
+                  workouts={workouts.filter(w => w.visibleTo === userID)}
                   onWorkoutPress={handleWorkoutPress}
                   onTrashPress={handleTrashPress}
                 />
               </View>
-            ) : (
-              <View>
-                <Header />
-                <View style={styles.centerContainer}>
-                  <Text style={styles.subtitle2}>You have no existing workout plan.</Text>
-                  <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
-                    <Text style={styles.buttonText}>Request Workout Plan</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
             </>
-          )}
+          ) : (
+            <>
+              {workouts.filter(w => w.visibleTo === "everyone").length > 0 ? (
+                <View style={styles.planContainer}>
+                  <Header />
+                  <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("personalWO")}>
+                    <Text style={styles.buttonText}>Personal Workout Programs</Text>
+                  </TouchableOpacity>
+                  <WorkoutsContainer
+                    workouts={workouts.filter(w => w.visibleTo === "everyone")}
+                    onWorkoutPress={handleWorkoutPress}
+                    onTrashPress={handleTrashPress}
+                  />
+                </View>
+              ) : (
+                <View>
+                  <Header />
+                  <View style={styles.centerContainer}>
+                    <Text style={styles.subtitle2}>You have no existing workout plan.</Text>
+                    <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
+                      <Text style={styles.buttonText}>Request Workout Plan</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </>
+          )}          
         </View>
       </ScrollView>
       <Toast />
@@ -755,7 +825,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignSelf: "center",
     top: -5,
-    width: "50%",
+    width: "70%",
     height: 45,
     marginTop: 30,
     fontFamily: Fonts.medium,

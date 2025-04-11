@@ -24,6 +24,18 @@ interface Meal {
   carbs: number;
 }
 
+interface User{
+  id: string;
+  email: string;
+  full_name: string;
+}
+interface Trainer{
+  id: string;
+  user: User;
+  experience?: string;
+  contact?: string;
+}
+
 interface Feedback {
   id: string;
   feedback: string;
@@ -44,6 +56,10 @@ interface MealPlan {
   weight_goal: number;
   allergens: string;
   instructions: string;
+  visibleTo: string;
+  requestee_id: string;
+  requestee: string;
+  status: string;
 }
 
 const API_BASE_URL =
@@ -58,8 +74,8 @@ let mealPlan_id: number | null = null;
 const MealPlanScreen = () => {
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State to store meal plan
-  const [trainer, setTrainer] = useState<string | number | undefined>('');
-  const [trainers, setTrainers] = useState([]);
+  const [trainer, setTrainer] = useState<Trainer | null>(null);
+  const [trainers, setTrainers] = useState<Trainer[]>([]); // State to store trainers
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
   const [allergens, setAllergens] = useState(""); // State to store allergens
@@ -68,80 +84,95 @@ const MealPlanScreen = () => {
 
   // Fetching trainers from API
 
-  // useEffect(() => {
-  //   const fetchTrainers = async () => {
-  //     try {
-  //       token = await AsyncStorage.getItem('authToken');
-  //       userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
-  //       const response = await fetch(`${API_BASE_URL}/api/mealplan/trainers`, {
-  //         headers: {
-  //           'Accept': 'application/json',
-  //           'Authorization': `Bearer ${token}`,
-  //         },
-  //       });
-
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-
-  //       const data = await response.json();
-  //       setTrainers(data);
-  //     } catch (error) {
-  //       console.error('Error fetching trainers:', error);
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchTrainers = async () => {
+      try {
+        const token = await AsyncStorage.getItem('authToken');
+        const trainerResponse = await fetch(`${API_BASE_URL}/api/account/trainers/`, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
   
-  //   fetchTrainers();
-  // }, []);
+        if (!trainerResponse.ok) {
+          throw new Error(`Trainer fetch error! Status: ${trainerResponse.status}`);
+        }
+  
+        const trainerList = await trainerResponse.json();
+
+        const resolvedTrainers = trainerList.map((trainer: Trainer) => ({
+          id: trainer.id,
+          user: {
+            id: trainer.user?.id || null,
+            email: trainer.user?.email || "No email",
+            full_name: trainer.user?.full_name || "Unknown Trainer",
+          },
+          experience: trainer.experience?.trim() || "Not Specified",
+          contact: trainer.contact?.trim() || "Not Available",
+        }));
+  
+        setTrainers(resolvedTrainers);
+      } catch (error) {
+        console.error('Error fetching trainers:', error);
+      }
+    };
+  
+    fetchTrainers();
+  }, []);
 
   // Fetching Meal Plan from API
   
   useEffect(() => {
     const fetchMealPlan = async () => {
       try {
-        token = await AsyncStorage.getItem('authToken');
-        userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
+        const token = await AsyncStorage.getItem('authToken');
+        const userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+  
         const mealPlansResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
-
+  
         if (!mealPlansResponse.ok) {
           throw new Error(`HTTP error! status: ${mealPlansResponse.status}`);
         }
-
+  
         const mealPlansData = await mealPlansResponse.json();
-        const memberIds = mealPlansData.map((plan: MealPlan) => plan.member_id.toString());
-        console.log('member_ids:', memberIds);
-        console.log('userID:', userID);
-        const userMealPlan = mealPlansData.find((plan: MealPlan) => memberIds.includes(plan.member_id.toString()));
-        console.log('User Meal Plan:', userMealPlan);
-
-        if (!userMealPlan) {
-          throw new Error('No meal plan found for the user');
+  
+        // Filter meal plans to only include those with status "completed"
+        const completedMealPlans = mealPlansData.filter((plan: MealPlan) => plan.status === 'completed');
+  
+        if (completedMealPlans.length === 0) {
+          throw new Error('No completed meal plan found for the user');
         }
-
-        mealPlan_id = userMealPlan.mealplan_id;
-
+  
+        const memberIds = completedMealPlans.map((plan: MealPlan) => plan.member_id.toString());
+        const userMealPlan = completedMealPlans.find((plan: MealPlan) => memberIds.includes(plan.member_id.toString()));
+  
+        if (!userMealPlan) {
+          throw new Error('No completed meal plan found for the user');
+        }
+  
+        const mealPlan_id = userMealPlan.mealplan_id;
+  
         if (!token) {
           throw new Error('No token found');
         }
-
+  
         const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
-
+  
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+  
         if (response.status === 404) {
           setMealPlan(null);
         } else {
@@ -150,7 +181,7 @@ const MealPlanScreen = () => {
         }
       } catch (error) {
         console.error('Error fetching meal plan:', error);
-
+  
         if (error instanceof Error) {
           if (error.message.includes('NetworkError')) {
             console.error('Network error: Please check if the server is running and accessible.');
@@ -160,24 +191,24 @@ const MealPlanScreen = () => {
         }
       }
     };
-
+  
     fetchMealPlan();
-  }, []);  
+  }, []);    
 
   const handleSubmit = async () => {
     if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
-      Toast.show({
-        type: 'error',
-        text1: 'Missing Fields',
-        text2: 'Please fill out all fields before submitting.',
-        position: 'bottom'
-      });
-      return;
+        Toast.show({
+            type: 'error',
+            text1: 'Missing Fields',
+            text2: 'Please fill out all fields before submitting.',
+            position: 'bottom'
+        });
+        return;
     }
-    
+
     try {
       // Fetch member data from the profile API
-      const profileResponse = await fetch(`${API_BASE_URL}/api/profile/${userID}`, {
+      const profileResponse = await fetch(`${API_BASE_URL}/api/profilee/profile/${userID}`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -190,61 +221,52 @@ const MealPlanScreen = () => {
 
       const profileData = await profileResponse.json();
       const { height, weight, age } = profileData;
-      profileData.user_ID = userID; // Add user_ID to profile data
 
-      // Fetch request data from the requests-feedback API
-      const requestResponse = await fetch(`${API_BASE_URL}/api/requests-feedback`, {
+      // Create an empty meal plan request (meals are added by the trainer)
+      const requestResponse = await fetch(`${API_BASE_URL}/api/mealplans`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userID,
-          trainer,
-          fitnessGoal,
-          weightGoal,
+          member_id: userID,
+          trainer_id: trainer,
+          fitness_goal: fitnessGoal,
+          weight_goal: weightGoal,
           allergens,
           height,
           weight,
           age,
+          meals: [],  // Empty meals (trainer will add them later)
+          instructions: "",  // Optional, can be updated later
+          status: "in_progress", // Optional status for tracking
+          requestee_id: userID,
+          requestee: userID, // Assuming the requestee is the same as the member
         }),
       });
 
       if (!requestResponse.ok) {
-        throw new Error(`Requests API error! status: ${requestResponse.status}`);
+        throw new Error(`Meal Plan API error! status: ${requestResponse.status}`);
       }
 
-      const requestData = await requestResponse.json();
-      
-      // // Temporary Success Placeholder
-      const temp_response = true;
+      Toast.show({
+        type: 'success',
+        text1: 'Request Submitted',
+        text2: 'Your meal plan request has been submitted successfully.',
+        position: 'bottom'
+      });
 
-      if (temp_response) {
-        Toast.show({
-          type: 'success',
-          text1: 'Request Submitted',
-          text2: 'Your meal plan request has been submitted successfully.',
-          position: 'bottom'
-        });
-        setTimeout(() => {
-          setViewState("plan");
-          // setMealPlan("result"); // Update meal plan with the new data
-        }, 2000); // 2-second delay
-      } else {
-        Toast.show({
+      setTimeout(() => {
+        setViewState("plan");
+      }, 2000);
+
+    } catch (error) {
+      Toast.show({
           type: 'error',
           text1: 'Request Failed',
           text2: 'There was an error with your meal plan request.',
           position: 'bottom'
-        });
-      }
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Request Failed',
-        text2: 'There was an error with your meal plan request.',
-        position: 'bottom'
       });
     }
   };
@@ -261,23 +283,21 @@ const MealPlanScreen = () => {
     }
 
     try {
-      // Uncomment and replace with actual API call,
       // This is in line with an agreed central feedback and request database.
 
-      // const response = await fetch('https://api.example.com/submitFeedback', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     feedback,
-      //     rating,
-      //   }),
-      // });
+      const response = await fetch(`${API_BASE_URL}/api/mealplan/feedbacks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mealplan: mealPlan_id,
+          comment: feedback,
+          rating: rating,
+        }),
+      });
 
-      const temp_response = true;
-      // // response.ok
-      if (temp_response) {
+      if (response.ok) {
         Toast.show({
           type: 'info',
           text1: 'Feedback Sent',
@@ -368,11 +388,10 @@ const MealPlanScreen = () => {
                 <View style={styles.pickerTrainer}>
                   <RNPickerSelect
                     onValueChange={(value) => setTrainer(value)}
-                    items={[
-                      { label: 'Trainer A', value: 'trainerA' },
-                      { label: 'Trainer B', value: 'trainerB' },
-                      { label: 'Trainer C', value: 'trainerC' },
-                    ]}
+                    items={trainers.map((trainer) => ({
+                      label: trainer.user.full_name,
+                      value: trainer.id,
+                    }))}
                     style={trainerpickerSelectStyles}
                     value={trainer}
                     placeholder={{ label: 'Select Trainer', value: null }}

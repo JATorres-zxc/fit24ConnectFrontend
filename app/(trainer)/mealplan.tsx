@@ -17,6 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MemberMealPlan from "@/components/MemberMealPlan";
 import MealPlanRequest from "@/components/MealPlanRequest";
 import TrainerMPHeader from "@/components/TrainerMPHeader";
+import { nanoid } from 'nanoid';
 
 interface Meal {
   id: string;
@@ -37,7 +38,7 @@ interface Feedback {
 }
 
 interface MealPlan {
-  mealplan_id: number;
+  mealplan_id: string;
   meals: Meal[];
   member_id: string;
   trainer_id: string;
@@ -46,9 +47,23 @@ interface MealPlan {
   calorie_intake: number;
   protein: number;
   carbs: number;
-  weight_goal: number;
+  weight_goal: string;
   allergens: string;
   instructions: string;
+  requestee_id: string;
+  requestee: string;
+  status: string;
+}
+
+interface SelectedMemberData {
+  requesteeID: string;
+  requesteeName: string;
+  height: string;
+  weight: string;
+  age: string;
+  fitnessGoal: string;
+  weightGoal: string;
+  allergens: string;
 }
 
 const API_BASE_URL =
@@ -58,6 +73,8 @@ const API_BASE_URL =
 
 let token: string | null = null;
 let userID: string | null = null;
+let trainerID: string | null = null;
+let requesteeID: string | null = null;
 let mealPlan_id: number | null = null;
 
 const MealPlanScreen = () => {
@@ -65,192 +82,208 @@ const MealPlanScreen = () => {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]); // State for multiple meal plans
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State for singular meal plan
   const [updateMealPlan, setUpdateMealPlan] = useState<MealPlan | null>(null);
-  const [trainer, setTrainer] = useState<string | number | undefined>('');
-  const [trainers, setTrainers] = useState([]);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
   const [allergens, setAllergens] = useState(""); // State to store allergens
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
-  const [memberData, setMemberData] = useState({
-    requesteeID: '2',
-    requesteeName: 'John Daks',
-    height: '170',
-    weight: '65',
-    age: '25',
-    fitnessGoal: 'Gain Weight',
-    weightGoal: '60',
-    allergens: 'Peanuts, Dairy',
-  });
+  const [memberData, setMemberData] = useState<SelectedMemberData[]>([
+    {
+      requesteeID: '1',
+      requesteeName: 'John Daks',
+      height: '170',
+      weight: '65',
+      age: '25',
+      fitnessGoal: 'Gain Weight',
+      weightGoal: '60',
+      allergens: 'Peanuts, Dairy',
+    },
+    {
+      requesteeID: '3',
+      requesteeName: 'Jane Smith',
+      height: '165',
+      weight: '55',
+      age: '28',
+      fitnessGoal: 'Lose Fat',
+      weightGoal: '50',
+      allergens: 'Shellfish',
+    },
+    // You can add more members in this list as needed
+  ]);
+  const [selectedMemberData, setSelectedMemberData] = useState<SelectedMemberData | null>(null); // Default to the first member in the list
+  
   const [newMealPlan, setNewMealPlan] = useState<MealPlan | null>({
-    mealplan_id: Date.now(),
+    mealplan_id: nanoid(), // Generate a unique ID for the new workout
     meals: [], // Ensures `meals` is always defined
-    member_id: memberData.requesteeID,
-    trainer_id: userID?.toString() || "",
+    member_id: selectedMemberData?.requesteeID || '',
+    trainer_id: userID || "",
     mealplan_name: "",
     fitness_goal: "",
     calorie_intake: 0,
     protein: 0,
     carbs: 0,
-    weight_goal: 0,
+    weight_goal: "",
     allergens: "",
     instructions: "",
+    requestee_id: selectedMemberData?.requesteeID || '', // Default to the first member's ID
+    requestee: selectedMemberData?.requesteeID || '', // Default to the first member's ID
+    status: "in_progress", // Default status
   });
+ 
+  // Fetch only mealplan requests and retrieve corresponding member profiles
   
-
-  // Fetching trainers from API
-
-  // useEffect(() => {
-  //   const fetchTrainers = async () => {
-  //     try {
-  //       token = await AsyncStorage.getItem('authToken');
-  //       userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
-  //       const response = await fetch(`${API_BASE_URL}/api/mealplan/trainers`, {
-  //         headers: {
-  //           'Accept': 'application/json',
-  //           'Authorization': `Bearer ${token}`,
-  //         },
-  //       });
-
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-
-  //       const data = await response.json();
-  //       setTrainers(data);
-  //     } catch (error) {
-  //       console.error('Error fetching trainers:', error);
-  //     }
-  //   };
-  
-  //   fetchTrainers();
-  // }, []);
-
-  // Fetch member data and request data from different APIs
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchMealplanRequests = async () => {
       try {
-        // Retrieve token and userID from AsyncStorage
-        const token = await AsyncStorage.getItem('authToken');
-        const userID = await AsyncStorage.getItem('userID'); // Logged-in user's ID
-
-        // Fetch height, weight, and age from the first API
-        const profileResponse = await fetch(`${API_BASE_URL}/api/profile/`, {
+        const token = await AsyncStorage.getItem("authToken");
+        if (!token) throw new Error("Token not found");
+  
+        // Fetch all meal plan requests
+        const requestsResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
+          method: "GET",
           headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
-
-        if (!profileResponse.ok) {
-          throw new Error(`Profile API error! status: ${profileResponse.status}`);
+  
+        if (!requestsResponse.ok) {
+          throw new Error(`Requests API error! Status: ${requestsResponse.status}`);
         }
+  
+        const requestsData = await requestsResponse.json();
 
-        const profileData = await profileResponse.json();
-        const { requesteeID, height, weight, age, requesteeName } = profileData;
+        // Filter meal plans with 'in_progress' status
+        const inProgressRequests = requestsData.filter((request: any) => request.status === "in_progress");
 
-        // // Fetch requests from a different API
-        // const requestResponse = await fetch(`${API_BASE_URL}/api/requests-feedback`, {
-        //   method: 'GET',
-        //   headers: {
-        //     'Accept': 'application/json',
-        //     'Authorization': `Bearer ${token}`,
-        //   },
-        // });
+        // Extract requestee IDs from in-progress meal plans
+        const requesteeIDs = inProgressRequests.map((request: any) => request.requestee);
 
-        // if (!requestResponse.ok) {
-        //   throw new Error(`Requests API error! status: ${requestResponse.status}`);
-        // }
-
-        // const requestData = await requestResponse.json();
-        // const { fitnessGoal, weightGoal, allergens } = requestData;
-
-        // Update state with both sets of data
-        setMemberData({
-          requesteeID,
-          requesteeName,
-          height,
-          weight,
-          age,
-          fitnessGoal,
-          weightGoal,
-          allergens,
+        // Fetch all members first
+        const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         });
+  
+        if (!allMembersResponse.ok) {
+          throw new Error(`Failed to fetch all members! Status: ${allMembersResponse.status}`);
+        }
+  
+        const allMembers = await allMembersResponse.json();
+  
+        // Map to combine the requests and profiles
+        const memberDataList = requesteeIDs.map((requesteeID: string) => {
+          const profileData = allMembers.find((member: any) => String(member.id) === String(requesteeID));
+  
+          if (!profileData) {
+            return null; // If no matching profile found, return null
+          }
+          
+          // Find the matching request for this member
+          const request = inProgressRequests.find((request: any) => {
+            return request.requestee === profileData.id;
+          });
+
+          // Return combined profile and request data
+          return {
+            requesteeID: request?.requestee.toString() || "Unknown",
+            requesteeName: profileData?.full_name || "Unknown",
+            height: profileData?.height || "N/A",
+            weight: profileData?.weight || "N/A",
+            age: profileData?.age || "N/A",
+            fitnessGoal: request?.fitness_goal || "Not Specified",
+            weightGoal: request?.weight_goal || "Not Specified",
+            allergens: request?.allergens || "None",
+          };
+        }).filter((data: any) => data !== null); // Filter out null values (if any member had no matching profile)
+
+        // Append to previous data (assuming setMemberData updates the state)
+        setMemberData((prev) => [...prev, ...memberDataList]);
+
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching mealplan requests and profiles:", error);
       }
     };
-
-    fetchData();
-  }, []);
-
+  
+    fetchMealplanRequests();
+  }, []); // Empty dependency array ensures this effect runs once when the component mounts
+  
   // Fetching Meal Plan from API
   
   useEffect(() => {
     const fetchMealPlans = async () => {
       try {
-        token = await AsyncStorage.getItem('authToken');
-        userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-
-        const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
+        const token = await AsyncStorage.getItem('authToken');
+        const userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+  
+        const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
-
+  
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+  
         const mealPlansData = await response.json();
-        setMealPlans(mealPlansData); // Store all meal plans
+  
+        // Filter meal plans where trainer_id matches userID
+        const trainerMealPlans = mealPlansData.filter(
+          (plan: any) => (
+            plan.status === "in_progress" && // Only include in_progress meal plans
+            plan.trainer_id.toString() === userID
+          )
+        );
+  
+        setMealPlans(trainerMealPlans); // Store only meal plans where trainer_id === userID
       } catch (error) {
         console.error('Error fetching meal plans:', error);
       }
     };
-
+  
     fetchMealPlans();
-  }, []);
+  }, []);    
 
   const handlePublish = async (currentMealPlan?: MealPlan) => {
-    const plan = currentMealPlan; // Use the current meal plan state
-
-    if (!plan || !plan.meals || plan.meals.length === 0) {
+    if (!currentMealPlan || !currentMealPlan.meals || currentMealPlan.meals.length === 0) {
         Toast.show({
             type: 'error',
             text1: 'Empty Meal Plan',
-            text2: 'You must have at least one meal before publishing the meal plan.',
+            text2: 'You must add at least one meal before publishing the meal plan.',
             position: 'bottom',
         });
         return;
     }
 
-    const invalidMeals = plan.meals.filter(meal => 
-        !meal.meal_name?.trim() || 
-        !meal.meal_type?.trim() || 
-        !meal.description?.trim() || 
-        !meal.calories || 
-        !meal.protein || 
-        !meal.carbs
+    const invalidMeals = currentMealPlan.meals.filter(meal => 
+      !meal.meal_name?.trim() || 
+      !meal.meal_type?.trim() || 
+      !meal.description?.trim() || 
+      !meal.calories || 
+      !meal.protein || 
+      !meal.carbs
     );
 
     if (invalidMeals.length > 0) {
-        Toast.show({
-            type: 'error',
-            text1: 'Missing Fields',
-            text2: `Please fill out all fields for ${invalidMeals.length} meal(s).`,
-            position: 'bottom',
-        });
-        return;
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Fields',
+        text2: `Please fill out all fields for ${invalidMeals.length} meal(s).`,
+        position: 'bottom',
+      });
+      return;
     }
-  
+
     try {
-      const token = await AsyncStorage.getItem('authToken');
-      const trainerID = await AsyncStorage.getItem('userID'); // Logged-in trainer's ID
-      const requesteeID = memberData?.requesteeID; // Member's ID from the state
-  
+      token = await AsyncStorage.getItem('authToken');
+      trainerID = await AsyncStorage.getItem('userID'); // Logged-in trainer's ID
+      requesteeID = selectedMemberData?.requesteeID || ''; // Get member ID safely
+
       if (!requesteeID) {
         Toast.show({
           type: 'error',
@@ -260,110 +293,70 @@ const MealPlanScreen = () => {
         });
         return;
       }
-  
-      // Simulated responses for now
-      const temp_response = {
-        searchResponse: true,
-        updateResponse: true,
-        createResponse: true,
-      };
-  
-      let mealPlanId: number;
-  
-      if (temp_response.searchResponse) { // REMOVE IF API AVAILABLE
-        // const searchResponse = await fetch(`${API_BASE_URL}/api/mealplans?member_id=${requesteeID}`, {
-        //   method: 'GET',
-        //   headers: {
-        //     'Accept': 'application/json',
-        //     'Authorization': `Bearer ${token}`,
-        //   },
-        // });
-        // if (!searchResponse.ok) {
-        //   throw new Error(`Search API error! status: ${searchResponse.status}`);
-        // }
-        const existingMealPlans = [{ mealplan_id: 1 }]; // Placeholder for simulated response: await searchResponse.json();
-        if (existingMealPlans.length > 0) {
-          mealPlanId = existingMealPlans[0].mealplan_id;
-  
-          if (temp_response.updateResponse) { // REMOVE IF API AVAILABLE
-            // const updateResponse = await fetch(`${API_BASE_URL}/api/mealplans/${mealPlanId}`, {
-            //   method: 'PUT',
-            //   headers: {
-            //     'Content-Type': 'application/json',
-            //     'Authorization': `Bearer ${token}`,
-            //   },
-            //   body: JSON.stringify({
-            //     member_id: requesteeID,
-            //     trainer_id: trainerID,
-            //     meals: plan.meals.map(meal => ({
-            //       id: meal.id,
-            //       meal_name: meal.meal_name,
-            //       description: meal.description,
-            //       meal_type: meal.meal_type,
-            //       calories: meal.calories,
-            //       protein: meal.protein,
-            //       carbs: meal.carbs,
-            //       mealplan: mealPlanId,
-            //     })),
-            //     mealplan_name: plan.mealplan_name,
-            //     fitness_goal: fitnessGoal,
-            //     calorie_intake: plan.calorie_intake,
-            //     protein: plan.protein,
-            //     carbs: plan.carbs,
-            //     weight_goal: weightGoal,
-            //     instructions: plan.instructions,
-            //   }),
-            // });
-            
-            console.log("Meal plan updated successfully!");
-          } else {
-            throw new Error("Simulated update failed!");
-          }
-        } else {
-          if (temp_response.createResponse) { // REMOVE IF API AVAILABLE
-            // const createResponse = await fetch(`${API_BASE_URL}/api/mealplans`, {
-            //   method: 'POST',
-            //   headers: {
-            //     'Content-Type': 'application/json',
-            //     'Authorization': `Bearer ${token}`,
-            //   },
-            //   body: JSON.stringify({
-            //     member_id: requesteeID,
-            //     trainer_id: trainerID,
-            //     meals: plan.meals.map(meal => ({
-            //       meal_name: meal.meal_name,
-            //       description: meal.description,
-            //       meal_type: meal.meal_type,
-            //       calories: meal.calories,
-            //       protein: meal.protein,
-            //       carbs: meal.carbs,
-            //     })),
-            //     mealplan_name: "New Meal Plan",
-            //     fitness_goal: fitnessGoal,
-            //     calorie_intake: plan.calorie_intake,
-            //     protein: plan.protein,
-            //     carbs: plan.carbs,
-            //     weight_goal: weightGoal,
-            //     instructions: plan.instructions,
-            //   }),
-            // });
-            console.log("New meal plan created successfully!");
-          } else {
-            throw new Error("Simulated creation failed!");
-          }
-        }
-      } else {
-        throw new Error("Simulated search failed!");
+
+      // Fetch existing meal plan for this member
+      const searchResponse = await fetch(`${API_BASE_URL}/api/mealplans?member_id=${requesteeID}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!searchResponse.ok) {
+        throw new Error(`Search API error! status: ${searchResponse.status}`);
       }
+
+      const existingMealPlans = await searchResponse.json();
+      let mealPlanId = existingMealPlans[0]?.mealplan_id;
+
+      if (!mealPlanId) {
+        throw new Error("No existing meal plan found for this member.");
+      }
+
+      // Update the existing meal plan
+      const updateResponse = await fetch(`${API_BASE_URL}/api/mealplans/${mealPlanId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          member_id: requesteeID,
+          trainer_id: trainerID,
+          meals: currentMealPlan.meals.map(meal => ({
+            id: meal.id, // Include meal ID if applicable
+            meal_name: meal.meal_name,
+            description: meal.description,
+            meal_type: meal.meal_type,
+            calories: meal.calories,
+            protein: meal.protein,
+            carbs: meal.carbs,
+          })),
+          mealplan_name: currentMealPlan.mealplan_name,
+          fitness_goal: currentMealPlan.fitness_goal,
+          calorie_intake: currentMealPlan.calorie_intake,
+          protein: currentMealPlan.protein,
+          carbs: currentMealPlan.carbs,
+          weight_goal: currentMealPlan.weight_goal,
+          instructions: currentMealPlan.instructions,
+          status: "completed", // Mark as completed
+        }),
+      });
   
       // Update state after successful publish
       setMealPlans((prevMealPlans) =>
         prevMealPlans.map((p) =>
-          p.mealplan_id === mealPlanId ? { ...plan, mealplan_id: mealPlanId } : p
+          p.mealplan_id === mealPlanId ? { ...currentMealPlan, mealplan_id: mealPlanId } : p
         )
       );
       setMealPlan(null); // Clear view state
-  
+      setSelectedMemberData(null); // Clear selected member data
+      
+      if (!updateResponse.ok) {
+        throw new Error(`Meal Plan API error! status: ${updateResponse.status}`);
+      }
+
       Toast.show({
         type: 'info',
         text1: 'Meal Plan Published',
@@ -387,6 +380,13 @@ const MealPlanScreen = () => {
     setViewState("editMP");
   };
 
+  const handleRequestSelect = (request: SelectedMemberData) => {
+    // Update selectedMemberData to the request that was selected
+    setSelectedMemberData(request);
+    // Change view state to "createMP" to allow editing the selected request
+    setViewState("createMP");
+  };
+
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === "ios" ? "padding" : "height"} 
@@ -396,23 +396,40 @@ const MealPlanScreen = () => {
         <View style={styles.container}>
           {viewState === "requests" ? (
             // Request Meal Plan View
-            <View style={styles.planContainer}>
+            <View>
               <MealPlanRequestHeader setViewState={setViewState} />
-              <MealPlanRequest
-                  setViewState={setViewState}
-                  memberName={memberData.requesteeName || ''}
-                  fitnessGoal={memberData.fitnessGoal || ''}
-                  weightGoal={memberData.weightGoal || ''}
-                  allergens={memberData.allergens || ''}
-                  height={memberData.height || ''}
-                  weight={memberData.weight || ''}
-                  age={memberData.age || ''}
-                  onEditPress={() => setViewState("createMP")}
-              />
-          </View>
+              <Text style={{ ...styles.subtitle2, marginBottom: 10, lineHeight: 20 }}>
+                <Text style={{ fontFamily: Fonts.semiboldItalic }}>Note:</Text> Creating a Meal Plan for 
+                these Requestees will only set that meal plan to be visible to them.
+              </Text>
+              {/* Render Member Requests List */}
+              {memberData.map((request) => (
+                <TouchableOpacity key={request.requesteeID}>
+                  <MealPlanRequest 
+                    memberName={request.requesteeName}
+                    fitnessGoal={request.fitnessGoal}
+                    weightGoal={request.weightGoal}
+                    allergens={request.allergens}
+                    height={request.height}
+                    weight={request.weight}
+                    age={request.age}
+                    onEditPress={() => handleRequestSelect(request)} // Trigger edit for the selected request
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
             ) : viewState === "createMP" ? (
             <>
-              <CreateMPHeader setViewState={setViewState} setMealPlan={setNewMealPlan} />
+              <CreateMPHeader setViewState={setViewState} setMealPlan={setNewMealPlan} setSelectedMemberData = {setSelectedMemberData}/>
+              <View>
+              <Text style={styles.infoTitle}>Fitness Goal:</Text>
+              <Text style={styles.infoText}>{selectedMemberData?.fitnessGoal || 'No fitness goal'}</Text>
+              <Text style={styles.infoTitle}>Weight Goal:</Text>
+              <Text style={styles.infoText}>{weightGoal || 'No weight goal'}</Text>
+              <Text style={styles.infoTitle}>Allergen/s:</Text>
+              <Text style={styles.infoText}>{allergens || 'No allergens'}</Text>
+
+              </View>
               <MealPlanForm
                 meals={newMealPlan?.meals || []} // Use newMealPlan for unconfirmed changes
                 onChangeMeal={(index: number, key: keyof Meal, value: string | number) => {
@@ -435,7 +452,7 @@ const MealPlanScreen = () => {
                 }}
                 onAction={() => {
                   const newMeal: Meal = {
-                    id: Date.now().toString(),
+                    id: nanoid(), // Generate a unique ID for the new workout
                     mealplan: "0", // Placeholder, may need an updated value
                     meal_name: `Meal ${(newMealPlan?.meals?.length || 0) + 1}`, // Safely handle undefined
                     meal_type: "",
@@ -448,8 +465,8 @@ const MealPlanScreen = () => {
                   setNewMealPlan((prevMealPlan) => ({
                     ...prevMealPlan!,
                     meals: [...(prevMealPlan?.meals || []), newMeal],
-                    trainer_id: userID?.toString() || "", // Assign trainer
-                    member_id: memberData.requesteeID, // Assign member
+                    trainer_id: userID || "", // Assign trainer
+                    member_id: selectedMemberData ? selectedMemberData.requesteeID : '', // Assign member ID safely
                   }));
                 }}
                 actionLabel="Add Meal"
@@ -471,7 +488,7 @@ const MealPlanScreen = () => {
             <>
               {mealPlan && mealPlan.meals ? (
                 <>
-                  <EditMPHeader setViewState={setViewState} setMealPlan={setMealPlan} />
+                  <EditMPHeader setViewState={setViewState} setMealPlan={setMealPlan} setSelectedMemberData = {setSelectedMemberData}/>
                   <MealPlanForm
                     meals={mealPlan?.meals || []}
                     onChangeMeal={(index: number, key: keyof Meal, value: string | number) => {
@@ -494,7 +511,7 @@ const MealPlanScreen = () => {
                     }}
                     onAction={() => {
                       const newMeal: Meal = {
-                        id: Date.now().toString(),
+                        id: nanoid(), // Generate a unique ID for the new workout
                         mealplan: mealPlan?.mealplan_id?.toString() || "", // Use selected meal plan ID
                         meal_name: `Meal ${mealPlan?.meals.length + 1}`, // Dynamically set meal name
                         meal_type: "",
@@ -538,18 +555,22 @@ const MealPlanScreen = () => {
               <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("requests")}>
               <Text style={styles.buttonText}>Meal Plan Requests</Text>
               </TouchableOpacity>
-              {mealPlans.map((plan) => (
-                <TouchableOpacity key={plan.mealplan_id} onPress={() => handleMealPlanSelect(plan)}>
-                  <MemberMealPlan 
-                    mealPlan={plan} 
-                    requesteeName={memberData.requesteeName}  // Pass the prop here
-                    onEditPress={() => handleMealPlanSelect(plan)} 
-                  />
-                </TouchableOpacity>
-              ))}
+              {mealPlans.map((plan) => {
+                // Find the corresponding member data based on the member_id
+                const member = memberData.find((data) => data.requesteeID === plan.member_id.toString()); // Assuming member_id is a number or string
+
+                return (
+                  <TouchableOpacity key={plan.mealplan_id} onPress={() => handleMealPlanSelect(plan)}>
+                    <MemberMealPlan 
+                      mealPlan={plan} 
+                      requesteeName={member ? member.requesteeName : 'Unknown'}  // Use the matched requesteeName
+                      onEditPress={() => handleMealPlanSelect(plan)} 
+                    />
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
-          
         </View>
       </ScrollView>
       <Toast />
@@ -669,21 +690,18 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mediumItalic,
   },
 
-  // Delete confirmation dialog container
-  deleteContainer: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -150 }, { translateY: -100 }],
-    width: 300,
-    padding: 20,
-    backgroundColor: Colors.bg,
-    borderRadius: 10,
-    shadowColor: Colors.shadowColor,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
+  // For Meal Plan Form member info styles
+  infoTitle: {
+      fontSize: 14,
+      fontFamily: Fonts.italic,
+      color: Colors.textSecondary,
+      marginBottom: 5,
+  },
+  infoText: {
+      fontSize: 14,
+      fontFamily: Fonts.semibold,
+      color: Colors.black,
+      marginBottom: 15,
   },
 });
 

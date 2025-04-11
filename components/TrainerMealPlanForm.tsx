@@ -143,8 +143,11 @@ const styles = StyleSheet.create({
       color: Colors.textPrimary,
       fontFamily: Fonts.bold,
       marginBottom: 10,
-      paddingLeft: 5,
-      paddingRight: 5,
+      marginTop: 3,
+      padding: 5,
+      borderWidth: 0.5,
+      borderColor: Colors.border,
+      borderRadius: 8,
   },
   buttonAction: {
       backgroundColor: Colors.gold,
