@@ -113,11 +113,11 @@ const WorkoutScreen = () => {
   
         const programsData = await response.json();
         
-        // Based on backend, the program_type contains the userID or "everyone" that it is visible to.
-        // Filter workout programs based on program_type matching userID or "everyone" and status is completed
+        // Based on backend, the requestee contains the userID or "everyone" that it is visible to.
+        // Filter workout programs based on requestee matching userID or "everyone" and status is completed
         const filteredPrograms = programsData.filter((program: any) => 
           program.status === "completed" &&
-          (program.program_type === userID || program.program_type === "everyone")
+          (program.requestee === userID || program.requestee === null) // means that it is visible to everyone
         );
   
         console.log('Filtered Programs:', filteredPrograms);
@@ -144,7 +144,7 @@ const WorkoutScreen = () => {
             durationPerSet: exercise.duration_per_set,
             notes: exercise.notes,
           })),
-          visibleTo: userProgram.program_type,
+          visibleTo: userProgram.requestee || "everyone",
           feedbacks: [], // Adjust if feedback is available
         }));
   

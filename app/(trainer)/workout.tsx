@@ -243,7 +243,7 @@ const WorkoutScreen = () => {
         const userPrograms = programsData.filter(
           (program: any) =>
             // program.status === "completed" &&
-            (String(program.trainer) === String(userID) || program.program_type === "everyone")
+            (String(program.trainer) === String(userID) || program.requestee === null)
         );
   
         if (!userPrograms.length) {
@@ -273,10 +273,10 @@ const WorkoutScreen = () => {
           })),
           duration: userProgram.duration, // in days
           status: userProgram.status,
-          // program_type from backend is treated as the userID or "everyone" it is visible to.
-          visibleTo: userProgram.program_type === "everyone" 
-            ? "everyone" 
-            : memberData.find((member) => member.requesteeID === userProgram.program_type)?.requesteeName || "unknown",
+          // requestee from backend is treated as the userID or "everyone" it is visible to.
+          visibleTo: !userProgram.requestee
+            ? "everyone"
+            : memberData.find((member) => member.requesteeID === userProgram.requestee)?.requesteeName || "unknown",
           feedbacks: [], // Adjust if feedback data is available in the backend
         }));
   
@@ -337,7 +337,7 @@ const WorkoutScreen = () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       const trainerID = await AsyncStorage.getItem('userID');
-      const requesteeID = selectedMemberData?.requesteeID || "everyone";
+      const requesteeID = selectedMemberData?.requesteeID || null;
   
       // Check if the workout exists in the state
       const existingWorkout = workouts.find(workout => workout.id === plan.id);
@@ -353,7 +353,7 @@ const WorkoutScreen = () => {
           body: JSON.stringify({
             id: plan.id,
             program_name: plan.title,
-            program_type: requesteeID,
+            requestee: requesteeID,
             trainer_id: trainerID,
             workouts: plan.exercises.map(exercise => ({
               id: exercise.id.toString(),
@@ -383,7 +383,7 @@ const WorkoutScreen = () => {
           },
           body: JSON.stringify({
             program_name: plan.title,
-            program_type: requesteeID,
+            requestee: requesteeID,
             trainer_id: trainerID,
             workouts: plan.exercises.map(exercise => ({
               id: exercise.id.toString(),
