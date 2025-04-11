@@ -1,4 +1,4 @@
-import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { useState } from 'react';
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
@@ -14,6 +14,18 @@ export default function HistoryScreen() {
     {id: "4", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
     {id: "5", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
   ]); // Replace with actual data fetching logic
+
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedReportType, setSelectedReportType] = useState('');
+
+  const showExportPopup = (reportType: string) => {
+    setSelectedReportType(reportType);
+    setModalVisible(true);
+    setTimeout(() => {
+      setModalVisible(false);
+    }, 2000); // Hide after 2 seconds
+  };
+  
 
   return (
     <View style={styles.container}>
@@ -34,7 +46,9 @@ export default function HistoryScreen() {
                   <Text style={styles.headerLabel}>Report Type:{' '}
                     <Text style={styles.headerValue}>{item.reportType}</Text>
                   </Text>
-                  <MaterialCommunityIcons name="export" size={24} color="black" />
+                  <TouchableOpacity onPress={() => showExportPopup(item.reportType)}>
+                    <MaterialCommunityIcons name="export" size={24} color="black" />
+                  </TouchableOpacity>
                 </View>
                 <View style={styles.cardContent}>
                   <Text style={styles.label}>Date Interval:{' '}
@@ -47,6 +61,19 @@ export default function HistoryScreen() {
               </View>
             )}
           />
+
+          <Modal animationType="fade" transparent={true} visible={isModalVisible}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.customModal}>
+                <MaterialCommunityIcons name="book-open-page-variant-outline" size={100} color={Colors.black} />
+                <Text style={styles.modalTitle}>Report exported</Text>
+                <Text style={styles.modalSubtitle}>
+                  <Text style={styles.modalItalic}>"{selectedReportType}"</Text> was saved to your device.
+                </Text>
+              </View>
+            </View>
+          </Modal>
+
         </>
       ) : (
         <View style={styles.emptyContainer}>
@@ -138,4 +165,40 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: Fonts.medium,
   },
+  customModal: {
+    backgroundColor: 'white',
+    paddingVertical: 30,
+    paddingHorizontal: 25,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 10,
+    width: 280,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontFamily: Fonts.semibold,
+    marginTop: 15,
+    color: Colors.black,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 10,
+    color: Colors.black,
+    fontFamily: Fonts.regular,
+  },
+  modalItalic: {
+    fontFamily: Fonts.italic,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },    
 });

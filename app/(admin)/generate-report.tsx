@@ -1,5 +1,5 @@
 import { Text, View, StyleSheet, Platform, TouchableOpacity } from 'react-native';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import Toast from 'react-native-toast-message';
@@ -38,7 +38,7 @@ export default function ReportsFormScreen() {
   };
 
   const handleGenerateReport = () => {
-    if (!reportType || !startDate || !endDate) {
+    if (!reportType) {
       Toast.show({
         type: 'error',
         text1: 'Incomplete Fields',
@@ -147,6 +147,8 @@ export default function ReportsFormScreen() {
           <Text style={styles.buttonText}>Generate Report</Text>
         </TouchableOpacity>
       </View>
+    
+    <Toast />
     </View>
   );
 }
