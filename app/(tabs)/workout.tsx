@@ -25,9 +25,15 @@ interface Exercise {
   image: ImageSourcePropType | null;
 }
 
+interface User{
+  id: string;
+  email: string;
+  full_name: string;
+}
 interface Trainer{
   id: string;
   name: string;
+  user: User;
   experience?: string;
   contact?: string;
 }
@@ -91,9 +97,13 @@ const WorkoutScreen = () => {
   
         const resolvedTrainers = trainerList.map((trainer: Trainer) => ({
           id: trainer.id,
-          name: trainer.name || "Unknown Trainer",
-          experience: trainer.experience || "Not Specified",
-          contact: trainer.contact || "Not Available",
+          user: {
+            id: trainer.user?.id || null,
+            email: trainer.user?.email || "No email",
+            full_name: trainer.user?.full_name || "Unknown Trainer",
+          },
+          experience: trainer.experience?.trim() || "Not Specified",
+          contact: trainer.contact?.trim() || "Not Available",
         }));
   
         setTrainers(resolvedTrainers);
@@ -428,7 +438,7 @@ const WorkoutScreen = () => {
                   <RNPickerSelect
                     onValueChange={(value) => setTrainer(value)}
                     items={trainers.map((trainer) => ({
-                      label: trainer.name,
+                      label: trainer.user.full_name,
                       value: trainer.id,
                     }))}
                     style={trainerpickerSelectStyles}
