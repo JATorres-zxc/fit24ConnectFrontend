@@ -4,19 +4,15 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import AntDesign from '@expo/vector-icons/AntDesign';
 
-type CreateMealPlanButtonProps = {
+type MemberPersonalWorkoutProps = {
   setViewState: (view: string) => void;
-  setMealPlan: (mealPlan: null) => void; // Add this to clear mealPlan
-  setSelectedMemberData: (selectedMemberData: null) => void;
 };
 
-export default function CreateMealPlanButton({ setViewState, setMealPlan, setSelectedMemberData }: CreateMealPlanButtonProps) {
+export default function PersonalWorkoutMember({ setViewState }: MemberPersonalWorkoutProps) {
 
   const handlePress = () => {
-    setMealPlan(null); // Clear selected mealPlan when navigating back
-    setViewState(""); 
-    setSelectedMemberData(null); // Clear selected member data when navigating back
-    router.push('/(trainer)/mealplan');
+    router.push('/(tabs)/workout');
+    setViewState("");
   };
 
   return (
@@ -28,7 +24,7 @@ export default function CreateMealPlanButton({ setViewState, setMealPlan, setSel
             size={24} 
             onPress={handlePress}
         />
-        <Text style={styles.backText}>  Create Meal Plan</Text>
+        <Text style={styles.backText}>  Personal Workouts</Text>
       </View>
     </SafeAreaView>
   );
