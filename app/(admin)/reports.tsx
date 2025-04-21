@@ -1,12 +1,88 @@
-import { View, StyleSheet } from 'react-native';
-
-import Header from '@/components/HistoryHeader';
+import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import { useState } from 'react';
+import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
+import { Fonts } from '@/constants/Fonts';
+import { router } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function HistoryScreen() {
+  const [reports, setReports] = useState([
+    {id: "1", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
+    {id: "2", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
+    {id: "3", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
+    {id: "4", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
+    {id: "5", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
+  ]); // Replace with actual data fetching logic
+
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedReportType, setSelectedReportType] = useState('');
+
+  const showExportPopup = (reportType: string) => {
+    setSelectedReportType(reportType);
+    setModalVisible(true);
+    setTimeout(() => {
+      setModalVisible(false);
+    }, 2000); // Hide after 2 seconds
+  };
+  
+
   return (
     <View style={styles.container}>
-      <Header />
+      <Header screen='Reports' />
+      {reports.length > 0 ? (
+        <>
+          <TouchableOpacity style={styles.topButton} onPress={() => {router.push('/(admin)/generate-report')}}>
+            <Text style={styles.buttonText}>Generate Report</Text>
+          </TouchableOpacity>
+
+          <FlatList
+            style={styles.reportList}
+            data={reports}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.headerLabel}>Report Type:{' '}
+                    <Text style={styles.headerValue}>{item.reportType}</Text>
+                  </Text>
+                  <TouchableOpacity onPress={() => showExportPopup(item.reportType)}>
+                    <MaterialCommunityIcons name="export" size={24} color="black" />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.cardContent}>
+                  <Text style={styles.label}>Date Interval:{' '}
+                    <Text style={styles.value}>{item.startDate} to {item.endDate}</Text>
+                  </Text>
+                  <Text style={styles.label}>Generated on:{' '}
+                  <Text style={styles.value}>{item.generatedDate}</Text>
+                  </Text>
+                </View>
+              </View>
+            )}
+          />
+
+          <Modal animationType="fade" transparent={true} visible={isModalVisible}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.customModal}>
+                <MaterialCommunityIcons name="book-open-page-variant-outline" size={100} color={Colors.black} />
+                <Text style={styles.modalTitle}>Report exported</Text>
+                <Text style={styles.modalSubtitle}>
+                  <Text style={styles.modalItalic}>"{selectedReportType}"</Text> was saved to your device.
+                </Text>
+              </View>
+            </View>
+          </Modal>
+
+        </>
+      ) : (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.message}>You have not generated any report.</Text>
+          <TouchableOpacity style={styles.button} onPress={() => {router.push('/(admin)/generate-report')}}>
+            <Text style={styles.buttonText}>Generate Report</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
@@ -17,4 +93,112 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bg,
     alignItems: 'center',
   },
+  topButton: {
+    backgroundColor: Colors.gold,
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 15,
+    width: '85%',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    width: '85%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  message: {
+    fontSize: 16,
+    fontFamily: Fonts.regular,
+    color: Colors.black,
+    marginBottom: 20,
+  },
+  reportList: {
+    flex: 1,
+    width: '85%',
+  },
+  card: {
+    padding: 10,
+    paddingBottom: 20,
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.black,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  headerLabel: {
+    fontSize: 16,
+    fontFamily: Fonts.semibold,
+    color: Colors.black,
+  },
+  headerValue: {
+    fontSize: 16,
+    fontFamily: Fonts.regular,
+    color: Colors.textSecondary,
+  },
+  cardContent: {
+    marginTop: 10,
+  },
+  label: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: Colors.black,
+    marginBottom: 5,
+  },
+  value: {
+    fontSize: 12,
+    fontFamily: Fonts.regular,
+    color: Colors.textSecondary,
+  },
+  button: {
+    backgroundColor: Colors.gold,
+    padding: 15,
+    borderRadius: 10,
+  },
+  buttonText: {
+    fontSize: 16,
+    color: Colors.white,
+    textAlign: 'center',
+    fontFamily: Fonts.medium,
+  },
+  customModal: {
+    backgroundColor: 'white',
+    paddingVertical: 30,
+    paddingHorizontal: 25,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 10,
+    width: 280,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontFamily: Fonts.semibold,
+    marginTop: 15,
+    color: Colors.black,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 10,
+    color: Colors.black,
+    fontFamily: Fonts.regular,
+  },
+  modalItalic: {
+    fontFamily: Fonts.italic,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },    
 });

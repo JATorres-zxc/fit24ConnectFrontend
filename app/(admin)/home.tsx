@@ -2,7 +2,7 @@ import { View, StyleSheet, Platform, } from "react-native";
 import { useCallback, useState } from "react";
 
 import Button from '@/components/CreateAnnouncementButton';
-import Header from '@/components/HomeHeader';
+import Header from '@/components/AdminHomeHeader';
 import AdminAnnouncements from "@/components/AdminSideAnnouncementsContainer";
 
 import { Colors } from "@/constants/Colors";
