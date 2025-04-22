@@ -6,14 +6,16 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 
 type EditWorkoutButtonProps = {
   setViewState: (view: string) => void;
-  setWorkout: (workout: null) => void; // Added to reset mealPlan
+  setWorkout: (workout: null) => void;
+  setSelectedMemberData: (selectedMemberData: null) => void;
 };
 
-export default function EditWorkoutButton({ setViewState, setWorkout }: EditWorkoutButtonProps) {
+export default function EditWorkoutButton({ setViewState, setWorkout, setSelectedMemberData }: EditWorkoutButtonProps) {
 
   const handlePress = () => {
     setWorkout(null); // Clear mealPlan when navigating back
     setViewState(""); 
+    setSelectedMemberData(null); // Clear selected member data when navigating back
     router.push('/(trainer)/workout');
   };
 
