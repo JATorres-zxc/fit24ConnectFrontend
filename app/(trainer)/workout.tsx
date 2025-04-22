@@ -254,7 +254,7 @@ const WorkoutScreen = () => {
           // requestee from backend is treated as the userID or "everyone" it is visible to.
           visibleTo: (String(userProgram.requestee) === 'null') 
             ? 'everyone' 
-            : memberData.find((member) => member.requesteeID === String(userProgram.requestee))?.requesteeName || 'unknown',
+            : memberData.find((member) => String(member.requesteeID) === String(userProgram.requestee))?.requesteeName || 'unknown',
           feedbacks: [], // Adjust if feedback data is available in the backend
         }));
   
