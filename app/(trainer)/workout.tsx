@@ -17,10 +17,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MemberWorkout from "@/components/MemberWorkout";
 import WorkoutRequest from "@/components/WorkoutRequest";
 import TrainerWOHeader from "@/components/TrainerWOHeader";
-import { nanoid } from 'nanoid';
 
 interface Exercise {
-  id: string;
+  id: string | null; // ID can be null for new exercises
   name: string;
   description: string;
   image: ImageSourcePropType | null; // Image can be null if not set
@@ -33,7 +32,7 @@ interface Feedback {
 }
 
 interface Workout {
-  id: string;
+  id: string | null; // ID can be null for new workouts
   title: string;
   duration: number;
   fitnessGoal: string;
@@ -98,7 +97,7 @@ const WorkoutScreen = () => {
     ]);
     const [selectedMemberData, setSelectedMemberData] = useState<SelectedMemberData | null>(null); // Default to the first member in the list
     const [newWorkout, setNewWorkout] = useState<Workout | null>({
-      id: nanoid(), // Generate a unique ID for the new workout
+      id: null, // Set to null initially
       title: "",
       duration: 30, // Default number of days
       fitnessGoal: "",
@@ -335,11 +334,12 @@ const WorkoutScreen = () => {
             requestee: requesteeID,
             trainer_id: trainerID,
             workouts: plan.exercises.map(exercise => ({
-              id: exercise.id.toString(),
+              id: exercise.id?.toString(),
               name: exercise.name,
               description: exercise.description,
               image: "", // Provide an image URL if available
             })),
+            status: "completed", // Set status to completed
             workout_name: plan.title,
             fitness_goal: "General Fitness", // Default value, adjust as needed
             duration: 30, // Default number of days, adjust as needed
@@ -365,11 +365,12 @@ const WorkoutScreen = () => {
             requestee: requesteeID,
             trainer_id: trainerID,
             workouts: plan.exercises.map(exercise => ({
-              id: exercise.id.toString(),
+              id: exercise.id?.toString(),
               name: exercise.name,
               description: exercise.description,
               image: "", // Provide an image URL if available
             })),
+            status: "completed", // Set status to completed
             workout_name: plan.title,
             fitness_goal: "General Fitness", // Default value, adjust as needed
             duration: 30, // Default number of days, adjust as needed
@@ -544,7 +545,7 @@ const WorkoutScreen = () => {
                 }}
                 onAction={() => {
                   const newExercise: Exercise = {
-                    id: nanoid(), // Generate a unique ID for the new workout
+                    id: null, // Set initial value to null
                     name: `Exercise ${(newWorkout?.exercises?.length || 0) + 1}`, // Safely handle undefined
                     description: "",
                     image: null,
@@ -603,7 +604,7 @@ const WorkoutScreen = () => {
                     }}
                     onAction={() => {
                       const newExercise: Exercise = {
-                        id: nanoid(), // Generate a unique ID for the new workout
+                        id: null, // Set initial value to null
                         name: `Exercise ${(workout?.exercises.length || 0) + 1}`,
                         description: "",
                         image: null,

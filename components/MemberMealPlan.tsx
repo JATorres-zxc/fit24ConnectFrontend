@@ -5,7 +5,7 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
 interface Meal {
-    id: string;
+    id: string | null;
     mealplan: string;
     meal_name: string;
     description: string;
@@ -16,7 +16,7 @@ interface Meal {
 }
 
 interface MealPlan {
-    mealplan_id: string;
+    mealplan_id: string | null;
     meals: Meal[];
     member_id: string;
     trainer_id: string;

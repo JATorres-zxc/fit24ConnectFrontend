@@ -223,7 +223,7 @@ const MealPlanScreen = () => {
       const { height, weight, age } = profileData;
 
       // Create an empty meal plan request (meals are added by the trainer)
-      const requestResponse = await fetch(`${API_BASE_URL}/api/mealplans`, {
+      const requestResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -285,7 +285,7 @@ const MealPlanScreen = () => {
     try {
       // This is in line with an agreed central feedback and request database.
 
-      const response = await fetch(`${API_BASE_URL}/api/mealplan/feedbacks`, {
+      const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/feedbacks/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

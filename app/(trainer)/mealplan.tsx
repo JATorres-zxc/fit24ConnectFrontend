@@ -17,10 +17,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MemberMealPlan from "@/components/MemberMealPlan";
 import MealPlanRequest from "@/components/MealPlanRequest";
 import TrainerMPHeader from "@/components/TrainerMPHeader";
-import { nanoid } from 'nanoid';
 
 interface Meal {
-  id: string;
+  id: string | null;
   mealplan: string;
   meal_name: string;
   description: string;
@@ -38,7 +37,7 @@ interface Feedback {
 }
 
 interface MealPlan {
-  mealplan_id: string;
+  mealplan_id: string | null;
   meals: Meal[];
   member_id: string;
   trainer_id: string;
@@ -113,7 +112,7 @@ const MealPlanScreen = () => {
   const [selectedMemberData, setSelectedMemberData] = useState<SelectedMemberData | null>(null); // Default to the first member in the list
   
   const [newMealPlan, setNewMealPlan] = useState<MealPlan | null>({
-    mealplan_id: nanoid(), // Generate a unique ID for the new workout
+    mealplan_id: null,
     meals: [], // Ensures `meals` is always defined
     member_id: selectedMemberData?.requesteeID || '',
     trainer_id: userID || "",
@@ -139,7 +138,7 @@ const MealPlanScreen = () => {
         if (!token) throw new Error("Token not found");
   
         // Fetch all meal plan requests
-        const requestsResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
+        const requestsResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/`, {
           method: "GET",
           headers: {
             Accept: "application/json",
@@ -154,8 +153,8 @@ const MealPlanScreen = () => {
         const requestsData = await requestsResponse.json();
 
         // Filter meal plans with 'in_progress' status
-        const inProgressRequests = requestsData.filter((request: any) => request.status === "in_progress");
-
+        const inProgressRequests = requestsData.filter((request: any) => request.status === "completed");
+        
         // Extract requestee IDs from in-progress meal plans
         const requesteeIDs = inProgressRequests.map((request: any) => request.requestee);
 
@@ -173,11 +172,11 @@ const MealPlanScreen = () => {
         }
   
         const allMembers = await allMembersResponse.json();
-  
+        
         // Map to combine the requests and profiles
         const memberDataList = requesteeIDs.map((requesteeID: string) => {
           const profileData = allMembers.find((member: any) => String(member.id) === String(requesteeID));
-  
+        
           if (!profileData) {
             return null; // If no matching profile found, return null
           }
@@ -186,7 +185,7 @@ const MealPlanScreen = () => {
           const request = inProgressRequests.find((request: any) => {
             return request.requestee === profileData.id;
           });
-
+          
           // Return combined profile and request data
           return {
             requesteeID: request?.requestee.toString() || "Unknown",
@@ -199,6 +198,8 @@ const MealPlanScreen = () => {
             allergens: request?.allergens || "None",
           };
         }).filter((data: any) => data !== null); // Filter out null values (if any member had no matching profile)
+
+        console.log("Member Data List:", memberDataList); // Debugging log
 
         // Append to previous data (assuming setMemberData updates the state)
         setMemberData((prev) => [...prev, ...memberDataList]);
@@ -235,7 +236,7 @@ const MealPlanScreen = () => {
         // Filter meal plans where trainer_id matches userID
         const trainerMealPlans = mealPlansData.filter(
           (plan: any) => (
-            plan.status === "in_progress" && // Only include in_progress meal plans
+            // plan.status === "in_progress" && // Only include in_progress meal plans
             plan.trainer_id.toString() === userID
           )
         );
@@ -294,8 +295,8 @@ const MealPlanScreen = () => {
         return;
       }
 
-      // Fetch existing meal plan for this member
-      const searchResponse = await fetch(`${API_BASE_URL}/api/mealplans?member_id=${requesteeID}`, {
+      // Fetch all meal plans (you may paginate this later if needed)
+      const searchResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -307,15 +308,22 @@ const MealPlanScreen = () => {
         throw new Error(`Search API error! status: ${searchResponse.status}`);
       }
 
-      const existingMealPlans = await searchResponse.json();
-      let mealPlanId = existingMealPlans[0]?.mealplan_id;
+      const allMealPlans = await searchResponse.json();
+
+      // Find the meal plan where the requestee matches
+      const matchedMealPlan = allMealPlans.find(
+        (plan: any) => String(plan.requestee) === String(requesteeID)
+      );
+
+      // Extract the mealPlanId
+      let mealPlanId = matchedMealPlan?.mealplan_id;
 
       if (!mealPlanId) {
         throw new Error("No existing meal plan found for this member.");
       }
 
       // Update the existing meal plan
-      const updateResponse = await fetch(`${API_BASE_URL}/api/mealplans/${mealPlanId}`, {
+      const updateResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlanId}/update_meal_plan/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -325,7 +333,8 @@ const MealPlanScreen = () => {
           member_id: requesteeID,
           trainer_id: trainerID,
           meals: currentMealPlan.meals.map(meal => ({
-            id: meal.id, // Include meal ID if applicable
+            // id: meal.id, // Include meal ID if applicable
+            // mealplan: mealPlanId,
             meal_name: meal.meal_name,
             description: meal.description,
             meal_type: meal.meal_type,
@@ -333,6 +342,7 @@ const MealPlanScreen = () => {
             protein: meal.protein,
             carbs: meal.carbs,
           })),
+          plan_type: "personal", // Fixed for now, can be changed to general
           mealplan_name: currentMealPlan.mealplan_name,
           fitness_goal: currentMealPlan.fitness_goal,
           calorie_intake: currentMealPlan.calorie_intake,
@@ -377,8 +387,24 @@ const MealPlanScreen = () => {
 
   const handleMealPlanSelect = (selectedMealPlan: MealPlan) => {
     setMealPlan(selectedMealPlan); // Set the selected meal plan
+  
+    // Find corresponding member based on meal plan's member_id
+    const member = memberData.find(
+      (data) => data.requesteeID.toString() === selectedMealPlan.member_id.toString()
+    );
+    
+    console.log("Requestee ID:", selectedMealPlan.member_id);
+
+    // Set selected member data for this meal plan
+    if (member) {
+      setSelectedMemberData(member);
+    } else {
+      console.warn("Member data not found for selected meal plan.");
+      setSelectedMemberData(null); // or a fallback value
+    }
+  
     setViewState("editMP");
-  };
+  };  
 
   const handleRequestSelect = (request: SelectedMemberData) => {
     // Update selectedMemberData to the request that was selected
@@ -452,7 +478,7 @@ const MealPlanScreen = () => {
                 }}
                 onAction={() => {
                   const newMeal: Meal = {
-                    id: nanoid(), // Generate a unique ID for the new workout
+                    id: null, 
                     mealplan: "0", // Placeholder, may need an updated value
                     meal_name: `Meal ${(newMealPlan?.meals?.length || 0) + 1}`, // Safely handle undefined
                     meal_type: "",
@@ -511,7 +537,7 @@ const MealPlanScreen = () => {
                     }}
                     onAction={() => {
                       const newMeal: Meal = {
-                        id: nanoid(), // Generate a unique ID for the new workout
+                        id: null,
                         mealplan: mealPlan?.mealplan_id?.toString() || "", // Use selected meal plan ID
                         meal_name: `Meal ${mealPlan?.meals.length + 1}`, // Dynamically set meal name
                         meal_type: "",

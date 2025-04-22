@@ -5,7 +5,7 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
 interface Exercise {
-    id: string;
+    id: string | null;
     name: string;
     description: string;
     image: ImageSourcePropType | null; // Accepts an image or null if not set
@@ -19,7 +19,7 @@ interface Exercise {
   }
   
   interface Workout {
-    id: string;
+    id: string | null;
     title: string;
     duration: number; // in days
     fitnessGoal: string;

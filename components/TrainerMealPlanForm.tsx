@@ -5,7 +5,7 @@ import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons'; // Import Ionicons for the trash icon
 
 interface Meal {
-  id: string;
+  id: string | null;
   meal_name: string;
   description: string;
   meal_type: string;
