@@ -20,7 +20,7 @@ const Members = [
   { memberID: "10", name: 'Lovely' },
 ];
 
-export default function HistoryScreen() {
+export default function MembersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
@@ -52,8 +52,13 @@ export default function HistoryScreen() {
 
             {/* Right Section - Icons */}
             <View style={styles.rightSection}>
-              <MaterialCommunityIcons name="medal-outline" size={24} color="black" />
-              <MaterialCommunityIcons name="credit-card-edit-outline" size={24} color="black"  />
+              <TouchableOpacity>
+                <MaterialCommunityIcons name="medal-outline" size={24} color="black" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity>
+                <MaterialCommunityIcons name="credit-card-edit-outline" size={24} color="black"  />
+              </TouchableOpacity>
             </View>
           </View>
         )}
