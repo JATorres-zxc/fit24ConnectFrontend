@@ -1,14 +1,15 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, ImageSourcePropType } from "react-native";
 import { FontAwesome } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import * as ImagePicker from "expo-image-picker";
 
 interface Exercise {
   id: string;
   name: string;
   description: string;
-  image: string;
+  image: ImageSourcePropType | null;
 }
 
 interface Feedback {
@@ -25,7 +26,7 @@ interface Workout {
   intensityLevel: string;
   trainer: string;
   exercises: Exercise[];
-  visibleTo: "everyone" | "userEmail" | string;
+  visibleTo: string;
   feedbacks: Feedback[];
 }
 interface WorkoutsContainerProps {
@@ -34,7 +35,9 @@ interface WorkoutsContainerProps {
   onTrashPress: (workout: Workout) => void;
 }
 
+
 const WorkoutsContainer: React.FC<WorkoutsContainerProps> = ({ workouts, onWorkoutPress, onTrashPress}) => {
+  
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -42,7 +45,10 @@ const WorkoutsContainer: React.FC<WorkoutsContainerProps> = ({ workouts, onWorko
           {workouts.map((workout) => (
             <View key={workout.id}>
               <TouchableOpacity style={styles.workoutItem} onPress={() => onWorkoutPress(workout)}>
-                <Image source={{ uri: workout.exercises[0].image }} style={styles.workoutImage} />
+              <Image
+                source={workout.exercises[0].image ? { uri: workout.exercises[0].image } : require("@/assets/images/icon.png")}
+                style={styles.workoutImage}
+              />
                 <View style={styles.textContainer}>
                   <Text style={styles.workoutTitle}>{workout.title}</Text>
                   <Text style={styles.fitnessGoal}>Fitness Goal:</Text>

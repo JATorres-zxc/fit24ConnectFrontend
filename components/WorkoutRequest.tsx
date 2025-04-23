@@ -13,10 +13,9 @@ interface WorkoutRequestProps {
     weight: string;
     age: string;
     onEditPress: () => void;
-    setViewState: (viewState: string) => void;
 }
 
-const WorkoutRequest: React.FC<WorkoutRequestProps> = ({ memberName, fitnessGoal, weightGoal, allergens, height, weight, age, onEditPress, setViewState }) => {
+const WorkoutRequest: React.FC<WorkoutRequestProps> = ({ memberName, fitnessGoal, weightGoal, allergens, height, weight, age, onEditPress }) => {
     return (
         <ScrollView>
             <View style={styles.container}>

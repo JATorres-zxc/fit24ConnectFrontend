@@ -1,6 +1,6 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
-import { FontAwesome } from '@expo/vector-icons';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ImageSourcePropType } from "react-native";
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
@@ -8,7 +8,7 @@ interface Exercise {
     id: string;
     name: string;
     description: string;
-    image: string;
+    image: ImageSourcePropType | null; // Accepts an image or null if not set
   }
 
   interface Feedback {
@@ -21,11 +21,12 @@ interface Exercise {
   interface Workout {
     id: string;
     title: string;
+    duration: number; // in days
     fitnessGoal: string;
     intensityLevel: string;
     trainer: string;
     exercises: Exercise[];
-    visibleTo: "everyone" | "userEmail" | string;
+    visibleTo: string;
     feedbacks: Feedback[];
     member_id?: string; // Added member_id property
   }
@@ -34,21 +35,30 @@ interface MemberWorkoutProps {
     workout: Workout;
     requesteeName: string;  // Add this prop
     onEditPress: () => void;
+    onTrashPress: () => void;
 }
 
-const MemberWorkout: React.FC<MemberWorkoutProps> = ({ workout, requesteeName, onEditPress }) => {
+const MemberWorkout: React.FC<MemberWorkoutProps> = ({ workout, requesteeName, onEditPress, onTrashPress }) => {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Image source={{ uri: 'https://via.placeholder.com/90' }} style={styles.image} />
+                <Image
+                    source={workout.exercises[0].image ? { uri: workout.exercises[0].image } : require("@/assets/images/icon.png")}
+                    style={styles.image}
+                />
                 <View style={styles.textContainer}>
-                    <Text style={styles.title}>{requesteeName}'s Workout</Text>
-                    <Text style={styles.subtitle}>Working on:</Text>
-                    <Text style={styles.fitnessGoal}>{workout.fitnessGoal}</Text>
+                    <Text style={styles.title}>{workout.title}</Text>
+                    <Text style={styles.subtitle}>Accessible by:</Text>
+                    <Text style={styles.accessibleTo}>{workout.visibleTo}</Text>
                 </View>
-                <TouchableOpacity style={styles.editIcon} onPress={onEditPress}>
-                    <FontAwesome name="pencil" size={24} color={Colors.black} />
-                </TouchableOpacity>
+                <View style={styles.iconContainer}>
+                    <TouchableOpacity style={styles.editIcon} onPress={onEditPress}>
+                        <FontAwesome name="pencil" size={24} color={Colors.black} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={onTrashPress} style={styles.trashIcon}>
+                        <Ionicons name="trash-outline" size={24} color="red" />
+                    </TouchableOpacity>
+                </View>
             </View>
             <View style={styles.horizontalLine} />
             {/* <View style={styles.mealContainer}>
@@ -71,15 +81,17 @@ const styles = StyleSheet.create({
         marginTop: 15,
     },
     editIcon: {
-        alignSelf: 'flex-start',
-        justifyContent: 'flex-end',
-        marginTop: 5,
-        marginLeft: 20,
-        marginBottom: 10,
+        alignSelf: "flex-end",
+        marginBottom: "auto", // Pushes it to the top
     },
+    iconContainer: {
+        flexDirection: "column",  // Stack icons vertically
+        alignItems: "stretch",  // Center icons horizontally
+        justifyContent: "space-evenly", // Distribute space between icons
+        marginLeft: 15, // Add some spacing from text container
+    },    
     header: {
         flexDirection: 'row',
-        alignItems: 'center',
         marginBottom: 20,
     },
     horizontalLine: {
@@ -94,11 +106,12 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: Colors.black,
+        borderColor: Colors.border,
         marginRight: 16,
     },
     textContainer: {
         flex: 1,
+        justifyContent: "center",
     },
     title: {
         fontSize: 18,
@@ -112,7 +125,7 @@ const styles = StyleSheet.create({
         color: Colors.textSecondary,
         marginBottom: 5,
     },
-    fitnessGoal: {
+    accessibleTo: {
         fontSize: 14,
         fontFamily: Fonts.semiboldItalic,
         color: Colors.black,
@@ -138,6 +151,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: Fonts.regular,
         color: Colors.textSecondary,
+    },
+    trashIcon: {
+        alignSelf: "flex-end",
+        marginTop: "auto", // Pushes it to the bottom
     },
 });
 

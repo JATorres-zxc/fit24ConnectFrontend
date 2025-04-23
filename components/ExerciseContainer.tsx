@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, ImageSourcePropType } from "react-native";
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
@@ -7,7 +7,7 @@ interface Exercise {
     id: string;
     name: string;
     description: string;
-    image: string;
+    image: ImageSourcePropType | null; // Accepts an image or null if not set
 }
 
 interface ExerciseContainerProps {
@@ -21,7 +21,10 @@ const ExerciseContainer: React.FC<ExerciseContainerProps> = ({ exercises }) => {
             {exercises.map((exercise, index) => (
                 <View key={exercise.id}>
                   <View key={index} style={[styles.exerciseItem, index % 2 === 0 ? styles.exerciseItemLeft : styles.exerciseItemRight]}>
-                      <Image source={{ uri: exercise.image }} style={styles.image} />
+                  <Image
+                    source={exercise.image ? { uri: exercise.image } : require('@/assets/images/icon.png')}
+                    style={styles.image}
+                />
                       <View style={styles.textContainer}>
                           <Text style={styles.exerciseName}>{exercise.name}</Text>
                           <Text style={styles.exerciseDescription}>{exercise.description}</Text>
