@@ -1,5 +1,5 @@
 import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import Header from '@/components/AdminSectionHeaders';
@@ -7,7 +7,7 @@ import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 
 // mock members data
-const Members = [
+const initialMembers = [
   { memberID: "1", name: 'John' },
   { memberID: "2", name: 'Alexis' },
   { memberID: "3", name: 'Ezra' },
@@ -22,6 +22,14 @@ const Members = [
 
 export default function MembersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [members, setMembers] = useState(initialMembers);
+
+  useEffect(() => {
+    const filtered = initialMembers.filter(member =>
+      member.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setMembers(filtered);
+  }, [searchQuery]);
 
   return (
     <View style={styles.container}>
@@ -41,7 +49,7 @@ export default function MembersScreen() {
       </View>
 
       <FlatList
-        data={Members}
+        data={members}
         keyExtractor={(item) => item.memberID}
         renderItem={({ item }) => (
           <View style={styles.card}>
