@@ -1,6 +1,6 @@
-import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList } from 'react-native';
+import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList, TouchableWithoutFeedback } from 'react-native';
 import { useState, useEffect } from 'react';
-import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
+import { AntDesign, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
@@ -20,9 +20,17 @@ const initialMembers = [
   { memberID: "10", name: 'Lovely' },
 ];
 
+type Member = {
+  memberID: string;
+  name: string;
+};
+
 export default function MembersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [members, setMembers] = useState(initialMembers);
+  const [members, setMembers] = useState<Member[]>(initialMembers);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [trainers, setTrainers] = useState<Member[]>([]);
 
   useEffect(() => {
     const filtered = initialMembers.filter(member =>
@@ -30,6 +38,24 @@ export default function MembersScreen() {
     );
     setMembers(filtered);
   }, [searchQuery]);
+
+  const handleAssignTrainer = () => {
+    if (selectedMember) {
+      // Add to trainers if not already there
+      setTrainers(prev => {
+        if (!prev.find(t => t.memberID === selectedMember.memberID)) {
+          return [...prev, selectedMember];
+        }
+        return prev;
+      });
+  
+      // Remove from members list
+      setMembers(prev => prev.filter(m => m.memberID !== selectedMember.memberID));
+      
+      setModalVisible(false);
+      setSelectedMember(null);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -60,8 +86,11 @@ export default function MembersScreen() {
 
             {/* Right Section - Icons */}
             <View style={styles.rightSection}>
-              <TouchableOpacity>
-                <MaterialCommunityIcons name="medal-outline" size={24} color="black" />
+              <TouchableOpacity onPress={() => {
+                setSelectedMember(item);
+                setModalVisible(true);
+              }}>
+                  <MaterialCommunityIcons name="medal-outline" size={24} color="black" />
               </TouchableOpacity>
               
               <TouchableOpacity>
@@ -77,6 +106,48 @@ export default function MembersScreen() {
           </View>
         }
       />
+
+      {/* Assign as Trainer Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <View style={styles.modalIconContainer}>
+                  <FontAwesome6 name="dumbbell" size={36} color={Colors.black} />
+                </View>
+                <Text style={styles.modalTitle}>Assign as Trainer?</Text>
+                <Text style={styles.modalText}>
+                  You're going to assign{' '}
+                  <Text style={styles.selectedMember}>
+                    "{selectedMember?.name}"
+                  </Text> 
+                  {' '}as a trainer. Are you sure?
+                </Text>
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.cancelButton]} 
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.buttonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.assignButton]} 
+                    onPress={handleAssignTrainer}
+                  >
+                    <Text style={[styles.buttonText, styles.assignButtonText]}>Assign</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
     </View>
   );
@@ -148,5 +219,63 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: Colors.black,
     fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalIconContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontFamily: Fonts.bold,
+    fontSize: 20,
+    marginBottom: 15,
+  },
+  modalText: {
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  selectedMember: {
+    fontFamily: Fonts.semiboldItalic,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    flex: 1,
+    marginHorizontal: 5,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: Colors.bg,
+  },
+  assignButton: {
+    backgroundColor: Colors.green,
+  },
+  buttonText: {
+    fontFamily: Fonts.medium,
+    fontSize: 16,
+  },
+  assignButtonText: {
+    color: Colors.white,
   },
 });

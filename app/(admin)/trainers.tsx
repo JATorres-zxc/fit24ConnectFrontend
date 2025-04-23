@@ -20,12 +20,17 @@ const initialTrainers = [
   { trainerId: "10", name: 'Lovely' },
 ];
 
+type Trainer = {
+  trainerId: string;
+  name: string;
+};
+
 export default function TrainersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [trainers, setTrainers] = useState(initialTrainers); // Convert trainers to state
-  const [filteredTrainers, setFilteredTrainers] = useState(initialTrainers);
+  const [trainers, setTrainers] = useState<Trainer[]>(initialTrainers); // Convert trainers to state
+  const [filteredTrainers, setFilteredTrainers] = useState<Trainer[]>(initialTrainers);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedTrainer, setSelectedTrainer] = useState(null);
+  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null> (null);
 
   // Filter trainers when search query changes or when trainers change
   useEffect(() => {
@@ -49,11 +54,6 @@ export default function TrainersScreen() {
       setModalVisible(false);
       setSelectedTrainer(null);
     }
-  };
-
-  const openRemoveModal = (trainer) => {
-    setSelectedTrainer(trainer);
-    setModalVisible(true);
   };
 
   return (
@@ -86,7 +86,10 @@ export default function TrainersScreen() {
             {/* Right Section - Icon */}
             <TouchableOpacity 
               style={styles.rightSection}
-              onPress={() => openRemoveModal(item)}
+              onPress={() => {
+                setSelectedTrainer(item);
+                setModalVisible(true);
+              }}
             >
               <Feather name="user-minus" size={24} color="black" />
             </TouchableOpacity>
