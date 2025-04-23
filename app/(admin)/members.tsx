@@ -5,6 +5,7 @@ import { AntDesign, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-ic
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
+import { router } from 'expo-router';
 
 // mock members data
 const initialMembers = [
@@ -93,7 +94,7 @@ export default function MembersScreen() {
                   <MaterialCommunityIcons name="medal-outline" size={24} color="black" />
               </TouchableOpacity>
               
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push(`/(admin)/member-profile`)}>
                 <MaterialCommunityIcons name="credit-card-edit-outline" size={24} color="black"  />
               </TouchableOpacity>
             </View>
