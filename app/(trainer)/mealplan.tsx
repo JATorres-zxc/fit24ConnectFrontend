@@ -47,7 +47,7 @@ interface MealPlan {
   protein: number;
   carbs: number;
   weight_goal: string;
-  allergens: string;
+  allergies: string;
   instructions: string;
   requestee_id: string;
   requestee: string;
@@ -62,7 +62,7 @@ interface SelectedMemberData {
   age: string;
   fitnessGoal: string;
   weightGoal: string;
-  allergens: string;
+  allergies: string;
   status: string;
 }
 
@@ -84,7 +84,7 @@ const MealPlanScreen = () => {
   const [updateMealPlan, setUpdateMealPlan] = useState<MealPlan | null>(null);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
-  const [allergens, setAllergens] = useState(""); // State to store allergens
+  const [allergies, setallergies] = useState(""); // State to store allergies
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
   const [memberData, setMemberData] = useState<SelectedMemberData[]>([
@@ -96,7 +96,7 @@ const MealPlanScreen = () => {
       age: '25',
       fitnessGoal: 'Gain Weight',
       weightGoal: '60',
-      allergens: 'Peanuts, Dairy',
+      allergies: 'Peanuts, Dairy',
       status: 'in_progress',
     },
     {
@@ -107,7 +107,7 @@ const MealPlanScreen = () => {
       age: '28',
       fitnessGoal: 'Lose Fat',
       weightGoal: '50',
-      allergens: 'Shellfish',
+      allergies: 'Shellfish',
       status: 'in_progress',
     },
     // You can add more members in this list as needed
@@ -125,7 +125,7 @@ const MealPlanScreen = () => {
     protein: 0,
     carbs: 0,
     weight_goal: "",
-    allergens: "",
+    allergies: "",
     instructions: "",
     requestee_id: selectedMemberData?.requesteeID || '', // Default to the first member's ID
     requestee: selectedMemberData?.requesteeID || '', // Default to the first member's ID
@@ -159,10 +159,10 @@ const MealPlanScreen = () => {
         // Filter meal plans with 'in_progress' status AND assigned to current trainer
         const inProgressRequests = requestsData.filter(
           (request: any) =>
-            request.status === "in_progress" &&
+            (request.status === "in_progress" || request.status === "not_created") &&
             request.trainer_id?.toString() === userID
         );
-  
+
         // Extract requestee IDs from in-progress meal plans
         const requesteeIDs = inProgressRequests.map((request: any) => request.requestee);
   
@@ -180,17 +180,17 @@ const MealPlanScreen = () => {
         }
   
         const allMembers = await allMembersResponse.json();
-  
+
         // Combine request and member profile data
         const memberDataList = requesteeIDs.map((requesteeID: string) => {
           const profileData = allMembers.find((member: any) => String(member.id) === String(requesteeID));
-  
+
           if (!profileData) return null;
   
           const request = inProgressRequests.find(
-            (req: any) => req.requestee === profileData.id
+            (req: any) => String(req.requestee) === String(profileData.id)
           );
-  
+          
           return {
             requesteeID: request?.requestee.toString() || "Unknown",
             requesteeName: profileData?.full_name || "Unknown",
@@ -199,14 +199,14 @@ const MealPlanScreen = () => {
             age: profileData?.age || "N/A",
             fitnessGoal: request?.fitness_goal || "Not Specified",
             weightGoal: request?.weight_goal || "Not Specified",
-            allergens: request?.allergens || "None",
+            allergies: request?.user_allergies || "None",
             status: request?.status || "unknown",
           };
         }).filter(Boolean); // Remove any nulls
   
         // Append to existing state
         setMemberData((prev) => [...prev, ...memberDataList]);
-  
+
       } catch (error) {
         console.error("Error fetching mealplan requests and profiles:", error);
       }
@@ -273,7 +273,7 @@ const MealPlanScreen = () => {
             age: member.age,
             fitnessGoal: plan.fitness_goal,
             weightGoal: plan.weight_goal,
-            allergens: plan.allergens,
+            allergies: plan.allergies,
             status: plan.status,
           };
         }).filter(Boolean);
@@ -467,14 +467,14 @@ const MealPlanScreen = () => {
               </Text>
               {/* Render Member Requests List */}
               {memberData
-                .filter((request) => request.status === "in_progress") // ✅ only show in_progress
+                .filter((request) => (request.status === "in_progress" || request.status === "not_created")) // only show in_progress and not_created
                 .map((request) => (
                   <TouchableOpacity key={request.requesteeID}>
                     <MealPlanRequest 
                       memberName={request.requesteeName}
                       fitnessGoal={request.fitnessGoal}
                       weightGoal={request.weightGoal}
-                      allergens={request.allergens}
+                      allergies={request.allergies}
                       height={request.height}
                       weight={request.weight}
                       age={request.age}
@@ -491,8 +491,8 @@ const MealPlanScreen = () => {
               <Text style={styles.infoText}>{selectedMemberData?.fitnessGoal || 'No fitness goal'}</Text>
               <Text style={styles.infoTitle}>Weight Goal:</Text>
               <Text style={styles.infoText}>{weightGoal || 'No weight goal'}</Text>
-              <Text style={styles.infoTitle}>Allergen/s:</Text>
-              <Text style={styles.infoText}>{allergens || 'No allergens'}</Text>
+              <Text style={styles.infoTitle}>Allergies:</Text>
+              <Text style={styles.infoText}>{allergies || 'No allergies'}</Text>
 
               </View>
               <MealPlanForm

@@ -410,7 +410,7 @@ const WorkoutScreen = () => {
         Toast.show({
             type: 'error',
             text1: 'Request Failed',
-            text2: 'There was an error with your workout request.',
+            text2: 'There was an error with your workout request. Please check if you already have a pending request.',
             position: 'bottom',
         });
       }

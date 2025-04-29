@@ -54,7 +54,7 @@ interface MealPlan {
   protein: number;
   carbs: number;
   weight_goal: number;
-  allergens: string;
+  allergies: string;
   instructions: string;
   visibleTo: string;
   requestee_id: string;
@@ -78,7 +78,7 @@ const MealPlanScreen = () => {
   const [trainers, setTrainers] = useState<Trainer[]>([]); // State to store trainers
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
-  const [allergens, setAllergens] = useState(""); // State to store allergens
+  const [allergies, setAllergies] = useState(""); // State to store allergies
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
 
@@ -196,7 +196,7 @@ const MealPlanScreen = () => {
   }, []);    
 
   const handleSubmit = async () => {
-    if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
+    if (!trainer || !fitnessGoal || !weightGoal || !allergies) {
         Toast.show({
             type: 'error',
             text1: 'Missing Fields',
@@ -235,8 +235,6 @@ const MealPlanScreen = () => {
             age = 0
         } = profileData;
 
-        console.log("Token:", token);
-
         // Use the request_plan endpoint to request a new meal plan
         const requestResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/request_plan/`, {
             method: 'POST',
@@ -248,7 +246,7 @@ const MealPlanScreen = () => {
                 trainer_id: trainer, // Trainer ID is required
                 fitness_goal: fitnessGoal,
                 weight_goal: weightGoal,
-                allergens: allergens,
+                user_allergies: allergies,
                 height,
                 weight,
                 age,
@@ -274,7 +272,7 @@ const MealPlanScreen = () => {
         Toast.show({
             type: 'error',
             text1: 'Request Failed',
-            text2: 'There was an error with your meal plan request.',
+            text2: 'There was an error with your meal plan request. Please check if you already have a pending request.',
             position: 'bottom'
         });
       }
@@ -338,6 +336,8 @@ const MealPlanScreen = () => {
 
   const handleDelete = async () => {
     try {
+      const token = await AsyncStorage.getItem('authToken');
+
       // // Replace with actual API call
       const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}/`, {
         method: 'DELETE',
@@ -434,13 +434,13 @@ const MealPlanScreen = () => {
                   keyboardType="numeric"
                 />
 
-                <Text style={styles.requestHeaders}>Allergen/s</Text>
+                <Text style={styles.requestHeaders}>Allergies</Text>
                 <TextInput
-                  placeholder="Enter Your Allergen/s"
+                  placeholder="Enter Your Allergies"
                   placeholderTextColor={Colors.textSecondary}
                   style={styles.input}
-                  value={allergens}
-                  onChangeText={setAllergens}
+                  value={allergies}
+                  onChangeText={setAllergies}
                 />
 
                 <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>

@@ -26,7 +26,7 @@ interface MealPlan {
     protein: number;
     carbs: number;
     weight_goal: string;
-    allergens: string;
+    allergies: string;
     instructions: string;
     status: string;
 }

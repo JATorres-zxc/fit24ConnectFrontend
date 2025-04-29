@@ -132,8 +132,8 @@ const WorkoutScreen = () => {
   
         const requestsData = await requestsResponse.json();
   
-        // Filter workout plans with 'pending' status
-        const pendingRequests = requestsData.filter((request: any) => request.status === "pending");
+        // Filter workout plans with 'pending' or 'created' status
+        const pendingRequests = requestsData.filter((request: any) => (request.status === "pending" || request.status === "created"));
   
         // Extract requestee IDs from pending workout plans
         const requesteeIDs = pendingRequests.map((request: any) => request.requestee);
@@ -168,8 +168,7 @@ const WorkoutScreen = () => {
             age: profileData?.age || "N/A",
             fitnessGoal: request?.fitness_goal || "Not Specified",
             weightGoal: request?.weight_goal || "Not Specified",
-            allergens: request?.allergens || "None",
-            status: request?.status || "unknown", // ✅ Add status here for later filtering
+            status: request?.status || "unknown", // Add status here for later filtering
           };
         }).filter((data: any) => data !== null);
   
@@ -485,7 +484,7 @@ const WorkoutScreen = () => {
               </Text>
               {/* Render Member Requests List */}
               {memberData
-                .filter((request) => request.status === "pending")
+                .filter((request) => (request.status === "pending" || request.status === "created"))
                 .map((request) => (
                   <TouchableOpacity key={request.requesteeID}>
                     <WorkoutRequest 
