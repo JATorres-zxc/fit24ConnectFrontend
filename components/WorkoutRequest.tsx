@@ -7,15 +7,14 @@ import { Colors } from '@/constants/Colors';
 interface WorkoutRequestProps {
     memberName: string;
     fitnessGoal: string;
-    weightGoal: string;
-    allergens: string;
+    intensityLevel: string;
     height: string;
     weight: string;
     age: string;
     onEditPress: () => void;
 }
 
-const WorkoutRequest: React.FC<WorkoutRequestProps> = ({ memberName, fitnessGoal, weightGoal, allergens, height, weight, age, onEditPress }) => {
+const WorkoutRequest: React.FC<WorkoutRequestProps> = ({ memberName, fitnessGoal, intensityLevel, height, weight, age, onEditPress }) => {
     return (
         <ScrollView>
             <View style={styles.container}>
@@ -30,10 +29,8 @@ const WorkoutRequest: React.FC<WorkoutRequestProps> = ({ memberName, fitnessGoal
                         <View style={styles.column}>
                             <Text style={styles.infoTitle}>Fitness Goal:</Text>
                             <Text style={styles.infoText}>{fitnessGoal}</Text>
-                            <Text style={styles.infoTitle}>Weight Goal:</Text>
-                            <Text style={styles.infoText}>{weightGoal}</Text>
-                            <Text style={styles.infoTitle}>Allergen/s:</Text>
-                            <Text style={styles.infoText}>{allergens}</Text>
+                            <Text style={styles.infoTitle}>Intensity Level:</Text>
+                            <Text style={styles.infoText}>{intensityLevel}</Text>
                         </View>
                         <View style={styles.column}>
                             <Text style={styles.infoTitle}>Height:</Text>

@@ -51,8 +51,8 @@ interface SelectedMemberData {
   weight: string;
   age: string;
   fitnessGoal: string;
-  weightGoal: string;
-  allergens: string;
+  intensityLevel: string;
+  status: string;
 }
 
 const API_BASE_URL =
@@ -80,8 +80,8 @@ const WorkoutScreen = () => {
         weight: '65',
         age: '25',
         fitnessGoal: 'Gain Weight',
-        weightGoal: '60',
-        allergens: 'Peanuts, Dairy',
+        intensityLevel: 'Strong',
+        status: 'pending',
       },
       {
         requesteeID: '3',
@@ -90,8 +90,8 @@ const WorkoutScreen = () => {
         weight: '55',
         age: '28',
         fitnessGoal: 'Lose Fat',
-        weightGoal: '50',
-        allergens: 'Shellfish',
+        intensityLevel: 'Weak',
+        status: 'pending',
       },
       // You can add more members in this list as needed
     ]);
@@ -108,11 +108,6 @@ const WorkoutScreen = () => {
       feedbacks: [],
       member_id: selectedMemberData?.requesteeID || '', // Added member_id property
     });
-
-  // Add this useEffect to monitor changes to newWorkout and log the visibility
-  useEffect(() => {
-    console.log("Visibility of this workout plan:", newWorkout?.visibleTo || "Not Set");
-  }, [newWorkout?.visibleTo]); // Only trigger when visibleTo changes
 
   // Fetch Workouts for Trainer
   
@@ -136,14 +131,14 @@ const WorkoutScreen = () => {
         }
   
         const requestsData = await requestsResponse.json();
-
-        // Filter meal plans with 'in_progress' status
-        const inProgressRequests = requestsData.filter((request: any) => request.status === "pending");
-
-        // Extract requestee IDs from in-progress meal plans
-        const requesteeIDs = inProgressRequests.map((request: any) => request.requestee);
-
-        // Fetch all members first
+  
+        // Filter workout plans with 'pending' status
+        const pendingRequests = requestsData.filter((request: any) => request.status === "pending");
+  
+        // Extract requestee IDs from pending workout plans
+        const requesteeIDs = pendingRequests.map((request: any) => request.requestee);
+  
+        // Fetch all members
         const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
           method: "GET",
           headers: {
@@ -158,20 +153,13 @@ const WorkoutScreen = () => {
   
         const allMembers = await allMembersResponse.json();
   
-        // Map to combine the requests and profiles
+        // Combine member and request data
         const memberDataList = requesteeIDs.map((requesteeID: string) => {
           const profileData = allMembers.find((member: any) => String(member.id) === String(requesteeID));
+          if (!profileData) return null;
   
-          if (!profileData) {
-            return null; // If no matching profile found, return null
-          }
-          
-          // Find the matching request for this member
-          const request = inProgressRequests.find((request: any) => {
-            return request.requestee === profileData.id;
-          });
-
-          // Return combined profile and request data
+          const request = pendingRequests.find((req: any) => req.requestee === profileData.id);
+  
           return {
             requesteeID: request?.requestee.toString() || "Unknown",
             requesteeName: profileData?.full_name || "Unknown",
@@ -181,19 +169,20 @@ const WorkoutScreen = () => {
             fitnessGoal: request?.fitness_goal || "Not Specified",
             weightGoal: request?.weight_goal || "Not Specified",
             allergens: request?.allergens || "None",
+            status: request?.status || "unknown", // ✅ Add status here for later filtering
           };
-        }).filter((data: any) => data !== null); // Filter out null values (if any member had no matching profile)
+        }).filter((data: any) => data !== null);
   
-        // Append to previous data (assuming setMemberData updates the state)
+        // Update state
         setMemberData((prev) => [...prev, ...memberDataList]);
-        
+  
       } catch (error) {
         console.error("Error fetching workout requests and profiles:", error);
       }
     };
   
     fetchWorkoutRequests();
-  }, []);  
+  }, []);    
   
   // Fetching Workout from API
   
@@ -263,8 +252,6 @@ const WorkoutScreen = () => {
           const filteredPrev = prevWorkouts.filter((w) => !existingIds.has(w.id));
           return [...filteredPrev, ...formattedWorkouts];
         });        
-
-        console.log("Formatted workouts:", workouts);
   
       } catch (error) {
         console.error("Error fetching workout:", error);
@@ -497,19 +484,20 @@ const WorkoutScreen = () => {
                 create a workout plan visible to everyone.
               </Text>
               {/* Render Member Requests List */}
-              {memberData.map((request) => (
-                <TouchableOpacity key={request.requesteeID}>
-                  <WorkoutRequest 
-                    memberName={request.requesteeName}
-                    fitnessGoal={request.fitnessGoal}
-                    weightGoal={request.weightGoal}
-                    allergens={request.allergens}
-                    height={request.height}
-                    weight={request.weight}
-                    age={request.age}
-                    onEditPress={() => handleRequestSelect(request)} // Trigger edit for the selected request
-                  />
-                </TouchableOpacity>
+              {memberData
+                .filter((request) => request.status === "pending")
+                .map((request) => (
+                  <TouchableOpacity key={request.requesteeID}>
+                    <WorkoutRequest 
+                      memberName={request.requesteeName}
+                      fitnessGoal={request.fitnessGoal}
+                      intensityLevel={request.intensityLevel}
+                      height={request.height}
+                      weight={request.weight}
+                      age={request.age}
+                      onEditPress={() => handleRequestSelect(request)}
+                    />
+                  </TouchableOpacity>
               ))}
           </View>
             ) : viewState === "createWO" ? (

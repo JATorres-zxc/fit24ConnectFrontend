@@ -63,6 +63,7 @@ interface SelectedMemberData {
   fitnessGoal: string;
   weightGoal: string;
   allergens: string;
+  status: string;
 }
 
 const API_BASE_URL =
@@ -96,6 +97,7 @@ const MealPlanScreen = () => {
       fitnessGoal: 'Gain Weight',
       weightGoal: '60',
       allergens: 'Peanuts, Dairy',
+      status: 'in_progress',
     },
     {
       requesteeID: '3',
@@ -106,6 +108,7 @@ const MealPlanScreen = () => {
       fitnessGoal: 'Lose Fat',
       weightGoal: '50',
       allergens: 'Shellfish',
+      status: 'in_progress',
     },
     // You can add more members in this list as needed
   ]);
@@ -135,7 +138,8 @@ const MealPlanScreen = () => {
     const fetchMealplanRequests = async () => {
       try {
         const token = await AsyncStorage.getItem("authToken");
-        if (!token) throw new Error("Token not found");
+        const userID = await AsyncStorage.getItem("userID");
+        if (!token || !userID) throw new Error("Token or UserID not found");
   
         // Fetch all meal plan requests
         const requestsResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/`, {
@@ -151,14 +155,18 @@ const MealPlanScreen = () => {
         }
   
         const requestsData = await requestsResponse.json();
-
-        // Filter meal plans with 'in_progress' status
-        const inProgressRequests = requestsData.filter((request: any) => request.status === "completed");
-        
+  
+        // Filter meal plans with 'in_progress' status AND assigned to current trainer
+        const inProgressRequests = requestsData.filter(
+          (request: any) =>
+            request.status === "in_progress" &&
+            request.trainer_id?.toString() === userID
+        );
+  
         // Extract requestee IDs from in-progress meal plans
         const requesteeIDs = inProgressRequests.map((request: any) => request.requestee);
-
-        // Fetch all members first
+  
+        // Fetch all members
         const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
           method: "GET",
           headers: {
@@ -172,21 +180,17 @@ const MealPlanScreen = () => {
         }
   
         const allMembers = await allMembersResponse.json();
-        
-        // Map to combine the requests and profiles
+  
+        // Combine request and member profile data
         const memberDataList = requesteeIDs.map((requesteeID: string) => {
           const profileData = allMembers.find((member: any) => String(member.id) === String(requesteeID));
-        
-          if (!profileData) {
-            return null; // If no matching profile found, return null
-          }
-          
-          // Find the matching request for this member
-          const request = inProgressRequests.find((request: any) => {
-            return request.requestee === profileData.id;
-          });
-          
-          // Return combined profile and request data
+  
+          if (!profileData) return null;
+  
+          const request = inProgressRequests.find(
+            (req: any) => req.requestee === profileData.id
+          );
+  
           return {
             requesteeID: request?.requestee.toString() || "Unknown",
             requesteeName: profileData?.full_name || "Unknown",
@@ -196,29 +200,28 @@ const MealPlanScreen = () => {
             fitnessGoal: request?.fitness_goal || "Not Specified",
             weightGoal: request?.weight_goal || "Not Specified",
             allergens: request?.allergens || "None",
+            status: request?.status || "unknown",
           };
-        }).filter((data: any) => data !== null); // Filter out null values (if any member had no matching profile)
-
-        console.log("Member Data List:", memberDataList); // Debugging log
-
-        // Append to previous data (assuming setMemberData updates the state)
+        }).filter(Boolean); // Remove any nulls
+  
+        // Append to existing state
         setMemberData((prev) => [...prev, ...memberDataList]);
-
+  
       } catch (error) {
         console.error("Error fetching mealplan requests and profiles:", error);
       }
     };
   
     fetchMealplanRequests();
-  }, []); // Empty dependency array ensures this effect runs once when the component mounts
-  
+  }, []);
+    
   // Fetching Meal Plan from API
   
   useEffect(() => {
     const fetchMealPlans = async () => {
       try {
         const token = await AsyncStorage.getItem('authToken');
-        const userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+        const userID = await AsyncStorage.getItem('userID');
   
         const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/`, {
           headers: {
@@ -233,22 +236,58 @@ const MealPlanScreen = () => {
   
         const mealPlansData = await response.json();
   
-        // Filter meal plans where trainer_id matches userID
-        const trainerMealPlans = mealPlansData.filter(
-          (plan: any) => (
-            // plan.status === "in_progress" && // Only include in_progress meal plans
-            plan.trainer_id.toString() === userID
-          )
+        // Filter meal plans assigned to current trainer and are "completed"
+        const completedPlans = mealPlansData.filter(
+          (plan: any) =>
+            plan.trainer_id.toString() === userID?.toString() &&
+            plan.status === "completed"
         );
+        
+        // Store completed meal plans separately
+        setMealPlans(completedPlans);
+
+        // Fetch members
+        const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
   
-        setMealPlans(trainerMealPlans); // Store only meal plans where trainer_id === userID
+        if (!allMembersResponse.ok) {
+          throw new Error(`Failed to fetch members. Status: ${allMembersResponse.status}`);
+        }
+  
+        const allMembers = await allMembersResponse.json();
+  
+        // Match each completed plan with its member profile
+        const completedMemberData = completedPlans.map((plan: any) => {
+          const member = allMembers.find((m: any) => m.id === plan.requestee);
+          if (!member) return null;
+  
+          return {
+            requesteeID: plan.requestee.toString(),
+            requesteeName: member.full_name || "Unknown",
+            height: member.height,
+            weight: member.weight,
+            age: member.age,
+            fitnessGoal: plan.fitness_goal,
+            weightGoal: plan.weight_goal,
+            allergens: plan.allergens,
+            status: plan.status,
+          };
+        }).filter(Boolean);
+  
+        // Append completed member data to current list
+        setMemberData((prev) => [...prev, ...completedMemberData]);
+  
       } catch (error) {
-        console.error('Error fetching meal plans:', error);
+        console.error('Error fetching completed meal plans:', error);
       }
     };
   
     fetchMealPlans();
-  }, []);    
+  }, []);  
 
   const handlePublish = async (currentMealPlan?: MealPlan) => {
     if (!currentMealPlan || !currentMealPlan.meals || currentMealPlan.meals.length === 0) {
@@ -392,8 +431,6 @@ const MealPlanScreen = () => {
     const member = memberData.find(
       (data) => data.requesteeID.toString() === selectedMealPlan.member_id.toString()
     );
-    
-    console.log("Requestee ID:", selectedMealPlan.member_id);
 
     // Set selected member data for this meal plan
     if (member) {
@@ -429,19 +466,21 @@ const MealPlanScreen = () => {
                 these Requestees will only set that meal plan to be visible to them.
               </Text>
               {/* Render Member Requests List */}
-              {memberData.map((request) => (
-                <TouchableOpacity key={request.requesteeID}>
-                  <MealPlanRequest 
-                    memberName={request.requesteeName}
-                    fitnessGoal={request.fitnessGoal}
-                    weightGoal={request.weightGoal}
-                    allergens={request.allergens}
-                    height={request.height}
-                    weight={request.weight}
-                    age={request.age}
-                    onEditPress={() => handleRequestSelect(request)} // Trigger edit for the selected request
-                  />
-                </TouchableOpacity>
+              {memberData
+                .filter((request) => request.status === "in_progress") // ✅ only show in_progress
+                .map((request) => (
+                  <TouchableOpacity key={request.requesteeID}>
+                    <MealPlanRequest 
+                      memberName={request.requesteeName}
+                      fitnessGoal={request.fitnessGoal}
+                      weightGoal={request.weightGoal}
+                      allergens={request.allergens}
+                      height={request.height}
+                      weight={request.weight}
+                      age={request.age}
+                      onEditPress={() => handleRequestSelect(request)}
+                    />
+                  </TouchableOpacity>
               ))}
             </View>
             ) : viewState === "createMP" ? (
