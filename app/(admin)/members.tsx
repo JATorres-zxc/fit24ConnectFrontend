@@ -1,4 +1,4 @@
-import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList, TouchableWithoutFeedback } from 'react-native';
+import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList, TouchableWithoutFeedback, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
 import { AntDesign, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -6,6 +6,7 @@ import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // mock members data
 const initialMembers = [
@@ -22,20 +23,54 @@ const initialMembers = [
 ];
 
 type Member = {
-  memberID: string;
-  name: string;
+  id: string;
+  full_name: string;
 };
 
 export default function MembersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [members, setMembers] = useState<Member[]>(initialMembers);
+  const [members, setMembers] = useState<Member[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [trainers, setTrainers] = useState<Member[]>([]);
+  
+  // 👇 Fetch the trainer list from the API
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const API_BASE_URL = 
+          Platform.OS === 'web'
+            ? 'http://127.0.0.1:8000'
+            : 'http://192.168.1.9:8000';
+
+        const token = await AsyncStorage.getItem('authToken');
+        const response = await fetch(`${API_BASE_URL}/api/account/members/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('API Response:', data);
+
+          // Assuming your API returns something like [{ name: 'John', trainerId: 1 }, ...]
+          setMembers(data);
+        } else {
+          console.error('Failed to fetch members', await response.text());
+        }
+      } catch (error) {
+        console.error('Error fetching members:', error);
+      }
+    };
+
+    fetchMembers();
+  }, []);
 
   useEffect(() => {
-    const filtered = initialMembers.filter(member =>
-      member.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const filtered = members.filter(member =>
+      member.full_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setMembers(filtered);
   }, [searchQuery]);
@@ -44,14 +79,14 @@ export default function MembersScreen() {
     if (selectedMember) {
       // Add to trainers if not already there
       setTrainers(prev => {
-        if (!prev.find(t => t.memberID === selectedMember.memberID)) {
+        if (!prev.find(t => t.id === selectedMember.id)) {
           return [...prev, selectedMember];
         }
         return prev;
       });
   
       // Remove from members list
-      setMembers(prev => prev.filter(m => m.memberID !== selectedMember.memberID));
+      setMembers(prev => prev.filter(m => m.id !== selectedMember.id));
       
       setModalVisible(false);
       setSelectedMember(null);
@@ -77,12 +112,12 @@ export default function MembersScreen() {
 
       <FlatList
         data={members}
-        keyExtractor={(item) => item.memberID}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.card}>
             {/* Left Section - Member Name */}
             <View style={styles.leftSection}>
-              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.name}>{item.full_name}</Text>
             </View>
 
             {/* Right Section - Icons */}
@@ -126,7 +161,7 @@ export default function MembersScreen() {
                 <Text style={styles.modalText}>
                   You're going to assign{' '}
                   <Text style={styles.selectedMember}>
-                    "{selectedMember?.name}"
+                    "{selectedMember?.full_name}"
                   </Text> 
                   {' '}as a trainer. Are you sure?
                 </Text>
