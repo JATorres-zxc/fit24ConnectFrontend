@@ -4,7 +4,7 @@ import { useLocalSearchParams } from "expo-router";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import Header from "@/components/HomeHeader";
+import Header from "@/components/TrainerHomeHeader";
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
 
 import { announcements } from "@/context/announcements";
@@ -23,7 +23,7 @@ export default function Home() {
         const API_BASE_URL = 
           Platform.OS === 'web'
             ? 'http://127.0.0.1:8000' // Web uses localhost
-            : 'http://172.16.15.51:8000'; // Mobile uses local network IP (adjust as needed)
+            : 'http://192.168.1.5:8000'; // Mobile uses local network IP (adjust as needed)
 
         const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/announcement/`, {

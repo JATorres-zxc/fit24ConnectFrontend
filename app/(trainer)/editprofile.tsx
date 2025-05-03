@@ -10,7 +10,7 @@ import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 
-import Header from '@/components/EditProfileHeader';
+import Header from '@/components/TrainerEditProfileHeader';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
@@ -26,6 +26,7 @@ interface EditableProfile {
   email: string;
   address: string;
   phoneNo: string;
+  experience: string;
 }
 
 type Profile = ProfileBase & EditableProfile;
@@ -40,6 +41,7 @@ export default function EditProfileScreen() {
     email: '',
     address: '',
     phoneNo: '',
+    experience: '',
   });
 
   const [formValues, setFormValues] = useState<Profile>(originalProfile);
@@ -77,6 +79,7 @@ export default function EditProfileScreen() {
         email: data.email || '',
         address: data.address || '',
         phoneNo: data.phone_number || '',
+        experience: data.experience || '',
       };
   
       setOriginalProfile(profileData);
@@ -112,14 +115,16 @@ export default function EditProfileScreen() {
       fullName: originalProfile.fullName,
       email: originalProfile.email,
       address: originalProfile.address,
-      phoneNo: originalProfile.phoneNo
+      phoneNo: originalProfile.phoneNo,
+      experience: originalProfile.experience,
     };
     
     const editableCurrent = {
       fullName: formValues.fullName,
       email: formValues.email,
       address: formValues.address,
-      phoneNo: formValues.phoneNo
+      phoneNo: formValues.phoneNo,
+      experience: formValues.experience,
     };
   
     setHasUnsavedChanges(
@@ -302,6 +307,16 @@ export default function EditProfileScreen() {
                 onChangeText={text => handleInputChange('phoneNo', text)}
                 keyboardType="phone-pad"
                 placeholder={formValues.phoneNo}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Experience</Text>
+              <TextInput
+                style={styles.input}
+                value={formValues.experience}
+                onChangeText={text => handleInputChange('experience', text)}
+                placeholder={formValues.experience}
               />
             </View>
           </View>
