@@ -204,8 +204,14 @@ const MealPlanScreen = () => {
           };
         }).filter(Boolean); // Remove any nulls
   
-        // Append to existing state
-        setMemberData((prev) => [...prev, ...memberDataList]);
+        // Avoid duplicates by checking if requesteeID already exists
+        setMemberData((prev) => {
+          const existingIDs = prev.map((member) => member.requesteeID);
+          const filteredNewData = memberDataList.filter(
+            (newMember: any) => !existingIDs.includes(newMember.requesteeID)
+          );
+          return [...prev, ...filteredNewData];
+        });
 
       } catch (error) {
         console.error("Error fetching mealplan requests and profiles:", error);
@@ -278,8 +284,14 @@ const MealPlanScreen = () => {
           };
         }).filter(Boolean);
   
-        // Append completed member data to current list
-        setMemberData((prev) => [...prev, ...completedMemberData]);
+        // Avoid duplicates by checking if requesteeID already exists
+        setMemberData((prev) => {
+          const existingIDs = prev.map((member) => member.requesteeID);
+          const filteredNewData = completedMemberData.filter(
+            (newMember: any) => !existingIDs.includes(newMember.requesteeID)
+          );
+          return [...prev, ...filteredNewData];
+        });
   
       } catch (error) {
         console.error('Error fetching completed meal plans:', error);

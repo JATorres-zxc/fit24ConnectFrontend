@@ -172,8 +172,14 @@ const WorkoutScreen = () => {
           };
         }).filter((data: any) => data !== null);
   
-        // Update state
-        setMemberData((prev) => [...prev, ...memberDataList]);
+        // Avoid duplicates by checking if requesteeID already exists
+        setMemberData((prev) => {
+          const existingIDs = prev.map((member) => member.requesteeID);
+          const filteredNewData = memberDataList.filter(
+            (newMember: any) => !existingIDs.includes(newMember.requesteeID)
+          );
+          return [...prev, ...filteredNewData];
+        });
   
       } catch (error) {
         console.error("Error fetching workout requests and profiles:", error);
