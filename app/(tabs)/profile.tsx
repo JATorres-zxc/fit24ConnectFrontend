@@ -67,8 +67,8 @@ export default function ProfileScreen() {
         membershipStatus: data.membership_status || '',
         fullName: data.full_name || '',
         email: data.email || '',
-        address: data.address || '',
-        phoneNo: data.phone_number || '',
+        address: data.complete_address || '',
+        phoneNo: data.contact_number || '',
       });
 
       // Cache the profile data locally
@@ -143,7 +143,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.username}>{profile.username}</Text>
+          <Text style={styles.username}>{profile.fullName.split(' ')[0] || ''}</Text>
           <Text style={styles.membership}>
             {profile.membershipType}: {' '}
             <Text style={{ fontFamily: Fonts.mediumItalic }}>{profile.membershipStatus}</Text>

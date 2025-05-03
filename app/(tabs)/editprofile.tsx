@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { 
   Text, View, StyleSheet, Image, 
   TextInput, TouchableOpacity, Platform, 
-  ScrollView, KeyboardAvoidingView, TouchableWithoutFeedback, 
+  ScrollView, KeyboardAvoidingView,
   Keyboard,
-  ActivityIndicator} from 'react-native';
+  ActivityIndicator,
+  Pressable
+} from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
@@ -24,8 +26,8 @@ interface EditableProfile {
   username: string;
   fullName: string;
   email: string;
-  address: string;
-  phoneNo: string;
+  complete_address: string;
+  contact_number: string;
 }
 
 type Profile = ProfileBase & EditableProfile;
@@ -38,20 +40,26 @@ export default function EditProfileScreen() {
     membershipStatus: '',
     fullName: '',
     email: '',
-    address: '',
-    phoneNo: '',
+    complete_address: '',
+    contact_number: '',
   });
 
   const [formValues, setFormValues] = useState<Profile>(originalProfile);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // References for TextInput fields to improve focus management
+  const nameInputRef = useRef(null);
+  const emailInputRef = useRef(null);
+  const addressInputRef = useRef(null);
+  const phoneInputRef = useRef(null);
 
   const fetchProfile = async () => {
     try {
       const API_BASE_URL = 
         Platform.OS === 'web'
           ? 'http://127.0.0.1:8000'
-          : 'http://192.168.254.199:8000';
+          : 'http://192.168.1.5:8000';
   
       const token = await AsyncStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
@@ -68,15 +76,15 @@ export default function EditProfileScreen() {
       
       const profileData = {
         image: data.image 
-          ? { uri: `${API_BASE_URL}${data.image}` } // Adjust based on your image URL structure
+          ? { uri: `${API_BASE_URL}${data.image}` }
           : require("@/assets/images/icon.png"),
         username: data.username || '',
         membershipType: data.membership_type || '',
         membershipStatus: data.membership_status || '',
         fullName: data.full_name || '',
         email: data.email || '',
-        address: data.address || '',
-        phoneNo: data.phone_number || '',
+        complete_address: data.complete_address || '',
+        contact_number: data.contact_number || '',
       };
   
       setOriginalProfile(profileData);
@@ -111,15 +119,15 @@ export default function EditProfileScreen() {
     const editableOriginal = {
       fullName: originalProfile.fullName,
       email: originalProfile.email,
-      address: originalProfile.address,
-      phoneNo: originalProfile.phoneNo
+      complete_address: originalProfile.complete_address,
+      contact_number: originalProfile.contact_number
     };
     
     const editableCurrent = {
       fullName: formValues.fullName,
       email: formValues.email,
-      address: formValues.address,
-      phoneNo: formValues.phoneNo
+      complete_address: formValues.complete_address,
+      contact_number: formValues.contact_number
     };
   
     setHasUnsavedChanges(
@@ -150,8 +158,20 @@ export default function EditProfileScreen() {
       return;
     }
     
-    if (!formValues.fullName || !formValues.email || !formValues.address || !formValues.phoneNo) {
-      showToast('Please fill out all details before saving.');
+    if (!formValues.fullName) {
+      showToast('Please fill out Name before saving.');
+      return;
+    }
+    else if (!formValues.email) {
+      showToast('Please fill out Email before saving.');
+      return;
+    }
+    else if (!formValues.complete_address) {
+      showToast('Please fill out Address before saving.');
+      return;
+    }
+    else if (!formValues.contact_number) {
+      showToast('Please fill out Phone Number before saving.');
       return;
     }
   
@@ -167,13 +187,12 @@ export default function EditProfileScreen() {
       const profileData = {
         full_name: formValues.fullName,
         email: formValues.email,
-        address: formValues.address,
-        phone_number: formValues.phoneNo,
-        // Add other fields as needed by your API
+        complete_address: formValues.complete_address,
+        contact_number: formValues.contact_number,
       };
   
       // Make PATCH request to update profile
-      const response = await fetch(`${API_BASE_URL}/api/profilee/update/`, {
+      const response = await fetch(`${API_BASE_URL}/api/profilee/profile/update/`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -231,94 +250,135 @@ export default function EditProfileScreen() {
     );
   }
 
-  return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView 
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-      >
-        <Header onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
+  // Improved input rendering function with refs
+  const renderInput = (
+    label: string, 
+    value: string, 
+    fieldName: keyof EditableProfile, 
+    ref: any,
+    keyboardType: 'default' | 'email-address' | 'phone-pad' = 'default',
+    autoCapitalize: 'none' | 'sentences' | 'words' | 'characters' = 'none',
+    returnKeyType: 'next' | 'done' = 'next',
+    onSubmitEditing?: () => void
+  ) => {
+    return (
+      <View style={styles.inputContainerOuter}>
+        <Text style={styles.inputLabel}>{label}</Text>
+        <Pressable 
+          style={styles.inputWrapper}
+          onPress={() => ref.current && ref.current.focus()}
+        >
+          <TextInput
+            ref={ref}
+            style={styles.textInput}
+            value={value}
+            onChangeText={(text) => handleInputChange(fieldName, text)}
+            keyboardType={keyboardType}
+            autoCapitalize={autoCapitalize}
+            placeholderTextColor="#aaa"
+            returnKeyType={returnKeyType}
+            onSubmitEditing={onSubmitEditing}
+            blurOnSubmit={returnKeyType === 'done'}
+          />
+        </Pressable>
+      </View>
+    );
+  };
 
-        <ScrollView style={styles.scrollViewCont}>
+  // Function to dismiss keyboard when tapping outside inputs
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
+  return (
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+    >
+      <Header onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
+
+      <ScrollView 
+        style={styles.scrollViewCont}
+        contentContainerStyle={{paddingBottom: 20}}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Background pressable to dismiss keyboard when tapping empty areas */}
+        <Pressable style={styles.backgroundPressable} onPress={dismissKeyboard}>
           <View style={styles.profileContainer}>
             <View style={styles.imageContainer}>
-            <Image 
-              source={typeof formValues.image === "string" ? { uri: formValues.image } : formValues.image} 
-              style={styles.profileImage} 
-            />
+              <Image 
+                source={typeof formValues.image === "string" ? { uri: formValues.image } : formValues.image} 
+                style={styles.profileImage} 
+              />
             </View>
 
-            <View style={styles.textContainer}>
-              <TextInput
-                style={styles.usernameInput}
-                value={formValues.username}
-                onChangeText={text => handleInputChange('username', text)}
-                placeholder={formValues.username}
-              />
-              <Text style={styles.usernameLabel}>
-                Your Username
-              </Text>
+            <View style={styles.usernameContainer}>
+              <Text style={styles.username}>{formValues.fullName.split(' ')[0] || ''}</Text>
+              <Text style={styles.usernameLabel}>Your Username</Text>
             </View>
           </View>
         
-          <View style={styles.detailsContainer}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Full Name</Text>
-              <TextInput
-                style={styles.input}
-                value={formValues.fullName}
-                onChangeText={text => handleInputChange('fullName', text)}
-                placeholder={formValues.fullName}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={formValues.email}
-                onChangeText={text => handleInputChange('email', text)}
-                keyboardType="email-address"
-                placeholder={formValues.email}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Address</Text>
-              <TextInput
-                style={styles.input}
-                value={formValues.address}
-                onChangeText={text => handleInputChange('address', text)}
-                placeholder={formValues.address}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Phone Number</Text>
-              <TextInput
-                style={styles.input}
-                value={formValues.phoneNo}
-                onChangeText={text => handleInputChange('phoneNo', text)}
-                keyboardType="phone-pad"
-                placeholder={formValues.phoneNo}
-              />
-            </View>
+          <View style={styles.formContainer}>
+            {renderInput(
+              'Full Name', 
+              formValues.fullName, 
+              'fullName', 
+              nameInputRef,
+              'default', 
+              'words', 
+              'next', 
+              () => emailInputRef.current && emailInputRef.current.focus()
+            )}
+            
+            {renderInput(
+              'Email', 
+              formValues.email, 
+              'email', 
+              emailInputRef,
+              'email-address', 
+              'none', 
+              'next', 
+              () => addressInputRef.current && addressInputRef.current.focus()
+            )}
+            
+            {renderInput(
+              'Address', 
+              formValues.complete_address, 
+              'complete_address', 
+              addressInputRef,
+              'default', 
+              'sentences', 
+              'next', 
+              () => phoneInputRef.current && phoneInputRef.current.focus()
+            )}
+            
+            {renderInput(
+              'Phone Number', 
+              formValues.contact_number, 
+              'contact_number', 
+              phoneInputRef,
+              'phone-pad', 
+              'none', 
+              'done', 
+              () => Keyboard.dismiss()
+            )}
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={() => router.push('/editpassword')}>
-              <Text style={styles.buttonText}>
-                Edit Password
-              </Text>
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={() => router.push('/editpassword')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.buttonText}>Edit Password</Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
-          
-        <Toast />
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
-    
+        </Pressable>
+      </ScrollView>
+        
+      <Toast />
+    </KeyboardAvoidingView>
   );
 }
 
@@ -327,6 +387,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.bg,
     alignItems: 'center',
+  },
+  backgroundPressable: {
+    flex: 1,
   },
   imageContainer: {
     position: 'relative',
@@ -352,50 +415,61 @@ const styles = StyleSheet.create({
   usernameInput: {
     fontFamily: Fonts.regular,
     fontSize: 20,
+    textAlign: 'center',
   },
   scrollViewCont: {
     width: '85%',
   },
-  detailsContainer: {
-    flex: 1,
-    padding: 10,
-  },
-  inputGroup: {
-    position: 'relative',
-    marginBottom: 25,
-  },
-  label: {
-    position: 'absolute',
-    top: -10,
-    left: 15, 
-    backgroundColor: Colors.bg, 
-    paddingHorizontal: 5,
-    fontFamily: Fonts.regular,
-    fontSize: 14,
-    zIndex: 1,
-  },
-  input: {
-    fontFamily: Fonts.regular,
-    fontSize: 16,
-    paddingVertical: 10,
-    paddingLeft: 20,
-    borderWidth: 1,
-    borderRadius: 8,
-    height: 50,
-    color: Colors.textSecondary,
-  },
   buttonContainer: {
     alignItems: 'center',
+    marginTop: 10,
   },
   button: {
     backgroundColor: Colors.gold,
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
+    width: '50%',
   },
   buttonText: {
     fontFamily: Fonts.regular,
     fontSize: 14,
     color: Colors.white,
+  },
+  usernameContainer: {
+    alignItems: 'center',
+    marginTop: 15,
+  },
+  username: {
+    fontFamily: Fonts.regular,
+    fontSize: 20,
+    color: '#333',
+  },
+  formContainer: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  inputContainerOuter: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+    marginBottom: 8,
+    color: Colors.textSecondary,
+  },
+  inputWrapper: {
+    width: '100%',
+  },
+  textInput: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+    backgroundColor: '#fff',
+    color: '#333',
   },
 });
