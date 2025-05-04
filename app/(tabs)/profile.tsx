@@ -15,6 +15,9 @@ interface Profile {
   membershipStatus: string,
   fullName: string,
   email: string,
+  age: string,
+  height: string,
+  weight: string,
   address: string,
   phoneNo: string,
 }
@@ -27,6 +30,9 @@ export default function ProfileScreen() {
     membershipStatus: '',
     fullName: '',
     email: '',
+    age: '',
+    height: '',
+    weight: '',
     address: '',
     phoneNo: '',
   });
@@ -41,7 +47,7 @@ export default function ProfileScreen() {
       const API_BASE_URL = 
         Platform.OS === 'web'
           ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.5:8000';
+          : 'http://192.168.1.11:8000';
 
       const token = await AsyncStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
@@ -67,6 +73,9 @@ export default function ProfileScreen() {
         membershipStatus: data.membership_status || '',
         fullName: data.full_name || '',
         email: data.email || '',
+        age: data.age || '',
+        height: data.height || '',
+        weight: data.weight || '',
         address: data.complete_address || '',
         phoneNo: data.contact_number || '',
       });
@@ -163,6 +172,24 @@ export default function ProfileScreen() {
           <View style={styles.field}>
             <Text style={styles.label}>Email</Text>
             <Text style={styles.value}>{profile.email}</Text>
+          </View>
+
+          {/* Age Details*/}
+          <View style={styles.field}>
+            <Text style={styles.label}>Age</Text>
+            <Text style={styles.value}>{profile.age}</Text>
+          </View>
+
+          {/* Height Details*/}
+          <View style={styles.field}>
+            <Text style={styles.label}>Height</Text>
+            <Text style={styles.value}>{profile.height} cm</Text>
+          </View>
+
+          {/* Weight Details*/}
+          <View style={styles.field}>
+            <Text style={styles.label}>Weight</Text>
+            <Text style={styles.value}>{profile.weight} kg</Text>
           </View>
 
           {/* Address Details*/}

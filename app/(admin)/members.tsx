@@ -8,20 +8,6 @@ import { Fonts } from '@/constants/Fonts';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// mock members data
-const initialMembers = [
-  { memberID: "1", name: 'John' },
-  { memberID: "2", name: 'Alexis' },
-  { memberID: "3", name: 'Ezra' },
-  { memberID: "4", name: 'Ruel' },
-  { memberID: "5", name: 'Matthew' },
-  { memberID: "6", name: 'Samuel' },
-  { memberID: "7", name: 'Mark' },
-  { memberID: "8", name: 'Paul' },
-  { memberID: "9", name: 'Andres' },
-  { memberID: "10", name: 'Lovely' },
-];
-
 type Member = {
   id: string;
   full_name: string;
@@ -41,7 +27,7 @@ export default function MembersScreen() {
         const API_BASE_URL = 
           Platform.OS === 'web'
             ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.9:8000';
+            : 'http://192.168.1.11:8000';
 
         const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/account/members/`, {
@@ -129,7 +115,10 @@ export default function MembersScreen() {
                   <MaterialCommunityIcons name="medal-outline" size={24} color="black" />
               </TouchableOpacity>
               
-              <TouchableOpacity onPress={() => router.push(`/(admin)/member-profile`)}>
+              <TouchableOpacity onPress={() => router.push({
+                  pathname: `/(admin)/member-profile`,
+                  params: { memberId: item.id }
+                })}>
                 <MaterialCommunityIcons name="credit-card-edit-outline" size={24} color="black"  />
               </TouchableOpacity>
             </View>

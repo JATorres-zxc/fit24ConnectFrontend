@@ -26,6 +26,9 @@ interface EditableProfile {
   username: string;
   fullName: string;
   email: string;
+  age: string;
+  height: string;
+  weight: string;
   complete_address: string;
   contact_number: string;
 }
@@ -40,6 +43,9 @@ export default function EditProfileScreen() {
     membershipStatus: '',
     fullName: '',
     email: '',
+    age: '',
+    height: '',
+    weight: '',
     complete_address: '',
     contact_number: '',
   });
@@ -51,6 +57,9 @@ export default function EditProfileScreen() {
   // References for TextInput fields to improve focus management
   const nameInputRef = useRef(null);
   const emailInputRef = useRef(null);
+  const ageInputRef = useRef(null);
+  const heightInputRef = useRef(null);
+  const weightInputRef = useRef(null);
   const addressInputRef = useRef(null);
   const phoneInputRef = useRef(null);
 
@@ -83,6 +92,9 @@ export default function EditProfileScreen() {
         membershipStatus: data.membership_status || '',
         fullName: data.full_name || '',
         email: data.email || '',
+        age: data.age || '',
+        height: data.height || '',
+        weight: data.weight || '',
         complete_address: data.complete_address || '',
         contact_number: data.contact_number || '',
       };
@@ -119,6 +131,9 @@ export default function EditProfileScreen() {
     const editableOriginal = {
       fullName: originalProfile.fullName,
       email: originalProfile.email,
+      age: originalProfile.age,
+      height: originalProfile.height,
+      weight: originalProfile.weight,
       complete_address: originalProfile.complete_address,
       contact_number: originalProfile.contact_number
     };
@@ -126,6 +141,9 @@ export default function EditProfileScreen() {
     const editableCurrent = {
       fullName: formValues.fullName,
       email: formValues.email,
+      age: formValues.age,
+      height: formValues.height,
+      weight: formValues.weight,
       complete_address: formValues.complete_address,
       contact_number: formValues.contact_number
     };
@@ -166,6 +184,18 @@ export default function EditProfileScreen() {
       showToast('Please fill out Email before saving.');
       return;
     }
+    else if (!formValues.age) {
+      showToast('Please fill out Age before saving.');
+      return;
+    }
+    else if (!formValues.height) {
+      showToast('Please fill out Height before saving.');
+      return;
+    }
+    else if (!formValues.weight) {
+      showToast('Please fill out Weight before saving.');
+      return;
+    }
     else if (!formValues.complete_address) {
       showToast('Please fill out Address before saving.');
       return;
@@ -187,6 +217,9 @@ export default function EditProfileScreen() {
       const profileData = {
         full_name: formValues.fullName,
         email: formValues.email,
+        age: formValues.age,
+        height: formValues.height,
+        weight: formValues.weight,
         complete_address: formValues.complete_address,
         contact_number: formValues.contact_number,
       };
@@ -256,7 +289,7 @@ export default function EditProfileScreen() {
     value: string, 
     fieldName: keyof EditableProfile, 
     ref: any,
-    keyboardType: 'default' | 'email-address' | 'phone-pad' = 'default',
+    keyboardType: 'default' | 'email-address' | 'number-pad' | 'phone-pad' = 'default',
     autoCapitalize: 'none' | 'sentences' | 'words' | 'characters' = 'none',
     returnKeyType: 'next' | 'done' = 'next',
     onSubmitEditing?: () => void
@@ -337,6 +370,39 @@ export default function EditProfileScreen() {
               'email', 
               emailInputRef,
               'email-address', 
+              'none', 
+              'next', 
+              () => addressInputRef.current && addressInputRef.current.focus()
+            )}
+
+            {renderInput(
+              'Age', 
+              formValues.age, 
+              'age', 
+              ageInputRef,
+              'number-pad', 
+              'none', 
+              'next', 
+              () => heightInputRef.current && heightInputRef.current.focus()
+            )}
+
+            {renderInput(
+              'Height (in cm)', 
+              formValues.height, 
+              'height', 
+              heightInputRef,
+              'default', 
+              'none', 
+              'next', 
+              () => weightInputRef.current && weightInputRef.current.focus()
+            )}
+
+            {renderInput(
+              'Weight (in kg)', 
+              formValues.weight, 
+              'weight', 
+              weightInputRef,
+              'default', 
               'none', 
               'next', 
               () => addressInputRef.current && addressInputRef.current.focus()

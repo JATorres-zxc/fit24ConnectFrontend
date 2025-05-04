@@ -16,7 +16,7 @@ interface Profile {
   fullName: string,
   email: string,
   address: string,
-  phoneNo: string,
+  contact_number: string,
   experience: string,
 }
 
@@ -29,7 +29,7 @@ export default function ProfileScreen() {
     fullName: '',
     email: '',
     address: '',
-    phoneNo: '',
+    contact_number: '',
     experience: '',
   });
   const [loading, setLoading] = useState(true);
@@ -43,7 +43,7 @@ export default function ProfileScreen() {
       const API_BASE_URL = 
         Platform.OS === 'web'
           ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.5:8000';
+          : 'http://192.168.1.11:8000';
 
       const token = await AsyncStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
@@ -70,7 +70,7 @@ export default function ProfileScreen() {
         fullName: data.full_name || '',
         email: data.email || '',
         address: data.address || '',
-        phoneNo: data.phone_number || '',
+        contact_number: data.contact_number || '',
         experience: data.experience || '',
       });
 
@@ -146,7 +146,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.username}>{profile.username}</Text>
+          <Text style={styles.username}>{profile.fullName.split(' ')[0] || ''}</Text>
           <Text style={styles.membership}>
             {profile.membershipType}: {' '}
             <Text style={{ fontFamily: Fonts.mediumItalic }}>{profile.membershipStatus}</Text>
@@ -177,7 +177,7 @@ export default function ProfileScreen() {
           {/* Phone Number Details*/}
           <View style={styles.field}>
             <Text style={styles.label}>Phone Number</Text>
-            <Text style={styles.value}>{profile.phoneNo}</Text>
+            <Text style={styles.value}>{profile.contact_number}</Text>
           </View>
 
           {/* Experience Details*/}
