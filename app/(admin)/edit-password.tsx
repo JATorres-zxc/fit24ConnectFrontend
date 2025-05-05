@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useState, useEffect } from "react";
 import { router, useNavigation } from 'expo-router';
 import Toast from 'react-native-toast-message';
@@ -7,8 +7,11 @@ import Header from '@/components/NavigateBackHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function EditPasswordScreen() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -41,7 +44,7 @@ export default function EditPasswordScreen() {
     return unsubscribe;
   }, [navigation]);
 
-  const handleSavePassword = () => {
+  const handleSavePassword = async () => {
     // Validate inputs
     if (!currentPassword) {
       Toast.show({
@@ -72,47 +75,85 @@ export default function EditPasswordScreen() {
       });
       return;
     }
+
+    if (newPassword === currentPassword) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'New password must be different from current password',
+        topOffset: 100,
+      });
+      setIsSubmitting(false);
+      return;
+    }
   
-    // Here you would typically call an API to verify current password
-    // and update with the new password
-    // For example:
-    // updatePassword(currentPassword, newPassword)
-    //   .then(() => {
-    //     Toast.show({
-    //       type: 'success',
-    //       text1: 'Success',
-    //       text2: 'Password updated successfully',
-    //     });
-    //     router.push('/profile');
-    //   })
-    //   .catch(error => {
-    //     if (error.message === 'Current password is incorrect') {
-    //       Toast.show({
-    //         type: 'error',
-    //         text1: 'Error',
-    //         text2: 'Current password is incorrect',
-    //       });
-    //     } else {
-    //       Toast.show({
-    //         type: 'error',
-    //         text1: 'Error',
-    //         text2: 'Unable to update password. Please try again later',
-    //       });
-    //     }
-    //   });
+    try {
+      // Get API base URL based on platform
+      const API_BASE_URL = 
+        Platform.OS === 'web'
+          ? 'http://127.0.0.1:8000'
+          : 'http://192.168.1.5:8000';
   
-    // For demo purposes, show success toast and navigate
-    Toast.show({
-      type: 'success',
-      text1: 'Password Updated',
-      text2: 'Your password has been saved successfully',
-      topOffset: 100,
-    });
-    
-    // Short delay before navigation to allow toast to be seen
-    setTimeout(() => {
-      router.push('/(admin)/settings');
-    }, 1500);
+      // Get auth token
+      const token = await AsyncStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+      
+      // Make the API call to update password
+      const response = await fetch(`${API_BASE_URL}/api/profilee/profile/change-password/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          old_password: currentPassword,
+          new_password: newPassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle specific error cases
+        if (response.status === 400) {
+          if (data.old_password) {
+            throw new Error('Current password is incorrect');
+          }
+          // Handle other validation errors
+          const errorMessage = Object.values(data)[0];
+          throw new Error(Array.isArray(errorMessage) ? errorMessage[0] : errorMessage);
+        } else if (response.status === 401) {
+          throw new Error('Authentication failed. Please log in again.');
+        } else {
+          throw new Error('Server error. Please try again later.');
+        }
+      }
+      
+      Toast.show({
+        type: 'success',
+        text1: 'Password Updated',
+        text2: 'Your password has been saved successfully',
+        topOffset: 100,
+      });
+      
+      // Short delay before navigation to allow toast to be seen
+      setTimeout(() => {
+        setIsSubmitting(false);
+        router.push('/(admin)/settings');
+      }, 1500);
+    } catch (error) {
+      setIsSubmitting(false);
+      
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: error.message || 'Unable to update password. Please try again later',
+        topOffset: 100,
+      });
+    }
   };
 
   // Handle cancel action
@@ -209,11 +250,21 @@ export default function EditPasswordScreen() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.save} onPress={handleSavePassword}>
-            <Text style={styles.buttonText}>
-              Save Password
-            </Text>
-          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.save} 
+            onPress={handleSavePassword} 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+                <Text style={[styles.buttonText, styles.loadingText]}>
+                  Saving...
+                </Text>
+              ) : (
+                <Text style={styles.buttonText}>
+                  Save Password
+                </Text>
+              )}
+            </TouchableOpacity>
         </View>
       </ScrollView>
       
@@ -299,5 +350,8 @@ const styles = StyleSheet.create({
     color: 'white',
     fontFamily: Fonts.medium,
     textAlign: 'center',
+  },
+  loadingText: {
+    marginLeft: 5,
   },
 });

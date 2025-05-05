@@ -169,7 +169,7 @@ export default function EditPasswordScreen() {
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
-    router.push('/profile');
+    router.push('/(tabs)/profile');
   };
   
 
