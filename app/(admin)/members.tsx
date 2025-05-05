@@ -75,23 +75,53 @@ export default function MembersScreen() {
     setMembers(filtered);
   }, [searchQuery]);
 
-  const handleAssignTrainer = () => {
+  const handleAssignTrainer = async () => {
     if (selectedMember) {
-      // Add to trainers if not already there
-      setTrainers(prev => {
-        if (!prev.find(t => t.id === selectedMember.id)) {
-          return [...prev, selectedMember];
-        }
-        return prev;
-      });
+      try {
+        const API_BASE_URL =
+          Platform.OS === 'web'
+            ? 'http://127.0.0.1:8000'
+            : 'http://192.168.1.11:8000';
   
-      // Remove from members list
-      setMembers(prev => prev.filter(m => m.id !== selectedMember.id));
-      
-      setModalVisible(false);
-      setSelectedMember(null);
+        const token = await AsyncStorage.getItem('authToken');
+  
+        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedMember.id}/assign/`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Trainer assigned:', data);
+  
+          // Add to trainers if not already there
+          setTrainers(prev => {
+            if (!prev.find(t => t.id === selectedMember.id)) {
+              return [...prev, selectedMember];
+            }
+            return prev;
+          });
+  
+          // Remove from members list
+          setMembers(prev => prev.filter(m => m.id !== selectedMember.id));
+          
+          setModalVisible(false);
+          setSelectedMember(null);
+        } else {
+          const errorData = await response.json();
+          console.error('Failed to assign trainer:', errorData);
+          alert(errorData.detail || 'Failed to assign trainer');
+        }
+      } catch (error) {
+        console.error('Error assigning trainer:', error);
+        alert('An error occurred while assigning trainer');
+      }
     }
   };
+  
 
   return (
     <View style={styles.container}>

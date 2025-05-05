@@ -80,17 +80,39 @@ export default function TrainersScreen() {
     }
   }, [searchQuery, trainers]); // Add trainers as dependency
 
-  const handleRemoveTrainer = () => {
+  const handleRemoveTrainer = async () => {
     if (selectedTrainer) {
-      // Update the trainers state
-      const updatedTrainers = trainers.filter(trainer => trainer.id !== selectedTrainer.id);
-      setTrainers(updatedTrainers);
-      
-      // Close the modal
-      setModalVisible(false);
-      setSelectedTrainer(null);
+      try {
+        const API_BASE_URL =
+          Platform.OS === 'web'
+            ? 'http://127.0.0.1:8000'
+            : 'http://192.168.1.9:8000';
+  
+        const token = await AsyncStorage.getItem('authToken');
+  
+        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedTrainer.id}/remove/`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        if (response.ok) {
+          // Remove from local state
+          const updatedTrainers = trainers.filter(trainer => trainer.id !== selectedTrainer.id);
+          setTrainers(updatedTrainers);
+          setModalVisible(false);
+          setSelectedTrainer(null);
+        } else {
+          console.error('Failed to delete trainer:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error deleting trainer:', error);
+      }
     }
   };
+  
 
   return (
     <View style={styles.container}>
