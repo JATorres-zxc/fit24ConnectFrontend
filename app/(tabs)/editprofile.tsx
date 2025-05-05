@@ -311,7 +311,6 @@ export default function EditProfileScreen() {
             placeholderTextColor="#aaa"
             returnKeyType={returnKeyType}
             onSubmitEditing={onSubmitEditing}
-            blurOnSubmit={returnKeyType === 'done'}
           />
         </Pressable>
       </View>

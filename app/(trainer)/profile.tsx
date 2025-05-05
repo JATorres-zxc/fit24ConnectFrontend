@@ -28,9 +28,9 @@ export default function ProfileScreen() {
     membershipStatus: '',
     fullName: '',
     email: '',
+    experience: '',
     address: '',
     contact_number: '',
-    experience: '',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -69,9 +69,9 @@ export default function ProfileScreen() {
         membershipStatus: data.membership_status || '',
         fullName: data.full_name || '',
         email: data.email || '',
-        address: data.address || '',
-        contact_number: data.contact_number || '',
         experience: data.experience || '',
+        address: data.complete_address || '',
+        contact_number: data.contact_number || '',
       });
 
       // Cache the profile data locally
@@ -168,6 +168,12 @@ export default function ProfileScreen() {
             <Text style={styles.value}>{profile.email}</Text>
           </View>
 
+          {/* Experience Details*/}
+          <View style={styles.field}>
+            <Text style={styles.label}>Experience</Text>
+            <Text style={styles.value}>{profile.experience}</Text>
+          </View>
+
           {/* Address Details*/}
           <View style={styles.field}>
             <Text style={styles.label}>Address</Text>
@@ -180,11 +186,6 @@ export default function ProfileScreen() {
             <Text style={styles.value}>{profile.contact_number}</Text>
           </View>
 
-          {/* Experience Details*/}
-          <View style={styles.field}>
-            <Text style={styles.label}>Experience</Text>
-            <Text style={styles.value}>{profile.experience}</Text>
-          </View>
         </View>
       </ScrollView>
 
