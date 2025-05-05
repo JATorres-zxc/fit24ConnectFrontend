@@ -433,7 +433,7 @@ export default function EditProfileScreen() {
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
               style={styles.button} 
-              onPress={() => router.push('/editpassword')}
+              onPress={() => router.push('/(tabs)/editpassword')}
               activeOpacity={0.7}
             >
               <Text style={styles.buttonText}>Edit Password</Text>

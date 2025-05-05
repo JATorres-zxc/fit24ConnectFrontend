@@ -7,12 +7,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "@/components/TrainerHomeHeader";
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
 
-import { announcements } from "@/context/announcements";
 import { Colors } from '@/constants/Colors';
 import { Fonts } from "@/constants/Fonts";
 
 export default function Home() {
   const params = useLocalSearchParams();
+  const [firstName, setFirstName] = useState("");
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,6 +56,24 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const loadName = async () => {
+      const storedName = await AsyncStorage.getItem("full_name");
+      if (storedName) {
+        const first = storedName.split(" ")[0];
+        setFirstName(first);
+      }
+    };
+  
+    loadName();
+  }, []);
+
+  useEffect(() => {
+    if (params.full_name) {
+      if (typeof params.full_name === "string") {
+        AsyncStorage.setItem("full_name", params.full_name);
+      }
+    }
+
     if (params.showToast === "true") {
       Toast.show({
         type: "success",
@@ -68,7 +86,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <Header name="Trainer" />
+      <Header name={`Trainer ${firstName}`} />
 
       <View style={styles.announcementsContainer}>
         {loading ? (

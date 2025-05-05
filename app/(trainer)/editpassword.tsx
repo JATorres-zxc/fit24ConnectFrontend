@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { router, useNavigation } from 'expo-router';
 import Toast from 'react-native-toast-message';
 
-import Header from '@/components/EditPasswordHeader';
+import Header from '@/components/TrainerEditPasswordHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
@@ -149,7 +149,7 @@ export default function EditPasswordScreen() {
       // Short delay before navigation to allow toast to be seen
       setTimeout(() => {
         setIsSubmitting(false);
-        router.push('/(tabs)/profile');
+        router.push('/(trainer)/profile');
       }, 1500);
     } catch (error) {
       setIsSubmitting(false);
