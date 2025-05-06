@@ -82,7 +82,7 @@ const WorkoutScreen = () => {
         age: '25',
         fitnessGoal: 'Gain Weight',
         intensityLevel: 'Strong',
-        status: 'pending',
+        status: 'in_progress',
       },
       {
         requesteeID: '3',
@@ -92,7 +92,7 @@ const WorkoutScreen = () => {
         age: '28',
         fitnessGoal: 'Lose Fat',
         intensityLevel: 'Weak',
-        status: 'pending',
+        status: 'in_progress',
       },
       // You can add more members in this list as needed
     ]);
@@ -108,11 +108,13 @@ const WorkoutScreen = () => {
       visibleTo: "everyone",
       feedbacks: [],
       member_id: selectedMemberData?.requesteeID || '', // Added member_id property
-      status: "pending",
+      status: "in_progress",
     });
 
+  // Refresh trigger for useEffect
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
+
   // Fetch Workouts for Trainer
-  
   useEffect(() => {
     const fetchWorkoutRequests = async () => {
       try {
@@ -134,11 +136,11 @@ const WorkoutScreen = () => {
   
         const requestsData = await requestsResponse.json();
   
-        // Filter workout plans with 'pending' or 'created' status
-        const pendingRequests = requestsData.filter((request: any) => (request.status === "pending" || request.status === "created"));
+        // Filter workout plans with 'in_progress' or 'created' status
+        const in_progressRequests = requestsData.filter((request: any) => (request.status === "in_progress" || request.status === "created"));
   
-        // Extract requestee IDs from pending workout plans
-        const requesteeIDs = pendingRequests.map((request: any) => request.requestee);
+        // Extract requestee IDs from in_progress workout plans
+        const requesteeIDs = in_progressRequests.map((request: any) => request.requestee);
   
         // Fetch all members
         const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
@@ -160,7 +162,7 @@ const WorkoutScreen = () => {
           const profileData = allMembers.find((member: any) => String(member.id) === String(requesteeID));
           if (!profileData) return null;
   
-          const request = pendingRequests.find((req: any) => req.requestee === profileData.id);
+          const request = in_progressRequests.find((req: any) => req.requestee === profileData.id);
   
           return {
             requesteeID: request?.requestee.toString() || "Unknown",
@@ -274,12 +276,9 @@ const WorkoutScreen = () => {
     };
   
     fetchWorkout();
-  }, []);  
+  }, [refreshTrigger]);  
 
   const [workouts, setWorkouts] = useState<Workout[]>([]); // State to store all workouts]);
-
-  // Refresh trigger for useEffect
-  const [refreshTrigger, setRefreshTrigger] = useState(false);
 
   const handlePublish = async (currentWorkout?: Workout) => {
     const plan = currentWorkout; // Use the current workout state
@@ -507,7 +506,7 @@ const WorkoutScreen = () => {
               </Text>
               {/* Render Member Requests List */}
               {memberData
-                .filter((request) => (request.status === "pending" || request.status === "created"))
+                .filter((request) => (request.status === "in_progress" || request.status === "created"))
                 .map((request) => (
                   <TouchableOpacity key={request.requesteeID}>
                     <WorkoutRequest 

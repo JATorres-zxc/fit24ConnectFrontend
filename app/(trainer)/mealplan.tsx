@@ -302,7 +302,7 @@ const MealPlanScreen = () => {
     };
   
     fetchMealPlans();
-  }, []);  
+  }, [refreshTrigger]);  
 
   const handlePublish = async (currentMealPlan?: MealPlan) => {
     if (!currentMealPlan || !currentMealPlan.meals || currentMealPlan.meals.length === 0) {
