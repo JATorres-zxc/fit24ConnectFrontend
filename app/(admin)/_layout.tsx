@@ -1,10 +1,18 @@
 import React from "react";
-import { Tabs } from "expo-router";
+import { Text } from "react-native";
+import { Tabs, usePathname } from "expo-router";
 
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { Feather } from "@expo/vector-icons";
 
 export default function RootLayout() {
+  const pathname = usePathname();
+  
+  // Function to determine if members tab should be active
+  const isMembersActive = () => {
+    return pathname.includes('members') || pathname.includes('member-profile');
+  };
+
   return (
     <Tabs
       screenOptions={{
@@ -31,9 +39,16 @@ export default function RootLayout() {
         name="members" 
         options={{ 
           title: 'Members',
-          tabBarIcon: ({ color, focused }) => (
-            <Feather name={'users'} color={color} size={24} />
-          ),
+          tabBarIcon: ({ color }) => {
+            // Use the gold color if members should be active
+            const iconColor = isMembersActive() ? '#d7be69' : color;
+            return <Feather name={'users'} color={iconColor} size={24} />;
+          },
+          tabBarLabel: ({ focused, color }) => {
+            // Also change the label color if needed
+            const labelColor = isMembersActive() ? '#d7be69' : color;
+            return <Text style={{ color: labelColor, fontSize: 10 }}>Members</Text>;
+          }
         }} 
       />
 
@@ -105,6 +120,13 @@ export default function RootLayout() {
 
       <Tabs.Screen 
         name="generate-report" 
+        options={{ 
+          href: null,
+        }} 
+      />
+
+      <Tabs.Screen 
+        name="member-profile" 
         options={{ 
           href: null,
         }} 

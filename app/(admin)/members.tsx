@@ -1,13 +1,15 @@
-import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList } from 'react-native';
-import { useState } from 'react';
-import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList, TouchableWithoutFeedback, Platform } from 'react-native';
+import { useState, useEffect } from 'react';
+import { AntDesign, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
+import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // mock members data
-const Members = [
+const initialMembers = [
   { memberID: "1", name: 'John' },
   { memberID: "2", name: 'Alexis' },
   { memberID: "3", name: 'Ezra' },
@@ -20,8 +22,106 @@ const Members = [
   { memberID: "10", name: 'Lovely' },
 ];
 
-export default function HistoryScreen() {
+type Member = {
+  id: string;
+  full_name: string;
+};
+
+export default function MembersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [members, setMembers] = useState<Member[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [trainers, setTrainers] = useState<Member[]>([]);
+  
+  // 👇 Fetch the trainer list from the API
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const API_BASE_URL = 
+          Platform.OS === 'web'
+            ? 'http://127.0.0.1:8000'
+            : 'http://192.168.1.9:8000';
+
+        const token = await AsyncStorage.getItem('authToken');
+        const response = await fetch(`${API_BASE_URL}/api/account/members/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('API Response:', data);
+
+          // Assuming your API returns something like [{ name: 'John', trainerId: 1 }, ...]
+          setMembers(data);
+        } else {
+          console.error('Failed to fetch members', await response.text());
+        }
+      } catch (error) {
+        console.error('Error fetching members:', error);
+      }
+    };
+
+    fetchMembers();
+  }, []);
+
+  useEffect(() => {
+    const filtered = members.filter(member =>
+      member.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setMembers(filtered);
+  }, [searchQuery]);
+
+  const handleAssignTrainer = async () => {
+    if (selectedMember) {
+      try {
+        const API_BASE_URL =
+          Platform.OS === 'web'
+            ? 'http://127.0.0.1:8000'
+            : 'http://192.168.1.11:8000';
+  
+        const token = await AsyncStorage.getItem('authToken');
+  
+        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedMember.id}/assign/`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Trainer assigned:', data);
+  
+          // Add to trainers if not already there
+          setTrainers(prev => {
+            if (!prev.find(t => t.id === selectedMember.id)) {
+              return [...prev, selectedMember];
+            }
+            return prev;
+          });
+  
+          // Remove from members list
+          setMembers(prev => prev.filter(m => m.id !== selectedMember.id));
+          
+          setModalVisible(false);
+          setSelectedMember(null);
+        } else {
+          const errorData = await response.json();
+          console.error('Failed to assign trainer:', errorData);
+          alert(errorData.detail || 'Failed to assign trainer');
+        }
+      } catch (error) {
+        console.error('Error assigning trainer:', error);
+        alert('An error occurred while assigning trainer');
+      }
+    }
+  };
+  
 
   return (
     <View style={styles.container}>
@@ -41,19 +141,27 @@ export default function HistoryScreen() {
       </View>
 
       <FlatList
-        data={Members}
-        keyExtractor={(item) => item.memberID}
+        data={members}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.card}>
             {/* Left Section - Member Name */}
             <View style={styles.leftSection}>
-              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.name}>{item.full_name}</Text>
             </View>
 
             {/* Right Section - Icons */}
             <View style={styles.rightSection}>
-              <MaterialCommunityIcons name="medal-outline" size={24} color="black" />
-              <MaterialCommunityIcons name="credit-card-edit-outline" size={24} color="black"  />
+              <TouchableOpacity onPress={() => {
+                setSelectedMember(item);
+                setModalVisible(true);
+              }}>
+                  <MaterialCommunityIcons name="medal-outline" size={24} color="black" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity onPress={() => router.push(`/(admin)/member-profile`)}>
+                <MaterialCommunityIcons name="credit-card-edit-outline" size={24} color="black"  />
+              </TouchableOpacity>
             </View>
           </View>
         )}
@@ -64,6 +172,48 @@ export default function HistoryScreen() {
           </View>
         }
       />
+
+      {/* Assign as Trainer Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <View style={styles.modalIconContainer}>
+                  <FontAwesome6 name="dumbbell" size={36} color={Colors.black} />
+                </View>
+                <Text style={styles.modalTitle}>Assign as Trainer?</Text>
+                <Text style={styles.modalText}>
+                  You're going to assign{' '}
+                  <Text style={styles.selectedMember}>
+                    "{selectedMember?.full_name}"
+                  </Text> 
+                  {' '}as a trainer. Are you sure?
+                </Text>
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.cancelButton]} 
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.buttonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.assignButton]} 
+                    onPress={handleAssignTrainer}
+                  >
+                    <Text style={[styles.buttonText, styles.assignButtonText]}>Assign</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
     </View>
   );
@@ -135,5 +285,63 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: Colors.black,
     fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalIconContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontFamily: Fonts.bold,
+    fontSize: 20,
+    marginBottom: 15,
+  },
+  modalText: {
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  selectedMember: {
+    fontFamily: Fonts.semiboldItalic,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    flex: 1,
+    marginHorizontal: 5,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: Colors.bg,
+  },
+  assignButton: {
+    backgroundColor: Colors.green,
+  },
+  buttonText: {
+    fontFamily: Fonts.medium,
+    fontSize: 16,
+  },
+  assignButtonText: {
+    color: Colors.white,
   },
 });
