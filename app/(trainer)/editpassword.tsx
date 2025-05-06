@@ -1,9 +1,9 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from "react";
 import { router, useNavigation } from 'expo-router';
 import Toast from 'react-native-toast-message';
 
-import Header from '@/components/NavigateBackHeader';
+import Header from '@/components/TrainerEditPasswordHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
@@ -45,6 +45,9 @@ export default function EditPasswordScreen() {
   }, [navigation]);
 
   const handleSavePassword = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     // Validate inputs
     if (!currentPassword) {
       Toast.show({
@@ -53,6 +56,7 @@ export default function EditPasswordScreen() {
         text2: 'Current password is required',
         topOffset: 100,
       });
+      setIsSubmitting(false);
       return;
     }
   
@@ -63,6 +67,7 @@ export default function EditPasswordScreen() {
         text2: 'New password must be at least 8 characters',
         topOffset: 100,
       });
+      setIsSubmitting(false);
       return;
     }
   
@@ -73,6 +78,7 @@ export default function EditPasswordScreen() {
         text2: 'Passwords don\'t match',
         topOffset: 100,
       });
+      setIsSubmitting(false);
       return;
     }
 
@@ -86,6 +92,7 @@ export default function EditPasswordScreen() {
       setIsSubmitting(false);
       return;
     }
+    
   
     try {
       // Get API base URL based on platform
@@ -142,7 +149,7 @@ export default function EditPasswordScreen() {
       // Short delay before navigation to allow toast to be seen
       setTimeout(() => {
         setIsSubmitting(false);
-        router.push('/(admin)/settings');
+        router.push('/(trainer)/profile');
       }, 1500);
     } catch (error) {
       setIsSubmitting(false);
@@ -162,112 +169,115 @@ export default function EditPasswordScreen() {
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
-    router.push('/(admin)/settings');
+    router.push('/profile');
   };
   
 
   return (
     <View style={styles.container}>
-      <Header screen='Edit Password' prevScreen='/(admin)/settings' />
+      <Header />
 
-      <ScrollView style={styles.scrollViewCont}>
-        <Text style={styles.title}>
-            Create new password
-        </Text>
-        <Text style={styles.description}>
-            Your new password must be different from your current password.          
-        </Text>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style= {{ flex:1, alignItems: "center" }}
+      >
+        <ScrollView style={styles.scrollViewCont}>
+          <Text style={styles.title}>
+              Create new password
+          </Text>
+          <Text style={styles.description}>
+              Your new password must be different from your current password.          
+          </Text>
 
-        <View style={styles.formContainer}>
-          <View style={styles.form}>
-            <Text style={styles.label}>
-              Current Password
-            </Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter current password"
-                secureTextEntry={!showCurrentPassword}
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
-              />
+          <View style={styles.formContainer}>
+            <View style={styles.form}>
+              <Text style={styles.label}>
+                Current Password
+              </Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter current password"
+                  secureTextEntry={!showCurrentPassword}
+                  value={currentPassword}
+                  onChangeText={setCurrentPassword}
+                />
 
-              <TouchableOpacity onPress={() => setShowCurrentPassword(prev => !prev)} style={styles.icon}>
-                <FontAwesome name={showCurrentPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
-              </TouchableOpacity>
-            </View>  
-          </View>
-
-          <View style={styles.form}>
-            <Text style={styles.label}>
-              New Password
-            </Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter new password"
-                secureTextEntry={!showNewPassword}
-                value={newPassword}
-                onChangeText={setNewPassword}
-              />
-              <TouchableOpacity onPress={() => setShowNewPassword(prev => !prev)} style={styles.icon}>
-                <FontAwesome name={showNewPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
-              </TouchableOpacity>
+                <TouchableOpacity onPress={() => setShowCurrentPassword(prev => !prev)} style={styles.icon}>
+                  <FontAwesome name={showCurrentPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
+                </TouchableOpacity>
+              </View>  
             </View>
-            <Text style={styles.reminder}>
-              Must be at least 8 characters.
-            </Text>
-          </View>
 
-          <View style={styles.form}>
-            <Text style={styles.label}>
-              Confirm Password
-            </Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm new password"
-                placeholderTextColor={Colors.textSecondary}
-                secureTextEntry={!showConfirmPassword}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-              />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(prev => !prev)} style={styles.icon}>
-                <FontAwesome name={showConfirmPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
-              </TouchableOpacity>
+            <View style={styles.form}>
+              <Text style={styles.label}>
+                New Password
+              </Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter new password"
+                  secureTextEntry={!showNewPassword}
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                />
+                <TouchableOpacity onPress={() => setShowNewPassword(prev => !prev)} style={styles.icon}>
+                  <FontAwesome name={showNewPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.reminder}>
+                Must be at least 8 characters.
+              </Text>
             </View>
-            <Text style={styles.reminder}>
-              Both passwords must match.
-            </Text>
+
+            <View style={styles.form}>
+              <Text style={styles.label}>
+                Confirm Password
+              </Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Confirm new password"
+                  secureTextEntry={!showConfirmPassword}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+                <TouchableOpacity onPress={() => setShowConfirmPassword(prev => !prev)} style={styles.icon}>
+                  <FontAwesome name={showConfirmPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.reminder}>
+                Both passwords must match.
+              </Text>
+            </View>
+
           </View>
 
-        </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.cancel} onPress={handleCancel}>
+              <Text style={styles.buttonText}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.cancel} onPress={handleCancel}>
-            <Text style={styles.buttonText}>
-              Cancel
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.save} 
-            onPress={handleSavePassword} 
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
+            <TouchableOpacity 
+              style={styles.save} 
+              onPress={handleSavePassword} 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
                 <Text style={[styles.buttonText, styles.loadingText]}>
                   Saving...
                 </Text>
               ) : (
                 <Text style={styles.buttonText}>
                   Save Password
-                </Text>
+              </Text>
               )}
             </TouchableOpacity>
-        </View>
-      </ScrollView>
-      
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
       <Toast />
     </View>
   );

@@ -2,29 +2,28 @@ import { router } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import FontAwesome from '@expo/vector-icons/FontAwesome'
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { Fonts } from '@/constants/Fonts';
 
 export default function Header() {
   return (
     <SafeAreaView>
       <View style={styles.header}>
-
         <View style={styles.leftSection}>
-          <FontAwesome 
-            name='home' 
+          <AntDesign 
+            name='arrowleft' 
             color={'black'} 
             size={24} 
-            onPress={() => router.push('/home')} 
+            onPress={() => router.push('/(trainer)/editprofile')} 
           />
           <Text style={styles.headerText}>
-            Facility Access Logs
+            Edit Password
           </Text>
         </View>
 
-        <View style={styles.headerIcon}>
-          <FontAwesome name='user-circle' color={'black'} size={24} onPress={() => router.push('/(tabs)/profile')} />
-          <FontAwesome name='bell-o' color={'black'} size={24} onPress={() => router.push('/(tabs)/notifications')} />
+        {/* For spacing purposes */}
+        <View style={styles.rightSection}>
+          <Text>{''}</Text>
         </View>
       </View>
     </SafeAreaView>
@@ -47,9 +46,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: Fonts.semibold,
   },
-  headerIcon: {
-    flexDirection: 'row',
+  rightSection: {
     alignItems: 'center',
-    gap: 5,
   },
 });
