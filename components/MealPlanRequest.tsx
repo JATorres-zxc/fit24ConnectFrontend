@@ -8,14 +8,14 @@ interface MealPlanRequestProps {
     memberName: string;
     fitnessGoal: string;
     weightGoal: string;
-    allergens: string;
+    allergies: string;
     height: string;
     weight: string;
     age: string;
     onEditPress: () => void;
 }
 
-const MealPlanRequest: React.FC<MealPlanRequestProps> = ({ memberName, fitnessGoal, weightGoal, allergens, height, weight, age, onEditPress}) => {
+const MealPlanRequest: React.FC<MealPlanRequestProps> = ({ memberName, fitnessGoal, weightGoal, allergies, height, weight, age, onEditPress}) => {
     return (
         <ScrollView>
             <View style={styles.container}>
@@ -32,8 +32,8 @@ const MealPlanRequest: React.FC<MealPlanRequestProps> = ({ memberName, fitnessGo
                             <Text style={styles.infoText}>{fitnessGoal}</Text>
                             <Text style={styles.infoTitle}>Weight Goal:</Text>
                             <Text style={styles.infoText}>{weightGoal}</Text>
-                            <Text style={styles.infoTitle}>Allergen/s:</Text>
-                            <Text style={styles.infoText}>{allergens}</Text>
+                            <Text style={styles.infoTitle}>Allergies:</Text>
+                            <Text style={styles.infoText}>{allergies}</Text>
                         </View>
                         <View style={styles.column}>
                             <Text style={styles.infoTitle}>Height:</Text>

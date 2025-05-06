@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from "expo-image-picker";
 
 interface Exercise {
-  id: string;
+  id: string | null;
   name: string;
   description: string;
   image: ImageSourcePropType | null; 

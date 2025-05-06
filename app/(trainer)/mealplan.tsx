@@ -17,10 +17,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MemberMealPlan from "@/components/MemberMealPlan";
 import MealPlanRequest from "@/components/MealPlanRequest";
 import TrainerMPHeader from "@/components/TrainerMPHeader";
-import { nanoid } from 'nanoid';
 
 interface Meal {
-  id: string;
+  id: string | null;
   mealplan: string;
   meal_name: string;
   description: string;
@@ -38,7 +37,7 @@ interface Feedback {
 }
 
 interface MealPlan {
-  mealplan_id: string;
+  mealplan_id: string | null;
   meals: Meal[];
   member_id: string;
   trainer_id: string;
@@ -48,7 +47,7 @@ interface MealPlan {
   protein: number;
   carbs: number;
   weight_goal: string;
-  allergens: string;
+  allergies: string;
   instructions: string;
   requestee_id: string;
   requestee: string;
@@ -63,7 +62,8 @@ interface SelectedMemberData {
   age: string;
   fitnessGoal: string;
   weightGoal: string;
-  allergens: string;
+  allergies: string;
+  status: string;
 }
 
 const API_BASE_URL =
@@ -84,7 +84,7 @@ const MealPlanScreen = () => {
   const [updateMealPlan, setUpdateMealPlan] = useState<MealPlan | null>(null);
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
-  const [allergens, setAllergens] = useState(""); // State to store allergens
+  const [allergies, setallergies] = useState(""); // State to store allergies
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
   const [memberData, setMemberData] = useState<SelectedMemberData[]>([
@@ -96,7 +96,8 @@ const MealPlanScreen = () => {
       age: '25',
       fitnessGoal: 'Gain Weight',
       weightGoal: '60',
-      allergens: 'Peanuts, Dairy',
+      allergies: 'Peanuts, Dairy',
+      status: 'in_progress',
     },
     {
       requesteeID: '3',
@@ -106,14 +107,15 @@ const MealPlanScreen = () => {
       age: '28',
       fitnessGoal: 'Lose Fat',
       weightGoal: '50',
-      allergens: 'Shellfish',
+      allergies: 'Shellfish',
+      status: 'in_progress',
     },
     // You can add more members in this list as needed
   ]);
   const [selectedMemberData, setSelectedMemberData] = useState<SelectedMemberData | null>(null); // Default to the first member in the list
   
   const [newMealPlan, setNewMealPlan] = useState<MealPlan | null>({
-    mealplan_id: nanoid(), // Generate a unique ID for the new workout
+    mealplan_id: null,
     meals: [], // Ensures `meals` is always defined
     member_id: selectedMemberData?.requesteeID || '',
     trainer_id: userID || "",
@@ -123,23 +125,27 @@ const MealPlanScreen = () => {
     protein: 0,
     carbs: 0,
     weight_goal: "",
-    allergens: "",
+    allergies: "",
     instructions: "",
     requestee_id: selectedMemberData?.requesteeID || '', // Default to the first member's ID
     requestee: selectedMemberData?.requesteeID || '', // Default to the first member's ID
     status: "in_progress", // Default status
   });
  
+  // Refreshing state
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
+
   // Fetch only mealplan requests and retrieve corresponding member profiles
   
   useEffect(() => {
     const fetchMealplanRequests = async () => {
       try {
         const token = await AsyncStorage.getItem("authToken");
-        if (!token) throw new Error("Token not found");
+        const userID = await AsyncStorage.getItem("userID");
+        if (!token || !userID) throw new Error("Token or UserID not found");
   
         // Fetch all meal plan requests
-        const requestsResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
+        const requestsResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/`, {
           method: "GET",
           headers: {
             Accept: "application/json",
@@ -152,14 +158,18 @@ const MealPlanScreen = () => {
         }
   
         const requestsData = await requestsResponse.json();
-
-        // Filter meal plans with 'in_progress' status
-        const inProgressRequests = requestsData.filter((request: any) => request.status === "in_progress");
+  
+        // Filter meal plans with 'in_progress' status AND assigned to current trainer
+        const inProgressRequests = requestsData.filter(
+          (request: any) =>
+            (request.status === "in_progress" || request.status === "not_created") &&
+            request.trainer_id?.toString() === userID
+        );
 
         // Extract requestee IDs from in-progress meal plans
         const requesteeIDs = inProgressRequests.map((request: any) => request.requestee);
-
-        // Fetch all members first
+  
+        // Fetch all members
         const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
           method: "GET",
           headers: {
@@ -173,21 +183,17 @@ const MealPlanScreen = () => {
         }
   
         const allMembers = await allMembersResponse.json();
-  
-        // Map to combine the requests and profiles
+
+        // Combine request and member profile data
         const memberDataList = requesteeIDs.map((requesteeID: string) => {
           const profileData = allMembers.find((member: any) => String(member.id) === String(requesteeID));
-  
-          if (!profileData) {
-            return null; // If no matching profile found, return null
-          }
-          
-          // Find the matching request for this member
-          const request = inProgressRequests.find((request: any) => {
-            return request.requestee === profileData.id;
-          });
 
-          // Return combined profile and request data
+          if (!profileData) return null;
+  
+          const request = inProgressRequests.find(
+            (req: any) => String(req.requestee) === String(profileData.id)
+          );
+          
           return {
             requesteeID: request?.requestee.toString() || "Unknown",
             requesteeName: profileData?.full_name || "Unknown",
@@ -196,12 +202,19 @@ const MealPlanScreen = () => {
             age: profileData?.age || "N/A",
             fitnessGoal: request?.fitness_goal || "Not Specified",
             weightGoal: request?.weight_goal || "Not Specified",
-            allergens: request?.allergens || "None",
+            allergies: request?.user_allergies || "None",
+            status: request?.status || "unknown",
           };
-        }).filter((data: any) => data !== null); // Filter out null values (if any member had no matching profile)
-
-        // Append to previous data (assuming setMemberData updates the state)
-        setMemberData((prev) => [...prev, ...memberDataList]);
+        }).filter(Boolean); // Remove any nulls
+  
+        // Avoid duplicates by checking if requesteeID already exists
+        setMemberData((prev) => {
+          const existingIDs = prev.map((member) => member.requesteeID);
+          const filteredNewData = memberDataList.filter(
+            (newMember: any) => !existingIDs.includes(newMember.requesteeID)
+          );
+          return [...prev, ...filteredNewData];
+        });
 
       } catch (error) {
         console.error("Error fetching mealplan requests and profiles:", error);
@@ -209,15 +222,15 @@ const MealPlanScreen = () => {
     };
   
     fetchMealplanRequests();
-  }, []); // Empty dependency array ensures this effect runs once when the component mounts
-  
+  }, []);
+    
   // Fetching Meal Plan from API
   
   useEffect(() => {
     const fetchMealPlans = async () => {
       try {
         const token = await AsyncStorage.getItem('authToken');
-        const userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
+        const userID = await AsyncStorage.getItem('userID');
   
         const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/`, {
           headers: {
@@ -232,22 +245,64 @@ const MealPlanScreen = () => {
   
         const mealPlansData = await response.json();
   
-        // Filter meal plans where trainer_id matches userID
-        const trainerMealPlans = mealPlansData.filter(
-          (plan: any) => (
-            plan.status === "in_progress" && // Only include in_progress meal plans
-            plan.trainer_id.toString() === userID
-          )
+        // Filter meal plans assigned to current trainer and are "completed"
+        const completedPlans = mealPlansData.filter(
+          (plan: any) =>
+            plan.trainer_id.toString() === userID?.toString() &&
+            plan.status === "completed"
         );
+        
+        // Store completed meal plans separately
+        setMealPlans(completedPlans);
+
+        // Fetch members
+        const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
   
-        setMealPlans(trainerMealPlans); // Store only meal plans where trainer_id === userID
+        if (!allMembersResponse.ok) {
+          throw new Error(`Failed to fetch members. Status: ${allMembersResponse.status}`);
+        }
+  
+        const allMembers = await allMembersResponse.json();
+  
+        // Match each completed plan with its member profile
+        const completedMemberData = completedPlans.map((plan: any) => {
+          const member = allMembers.find((m: any) => m.id === plan.requestee);
+          if (!member) return null;
+  
+          return {
+            requesteeID: plan.requestee.toString(),
+            requesteeName: member.full_name || "Unknown",
+            height: member.height,
+            weight: member.weight,
+            age: member.age,
+            fitnessGoal: plan.fitness_goal,
+            weightGoal: plan.weight_goal,
+            allergies: plan.allergies,
+            status: plan.status,
+          };
+        }).filter(Boolean);
+  
+        // Avoid duplicates by checking if requesteeID already exists
+        setMemberData((prev) => {
+          const existingIDs = prev.map((member) => member.requesteeID);
+          const filteredNewData = completedMemberData.filter(
+            (newMember: any) => !existingIDs.includes(newMember.requesteeID)
+          );
+          return [...prev, ...filteredNewData];
+        });
+  
       } catch (error) {
-        console.error('Error fetching meal plans:', error);
+        console.error('Error fetching completed meal plans:', error);
       }
     };
   
     fetchMealPlans();
-  }, []);    
+  }, []);  
 
   const handlePublish = async (currentMealPlan?: MealPlan) => {
     if (!currentMealPlan || !currentMealPlan.meals || currentMealPlan.meals.length === 0) {
@@ -294,8 +349,8 @@ const MealPlanScreen = () => {
         return;
       }
 
-      // Fetch existing meal plan for this member
-      const searchResponse = await fetch(`${API_BASE_URL}/api/mealplans?member_id=${requesteeID}`, {
+      // Fetch all meal plans (you may paginate this later if needed)
+      const searchResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -307,15 +362,22 @@ const MealPlanScreen = () => {
         throw new Error(`Search API error! status: ${searchResponse.status}`);
       }
 
-      const existingMealPlans = await searchResponse.json();
-      let mealPlanId = existingMealPlans[0]?.mealplan_id;
+      const allMealPlans = await searchResponse.json();
+
+      // Find the meal plan where the requestee matches
+      const matchedMealPlan = allMealPlans.find(
+        (plan: any) => String(plan.requestee) === String(requesteeID)
+      );
+
+      // Extract the mealPlanId
+      let mealPlanId = matchedMealPlan?.mealplan_id;
 
       if (!mealPlanId) {
         throw new Error("No existing meal plan found for this member.");
       }
 
       // Update the existing meal plan
-      const updateResponse = await fetch(`${API_BASE_URL}/api/mealplans/${mealPlanId}`, {
+      const updateResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlanId}/update_meal_plan/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -325,7 +387,8 @@ const MealPlanScreen = () => {
           member_id: requesteeID,
           trainer_id: trainerID,
           meals: currentMealPlan.meals.map(meal => ({
-            id: meal.id, // Include meal ID if applicable
+            // id: meal.id, // Include meal ID if applicable
+            // mealplan: mealPlanId,
             meal_name: meal.meal_name,
             description: meal.description,
             meal_type: meal.meal_type,
@@ -333,6 +396,7 @@ const MealPlanScreen = () => {
             protein: meal.protein,
             carbs: meal.carbs,
           })),
+          plan_type: "personal", // Fixed for now, can be changed to general
           mealplan_name: currentMealPlan.mealplan_name,
           fitness_goal: currentMealPlan.fitness_goal,
           calorie_intake: currentMealPlan.calorie_intake,
@@ -343,6 +407,15 @@ const MealPlanScreen = () => {
           status: "completed", // Mark as completed
         }),
       });
+
+      // Update memberData with the matched meal plan ID and set status to "completed"
+      setMemberData((prevMemberData) =>
+        prevMemberData.map((member) =>
+          member.requesteeID === requesteeID
+            ? { ...member, status: "completed", mealplan_id: mealPlanId }
+            : member
+        )
+      );
   
       // Update state after successful publish
       setMealPlans((prevMealPlans) =>
@@ -363,6 +436,9 @@ const MealPlanScreen = () => {
         text2: 'Your meal plan has been published successfully.',
         position: 'bottom',
       });
+
+      // Trigger useEffect by toggling refreshTrigger
+      setRefreshTrigger((prev) => !prev);
       setViewState('');
     } catch (error) {
       console.error("Error handling meal plan:", error);
@@ -377,8 +453,22 @@ const MealPlanScreen = () => {
 
   const handleMealPlanSelect = (selectedMealPlan: MealPlan) => {
     setMealPlan(selectedMealPlan); // Set the selected meal plan
+  
+    // Find corresponding member based on meal plan's member_id
+    const member = memberData.find(
+      (data) => data.requesteeID.toString() === selectedMealPlan.member_id.toString()
+    );
+
+    // Set selected member data for this meal plan
+    if (member) {
+      setSelectedMemberData(member);
+    } else {
+      console.warn("Member data not found for selected meal plan.");
+      setSelectedMemberData(null); // or a fallback value
+    }
+  
     setViewState("editMP");
-  };
+  };  
 
   const handleRequestSelect = (request: SelectedMemberData) => {
     // Update selectedMemberData to the request that was selected
@@ -403,19 +493,21 @@ const MealPlanScreen = () => {
                 these Requestees will only set that meal plan to be visible to them.
               </Text>
               {/* Render Member Requests List */}
-              {memberData.map((request) => (
-                <TouchableOpacity key={request.requesteeID}>
-                  <MealPlanRequest 
-                    memberName={request.requesteeName}
-                    fitnessGoal={request.fitnessGoal}
-                    weightGoal={request.weightGoal}
-                    allergens={request.allergens}
-                    height={request.height}
-                    weight={request.weight}
-                    age={request.age}
-                    onEditPress={() => handleRequestSelect(request)} // Trigger edit for the selected request
-                  />
-                </TouchableOpacity>
+              {memberData
+                .filter((request) => (request.status === "in_progress" || request.status === "not_created")) // only show in_progress and not_created
+                .map((request) => (
+                  <TouchableOpacity key={request.requesteeID}>
+                    <MealPlanRequest 
+                      memberName={request.requesteeName}
+                      fitnessGoal={request.fitnessGoal}
+                      weightGoal={request.weightGoal}
+                      allergies={request.allergies}
+                      height={request.height}
+                      weight={request.weight}
+                      age={request.age}
+                      onEditPress={() => handleRequestSelect(request)}
+                    />
+                  </TouchableOpacity>
               ))}
             </View>
             ) : viewState === "createMP" ? (
@@ -425,9 +517,9 @@ const MealPlanScreen = () => {
               <Text style={styles.infoTitle}>Fitness Goal:</Text>
               <Text style={styles.infoText}>{selectedMemberData?.fitnessGoal || 'No fitness goal'}</Text>
               <Text style={styles.infoTitle}>Weight Goal:</Text>
-              <Text style={styles.infoText}>{weightGoal || 'No weight goal'}</Text>
-              <Text style={styles.infoTitle}>Allergen/s:</Text>
-              <Text style={styles.infoText}>{allergens || 'No allergens'}</Text>
+              <Text style={styles.infoText}>{selectedMemberData?.weightGoal || 'No weight goal'}</Text>
+              <Text style={styles.infoTitle}>Allergies:</Text>
+              <Text style={styles.infoText}>{selectedMemberData?.allergies || 'No allergies'}</Text>
 
               </View>
               <MealPlanForm
@@ -452,7 +544,7 @@ const MealPlanScreen = () => {
                 }}
                 onAction={() => {
                   const newMeal: Meal = {
-                    id: nanoid(), // Generate a unique ID for the new workout
+                    id: null, 
                     mealplan: "0", // Placeholder, may need an updated value
                     meal_name: `Meal ${(newMealPlan?.meals?.length || 0) + 1}`, // Safely handle undefined
                     meal_type: "",
@@ -511,7 +603,7 @@ const MealPlanScreen = () => {
                     }}
                     onAction={() => {
                       const newMeal: Meal = {
-                        id: nanoid(), // Generate a unique ID for the new workout
+                        id: null,
                         mealplan: mealPlan?.mealplan_id?.toString() || "", // Use selected meal plan ID
                         meal_name: `Meal ${mealPlan?.meals.length + 1}`, // Dynamically set meal name
                         meal_type: "",
