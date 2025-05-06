@@ -53,6 +53,7 @@ interface Workout {
   exercises: Exercise[];
   visibleTo: string;
   feedbacks: Feedback[];
+  status: string;
   member_id?: string; // Added member_id property
 }
 
@@ -203,6 +204,7 @@ const WorkoutScreen = () => {
       feedbacks: [
         { id: "feedback1", feedback: "Great workout!", rating: 5, createdAt: new Date() },
       ],
+      status: "completed",
     },
     {
       id: "WO2",
@@ -218,6 +220,7 @@ const WorkoutScreen = () => {
       feedbacks: [
         { id: "feedback2", feedback: "Intense but effective!", rating: 4, createdAt: new Date() },
       ],
+      status: "completed",
     },
   ]);
 
@@ -386,6 +389,8 @@ const WorkoutScreen = () => {
                 trainer_id: trainer, // Trainer ID is required
                 fitness_goal: fitnessGoal,
                 intensity_level: intensityLevel,
+                status: "pending",
+                requestee: userID, // User ID is required
                 height,
                 weight,
                 age,
@@ -548,12 +553,29 @@ const WorkoutScreen = () => {
           ) : viewState === "personalWO" ? (
             <>
               <View style={styles.planContainer}>
-                <PersonalWorkoutsHeader setViewState={setViewState}/>
-                <WorkoutsContainer
-                  workouts={workouts.filter(w => w.visibleTo?.toString() === userID?.toString())}
-                  onWorkoutPress={handleWorkoutPress}
-                  onTrashPress={handleTrashPress}
-                />
+                <PersonalWorkoutsHeader setViewState={setViewState} />
+                {workouts.filter(w => w.visibleTo?.toString() === userID?.toString()).length > 0 ? (
+                  <WorkoutsContainer
+                    workouts={workouts.filter(w => w.visibleTo?.toString() === userID?.toString())}
+                    onWorkoutPress={handleWorkoutPress}
+                    onTrashPress={handleTrashPress}
+                  />
+                ) : workouts.some(workout => workout.status === "pending" || workout.status === "created") ? (
+                  <View style={styles.centerContainer}>
+                    <Text style={styles.subtitle2}>
+                      You have a pending workout request. Please wait for your trainer to complete it. You cannot request a new workout at this time.
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={styles.centerContainer}>
+                    <Text style={styles.subtitle2}>
+                      You have no personal workouts yet. Request a new workout plan to get started.
+                    </Text>
+                    <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
+                      <Text style={styles.buttonText}>Request Workout Plan</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
             </>
           ) : (

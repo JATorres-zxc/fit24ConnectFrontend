@@ -132,6 +132,9 @@ const MealPlanScreen = () => {
     status: "in_progress", // Default status
   });
  
+  // Refreshing state
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
+
   // Fetch only mealplan requests and retrieve corresponding member profiles
   
   useEffect(() => {
@@ -404,6 +407,15 @@ const MealPlanScreen = () => {
           status: "completed", // Mark as completed
         }),
       });
+
+      // Update memberData with the matched meal plan ID and set status to "completed"
+      setMemberData((prevMemberData) =>
+        prevMemberData.map((member) =>
+          member.requesteeID === requesteeID
+            ? { ...member, status: "completed", mealplan_id: mealPlanId }
+            : member
+        )
+      );
   
       // Update state after successful publish
       setMealPlans((prevMealPlans) =>
@@ -424,6 +436,9 @@ const MealPlanScreen = () => {
         text2: 'Your meal plan has been published successfully.',
         position: 'bottom',
       });
+
+      // Trigger useEffect by toggling refreshTrigger
+      setRefreshTrigger((prev) => !prev);
       setViewState('');
     } catch (error) {
       console.error("Error handling meal plan:", error);
@@ -502,9 +517,9 @@ const MealPlanScreen = () => {
               <Text style={styles.infoTitle}>Fitness Goal:</Text>
               <Text style={styles.infoText}>{selectedMemberData?.fitnessGoal || 'No fitness goal'}</Text>
               <Text style={styles.infoTitle}>Weight Goal:</Text>
-              <Text style={styles.infoText}>{weightGoal || 'No weight goal'}</Text>
+              <Text style={styles.infoText}>{selectedMemberData?.weightGoal || 'No weight goal'}</Text>
               <Text style={styles.infoTitle}>Allergies:</Text>
-              <Text style={styles.infoText}>{allergies || 'No allergies'}</Text>
+              <Text style={styles.infoText}>{selectedMemberData?.allergies || 'No allergies'}</Text>
 
               </View>
               <MealPlanForm

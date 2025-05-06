@@ -41,6 +41,7 @@ interface Workout {
   exercises: Exercise[];
   visibleTo: string;
   feedbacks: Feedback[];
+  status: string;
   member_id?: string; // Added member_id property
 }
 
@@ -107,6 +108,7 @@ const WorkoutScreen = () => {
       visibleTo: "everyone",
       feedbacks: [],
       member_id: selectedMemberData?.requesteeID || '', // Added member_id property
+      status: "pending",
     });
 
   // Fetch Workouts for Trainer
@@ -276,6 +278,9 @@ const WorkoutScreen = () => {
 
   const [workouts, setWorkouts] = useState<Workout[]>([]); // State to store all workouts]);
 
+  // Refresh trigger for useEffect
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
+
   const handlePublish = async (currentWorkout?: Workout) => {
     const plan = currentWorkout; // Use the current workout state
   
@@ -376,7 +381,16 @@ const WorkoutScreen = () => {
   
         console.log("New workout created successfully!");
       }
-  
+      
+      // Update memberData with the matched workout ID and set status to "completed"
+      setMemberData((prevMemberData) =>
+        prevMemberData.map((member) =>
+          member.requesteeID === requesteeID
+            ? { ...member, status: "completed", workout_id: currentWorkout.id }
+            : member
+        )
+      );
+
       // Update the state with the new or updated workout
       setWorkouts(prevWorkouts =>
         prevWorkouts.map(p =>
@@ -394,8 +408,11 @@ const WorkoutScreen = () => {
         text2: 'Your workout plan has been published successfully.',
         position: 'bottom',
       });
-  
+
+      // Trigger useEffect by toggling refreshTrigger
+      setRefreshTrigger((prev) => !prev);
       setViewState('');
+
     } catch (error) {
       console.error("Error handling workout plan:", error);
       Toast.show({

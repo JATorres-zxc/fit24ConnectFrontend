@@ -143,7 +143,9 @@ const MealPlanScreen = () => {
         const mealPlansData = await mealPlansResponse.json();
   
         // Filter meal plans to only include those with status "completed"
-        const completedMealPlans = mealPlansData.filter((plan: MealPlan) => plan.status === 'completed');
+        // const completedMealPlans = mealPlansData.filter((plan: MealPlan) => plan.status === 'completed');
+        const completedMealPlans = mealPlansData;
+        setMealPlan(completedMealPlans);
   
         if (completedMealPlans.length === 0) {
           throw new Error('No completed meal plan found for the user');
@@ -511,8 +513,8 @@ const MealPlanScreen = () => {
           ) : (
             // Nutritional Meal Plan View
             <>
-              {mealPlan && mealPlan.meals ? (
-                mealPlan.meals.length > 0 ? (
+              {mealPlan ? (
+                (mealPlan.status === "completed") ? (
                   <View style={styles.planContainer}>
                     <Header />
                     {mealPlan.meals.map((meal, index) => (
