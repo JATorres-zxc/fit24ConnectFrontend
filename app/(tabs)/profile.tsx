@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Text, View, StyleSheet, Image, ScrollView } from 'react-native';
+import { Text, View, StyleSheet, Image, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -15,6 +15,9 @@ interface Profile {
   membershipStatus: string,
   fullName: string,
   email: string,
+  age: string,
+  height: string,
+  weight: string,
   address: string,
   phoneNo: string,
 }
@@ -22,83 +25,116 @@ interface Profile {
 export default function ProfileScreen() {
   const [profile, setProfile] = useState<Profile>({
     image: require("@/assets/images/icon.png"),
-    username: 'John',
-    membershipType: 'Student',
-    membershipStatus: 'Active',
-    fullName: 'John Doe',
-    email: 'johndoe@gmail.com',
-    address: 'Cebu City',
-    phoneNo: '0999 999 9999',
+    username: '',
+    membershipType: '',
+    membershipStatus: '',
+    fullName: '',
+    email: '',
+    age: '',
+    height: '',
+    weight: '',
+    address: '',
+    phoneNo: '',
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  /** 🔹 Load profile data when screen is focused */
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const API_BASE_URL = 
+        Platform.OS === 'web'
+          ? 'http://127.0.0.1:8000'
+          : 'http://192.168.1.11:8000';
+
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Profile API Response:', data);
+
+      setProfile({
+        image: data.image 
+          ? { uri: `${API_BASE_URL}${data.image}` } // Assuming image is a URL path
+          : require("@/assets/images/icon.png"),
+        username: data.username || '',
+        membershipType: data.membership_type || '',
+        membershipStatus: data.membership_status || '',
+        fullName: data.full_name || '',
+        email: data.email || '',
+        age: data.age || '',
+        height: data.height || '',
+        weight: data.weight || '',
+        address: data.complete_address || '',
+        phoneNo: data.contact_number || '',
+      });
+
+      // Cache the profile data locally
+      await AsyncStorage.setItem('profile', JSON.stringify(data));
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setError('Failed to load profile data');
+      
+      // Try to load cached profile if API fails
+      try {
+        const cachedProfile = await AsyncStorage.getItem('profile');
+        if (cachedProfile) {
+          const parsed = JSON.parse(cachedProfile);
+          setProfile({
+            ...parsed,
+            image: parsed.image 
+              ? { uri: parsed.image }
+              : require("@/assets/images/icon.png"),
+          });
+          setError('Using cached data (offline mode)');
+        }
+      } catch (cacheError) {
+        console.error('Error loading cached profile:', cacheError);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch profile on component mount
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  // Refresh profile when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      const loadProfile = async () => {
-        try {
-          const storedProfile = await AsyncStorage.getItem('profile');
-          if (storedProfile) {
-            const parsed = JSON.parse(storedProfile);
-            setProfile({
-              ...parsed,
-              image:
-                parsed.image && typeof parsed.image === "string"
-                  ? { uri: parsed.image }
-                  : require("@/assets/images/icon.png"),
-            });
-          }
-        } catch (error) {
-          console.error('Error loading profile:', error);
-        }
-      };
-      loadProfile();
+      fetchProfile();
     }, [])
   );
 
-  /** 🔹 Load profile on component mount */
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const storedProfile = await AsyncStorage.getItem("profile");
-        console.log("Stored Profile:", storedProfile);
-  
-        if (storedProfile) {
-          const parsed = JSON.parse(storedProfile);
-          setProfile({
-            ...parsed,
-            image:
-              parsed.image && typeof parsed.image === "string"
-                ? { uri: parsed.image } // If stored as a string, set as `uri`
-                : require("@/assets/images/icon.png"), // Fallback to local image
-          });
-        }
-      } catch (error) {
-        console.error("Error loading profile:", error);
-      }
-    };
-    loadProfile();
-  }, []);
-  
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={Colors.bg} />
+      </View>
+    );
+  }
 
-  /** 🔹 Save profile properly */
-  const saveProfile = async (updatedProfile: Profile) => {
-    try {
-      const profileToSave = {
-        ...updatedProfile,
-        image:
-          updatedProfile.image?.uri || // If image is a URI (remote)
-          (typeof updatedProfile.image === "string" ? updatedProfile.image : null) || // If image is already a string
-          null, // Default to null if it's an invalid number
-      };
+  if (error) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: Colors.red }}>{error}</Text>
+      </View>
+    );
+  }
   
-      await AsyncStorage.setItem("profile", JSON.stringify(profileToSave));
-      console.log("Profile saved successfully:", profileToSave);
-    } catch (error) {
-      console.error("Error saving profile:", error);
-    }
-  };
-  
-
   return (
     <View style={styles.container}>
       <Header />
@@ -116,7 +152,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.username}>{profile.username}</Text>
+          <Text style={styles.username}>{profile.fullName.split(' ')[0] || ''}</Text>
           <Text style={styles.membership}>
             {profile.membershipType}: {' '}
             <Text style={{ fontFamily: Fonts.mediumItalic }}>{profile.membershipStatus}</Text>
@@ -136,6 +172,24 @@ export default function ProfileScreen() {
           <View style={styles.field}>
             <Text style={styles.label}>Email</Text>
             <Text style={styles.value}>{profile.email}</Text>
+          </View>
+
+          {/* Age Details*/}
+          <View style={styles.field}>
+            <Text style={styles.label}>Age</Text>
+            <Text style={styles.value}>{profile.age}</Text>
+          </View>
+
+          {/* Height Details*/}
+          <View style={styles.field}>
+            <Text style={styles.label}>Height</Text>
+            <Text style={styles.value}>{profile.height} cm</Text>
+          </View>
+
+          {/* Weight Details*/}
+          <View style={styles.field}>
+            <Text style={styles.label}>Weight</Text>
+            <Text style={styles.value}>{profile.weight} kg</Text>
           </View>
 
           {/* Address Details*/}

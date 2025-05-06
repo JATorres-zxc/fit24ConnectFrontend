@@ -17,10 +17,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MemberWorkout from "@/components/MemberWorkout";
 import WorkoutRequest from "@/components/WorkoutRequest";
 import TrainerWOHeader from "@/components/TrainerWOHeader";
-import { nanoid } from 'nanoid';
 
 interface Exercise {
-  id: string;
+  id: string | null; // ID can be null for new exercises
   name: string;
   description: string;
   image: ImageSourcePropType | null; // Image can be null if not set
@@ -33,7 +32,7 @@ interface Feedback {
 }
 
 interface Workout {
-  id: string;
+  id: string | null; // ID can be null for new workouts
   title: string;
   duration: number;
   fitnessGoal: string;
@@ -42,6 +41,7 @@ interface Workout {
   exercises: Exercise[];
   visibleTo: string;
   feedbacks: Feedback[];
+  status: string;
   member_id?: string; // Added member_id property
 }
 
@@ -52,8 +52,8 @@ interface SelectedMemberData {
   weight: string;
   age: string;
   fitnessGoal: string;
-  weightGoal: string;
-  allergens: string;
+  intensityLevel: string;
+  status: string;
 }
 
 const API_BASE_URL =
@@ -81,8 +81,8 @@ const WorkoutScreen = () => {
         weight: '65',
         age: '25',
         fitnessGoal: 'Gain Weight',
-        weightGoal: '60',
-        allergens: 'Peanuts, Dairy',
+        intensityLevel: 'Strong',
+        status: 'pending',
       },
       {
         requesteeID: '3',
@@ -91,14 +91,14 @@ const WorkoutScreen = () => {
         weight: '55',
         age: '28',
         fitnessGoal: 'Lose Fat',
-        weightGoal: '50',
-        allergens: 'Shellfish',
+        intensityLevel: 'Weak',
+        status: 'pending',
       },
       // You can add more members in this list as needed
     ]);
     const [selectedMemberData, setSelectedMemberData] = useState<SelectedMemberData | null>(null); // Default to the first member in the list
     const [newWorkout, setNewWorkout] = useState<Workout | null>({
-      id: nanoid(), // Generate a unique ID for the new workout
+      id: null, // Set to null initially
       title: "",
       duration: 30, // Default number of days
       fitnessGoal: "",
@@ -108,12 +108,8 @@ const WorkoutScreen = () => {
       visibleTo: "everyone",
       feedbacks: [],
       member_id: selectedMemberData?.requesteeID || '', // Added member_id property
+      status: "pending",
     });
-
-  // Add this useEffect to monitor changes to newWorkout and log the visibility
-  useEffect(() => {
-    console.log("Visibility of this workout plan:", newWorkout?.visibleTo || "Not Set");
-  }, [newWorkout?.visibleTo]); // Only trigger when visibleTo changes
 
   // Fetch Workouts for Trainer
   
@@ -137,14 +133,14 @@ const WorkoutScreen = () => {
         }
   
         const requestsData = await requestsResponse.json();
-
-        // Filter meal plans with 'in_progress' status
-        const inProgressRequests = requestsData.filter((request: any) => request.status === "pending");
-
-        // Extract requestee IDs from in-progress meal plans
-        const requesteeIDs = inProgressRequests.map((request: any) => request.requestee);
-
-        // Fetch all members first
+  
+        // Filter workout plans with 'pending' or 'created' status
+        const pendingRequests = requestsData.filter((request: any) => (request.status === "pending" || request.status === "created"));
+  
+        // Extract requestee IDs from pending workout plans
+        const requesteeIDs = pendingRequests.map((request: any) => request.requestee);
+  
+        // Fetch all members
         const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
           method: "GET",
           headers: {
@@ -159,20 +155,13 @@ const WorkoutScreen = () => {
   
         const allMembers = await allMembersResponse.json();
   
-        // Map to combine the requests and profiles
+        // Combine member and request data
         const memberDataList = requesteeIDs.map((requesteeID: string) => {
           const profileData = allMembers.find((member: any) => String(member.id) === String(requesteeID));
+          if (!profileData) return null;
   
-          if (!profileData) {
-            return null; // If no matching profile found, return null
-          }
-          
-          // Find the matching request for this member
-          const request = inProgressRequests.find((request: any) => {
-            return request.requestee === profileData.id;
-          });
-
-          // Return combined profile and request data
+          const request = pendingRequests.find((req: any) => req.requestee === profileData.id);
+  
           return {
             requesteeID: request?.requestee.toString() || "Unknown",
             requesteeName: profileData?.full_name || "Unknown",
@@ -181,20 +170,26 @@ const WorkoutScreen = () => {
             age: profileData?.age || "N/A",
             fitnessGoal: request?.fitness_goal || "Not Specified",
             weightGoal: request?.weight_goal || "Not Specified",
-            allergens: request?.allergens || "None",
+            status: request?.status || "unknown", // Add status here for later filtering
           };
-        }).filter((data: any) => data !== null); // Filter out null values (if any member had no matching profile)
+        }).filter((data: any) => data !== null);
   
-        // Append to previous data (assuming setMemberData updates the state)
-        setMemberData((prev) => [...prev, ...memberDataList]);
-        
+        // Avoid duplicates by checking if requesteeID already exists
+        setMemberData((prev) => {
+          const existingIDs = prev.map((member) => member.requesteeID);
+          const filteredNewData = memberDataList.filter(
+            (newMember: any) => !existingIDs.includes(newMember.requesteeID)
+          );
+          return [...prev, ...filteredNewData];
+        });
+  
       } catch (error) {
         console.error("Error fetching workout requests and profiles:", error);
       }
     };
   
     fetchWorkoutRequests();
-  }, []);  
+  }, []);    
   
   // Fetching Workout from API
   
@@ -264,8 +259,6 @@ const WorkoutScreen = () => {
           const filteredPrev = prevWorkouts.filter((w) => !existingIds.has(w.id));
           return [...filteredPrev, ...formattedWorkouts];
         });        
-
-        console.log("Formatted workouts:", workouts);
   
       } catch (error) {
         console.error("Error fetching workout:", error);
@@ -284,6 +277,9 @@ const WorkoutScreen = () => {
   }, []);  
 
   const [workouts, setWorkouts] = useState<Workout[]>([]); // State to store all workouts]);
+
+  // Refresh trigger for useEffect
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
 
   const handlePublish = async (currentWorkout?: Workout) => {
     const plan = currentWorkout; // Use the current workout state
@@ -335,11 +331,12 @@ const WorkoutScreen = () => {
             requestee: requesteeID,
             trainer_id: trainerID,
             workouts: plan.exercises.map(exercise => ({
-              id: exercise.id.toString(),
+              id: exercise.id?.toString(),
               name: exercise.name,
               description: exercise.description,
               image: "", // Provide an image URL if available
             })),
+            status: "completed", // Set status to completed
             workout_name: plan.title,
             fitness_goal: "General Fitness", // Default value, adjust as needed
             duration: 30, // Default number of days, adjust as needed
@@ -365,11 +362,12 @@ const WorkoutScreen = () => {
             requestee: requesteeID,
             trainer_id: trainerID,
             workouts: plan.exercises.map(exercise => ({
-              id: exercise.id.toString(),
+              id: exercise.id?.toString(),
               name: exercise.name,
               description: exercise.description,
               image: "", // Provide an image URL if available
             })),
+            status: "completed", // Set status to completed
             workout_name: plan.title,
             fitness_goal: "General Fitness", // Default value, adjust as needed
             duration: 30, // Default number of days, adjust as needed
@@ -383,7 +381,16 @@ const WorkoutScreen = () => {
   
         console.log("New workout created successfully!");
       }
-  
+      
+      // Update memberData with the matched workout ID and set status to "completed"
+      setMemberData((prevMemberData) =>
+        prevMemberData.map((member) =>
+          member.requesteeID === requesteeID
+            ? { ...member, status: "completed", workout_id: currentWorkout.id }
+            : member
+        )
+      );
+
       // Update the state with the new or updated workout
       setWorkouts(prevWorkouts =>
         prevWorkouts.map(p =>
@@ -401,8 +408,11 @@ const WorkoutScreen = () => {
         text2: 'Your workout plan has been published successfully.',
         position: 'bottom',
       });
-  
+
+      // Trigger useEffect by toggling refreshTrigger
+      setRefreshTrigger((prev) => !prev);
       setViewState('');
+
     } catch (error) {
       console.error("Error handling workout plan:", error);
       Toast.show({
@@ -496,19 +506,20 @@ const WorkoutScreen = () => {
                 create a workout plan visible to everyone.
               </Text>
               {/* Render Member Requests List */}
-              {memberData.map((request) => (
-                <TouchableOpacity key={request.requesteeID}>
-                  <WorkoutRequest 
-                    memberName={request.requesteeName}
-                    fitnessGoal={request.fitnessGoal}
-                    weightGoal={request.weightGoal}
-                    allergens={request.allergens}
-                    height={request.height}
-                    weight={request.weight}
-                    age={request.age}
-                    onEditPress={() => handleRequestSelect(request)} // Trigger edit for the selected request
-                  />
-                </TouchableOpacity>
+              {memberData
+                .filter((request) => (request.status === "pending" || request.status === "created"))
+                .map((request) => (
+                  <TouchableOpacity key={request.requesteeID}>
+                    <WorkoutRequest 
+                      memberName={request.requesteeName}
+                      fitnessGoal={request.fitnessGoal}
+                      intensityLevel={request.intensityLevel}
+                      height={request.height}
+                      weight={request.weight}
+                      age={request.age}
+                      onEditPress={() => handleRequestSelect(request)}
+                    />
+                  </TouchableOpacity>
               ))}
           </View>
             ) : viewState === "createWO" ? (
@@ -544,7 +555,7 @@ const WorkoutScreen = () => {
                 }}
                 onAction={() => {
                   const newExercise: Exercise = {
-                    id: nanoid(), // Generate a unique ID for the new workout
+                    id: null, // Set initial value to null
                     name: `Exercise ${(newWorkout?.exercises?.length || 0) + 1}`, // Safely handle undefined
                     description: "",
                     image: null,
@@ -603,7 +614,7 @@ const WorkoutScreen = () => {
                     }}
                     onAction={() => {
                       const newExercise: Exercise = {
-                        id: nanoid(), // Generate a unique ID for the new workout
+                        id: null, // Set initial value to null
                         name: `Exercise ${(workout?.exercises.length || 0) + 1}`,
                         description: "",
                         image: null,

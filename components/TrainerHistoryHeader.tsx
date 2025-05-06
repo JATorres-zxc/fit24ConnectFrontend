@@ -23,8 +23,8 @@ export default function Header() {
         </View>
 
         <View style={styles.headerIcon}>
-          <FontAwesome name='user-circle' color={'black'} size={24} onPress={() => router.push('/(tabs)/profile')} />
-          <FontAwesome name='bell-o' color={'black'} size={24} onPress={() => router.push('/(tabs)/notifications')} />
+          <FontAwesome name='user-circle' color={'black'} size={24} onPress={() => router.push('/(trainer)/profile')} />
+          <FontAwesome name='bell-o' color={'black'} size={24} onPress={() => router.push('/(trainer)/notifications')} />
         </View>
       </View>
     </SafeAreaView>

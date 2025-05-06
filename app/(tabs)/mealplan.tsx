@@ -54,7 +54,7 @@ interface MealPlan {
   protein: number;
   carbs: number;
   weight_goal: number;
-  allergens: string;
+  allergies: string;
   instructions: string;
   visibleTo: string;
   requestee_id: string;
@@ -78,7 +78,7 @@ const MealPlanScreen = () => {
   const [trainers, setTrainers] = useState<Trainer[]>([]); // State to store trainers
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
-  const [allergens, setAllergens] = useState(""); // State to store allergens
+  const [allergies, setAllergies] = useState(""); // State to store allergies
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
 
@@ -143,7 +143,9 @@ const MealPlanScreen = () => {
         const mealPlansData = await mealPlansResponse.json();
   
         // Filter meal plans to only include those with status "completed"
-        const completedMealPlans = mealPlansData.filter((plan: MealPlan) => plan.status === 'completed');
+        // const completedMealPlans = mealPlansData.filter((plan: MealPlan) => plan.status === 'completed');
+        const completedMealPlans = mealPlansData;
+        setMealPlan(completedMealPlans);
   
         if (completedMealPlans.length === 0) {
           throw new Error('No completed meal plan found for the user');
@@ -156,7 +158,7 @@ const MealPlanScreen = () => {
           throw new Error('No completed meal plan found for the user');
         }
   
-        const mealPlan_id = userMealPlan.mealplan_id;
+        mealPlan_id = userMealPlan.mealplan_id;
   
         if (!token) {
           throw new Error('No token found');
@@ -196,7 +198,7 @@ const MealPlanScreen = () => {
   }, []);    
 
   const handleSubmit = async () => {
-    if (!trainer || !fitnessGoal || !weightGoal || !allergens) {
+    if (!trainer || !fitnessGoal || !weightGoal || !allergies) {
         Toast.show({
             type: 'error',
             text1: 'Missing Fields',
@@ -207,68 +209,75 @@ const MealPlanScreen = () => {
     }
 
     try {
+      const token = await AsyncStorage.getItem('authToken');
+      
       // Fetch member data from the profile API
-      const profileResponse = await fetch(`${API_BASE_URL}/api/profilee/profile/${userID}`, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      // const profileResponse = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
+      //   headers: {
+      //     'Accept': 'application/json',
+      //     'Authorization': `Bearer ${token}`,
+      //   },
+      // });
+    
+      // if (!profileResponse.ok) {
+      //   throw new Error(`Profile API error! status: ${profileResponse.status}`);
+      // }
+    
+      // const profileData = await profileResponse.json();
+      // Placeholder profile data since API is currently disabled
+        const profileData = {
+            height: 0,
+            weight: 0,
+            age: 0
+        };
 
-      if (!profileResponse.ok) {
-        throw new Error(`Profile API error! status: ${profileResponse.status}`);
-      }
+        const {
+            height = 0,
+            weight = 0,
+            age = 0
+        } = profileData;
 
-      const profileData = await profileResponse.json();
-      const { height, weight, age } = profileData;
+        // Use the request_plan endpoint to request a new meal plan
+        const requestResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/request_plan/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                trainer_id: trainer, // Trainer ID is required
+                fitness_goal: fitnessGoal,
+                weight_goal: weightGoal,
+                user_allergies: allergies,
+                height,
+                weight,
+                age,
+            }),
+        });
 
-      // Create an empty meal plan request (meals are added by the trainer)
-      const requestResponse = await fetch(`${API_BASE_URL}/api/mealplans`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          member_id: userID,
-          trainer_id: trainer,
-          fitness_goal: fitnessGoal,
-          weight_goal: weightGoal,
-          allergens,
-          height,
-          weight,
-          age,
-          meals: [],  // Empty meals (trainer will add them later)
-          instructions: "",  // Optional, can be updated later
-          status: "in_progress", // Optional status for tracking
-          requestee_id: userID,
-          requestee: userID, // Assuming the requestee is the same as the member
-        }),
-      });
+        if (!requestResponse.ok) {
+            throw new Error(`Meal Plan API error! status: ${requestResponse.status}`);
+        }
 
-      if (!requestResponse.ok) {
-        throw new Error(`Meal Plan API error! status: ${requestResponse.status}`);
-      }
+        Toast.show({
+            type: 'success',
+            text1: 'Request Submitted',
+            text2: 'Your meal plan request has been submitted successfully.',
+            position: 'bottom'
+        });
 
-      Toast.show({
-        type: 'success',
-        text1: 'Request Submitted',
-        text2: 'Your meal plan request has been submitted successfully.',
-        position: 'bottom'
-      });
-
-      setTimeout(() => {
-        setViewState("plan");
-      }, 2000);
+        setTimeout(() => {
+            setViewState("plan");
+        }, 2000);
 
     } catch (error) {
-      Toast.show({
-          type: 'error',
-          text1: 'Request Failed',
-          text2: 'There was an error with your meal plan request.',
-          position: 'bottom'
-      });
-    }
+        Toast.show({
+            type: 'error',
+            text1: 'Request Failed',
+            text2: 'There was an error with your meal plan request. Please check if you already have a pending request.',
+            position: 'bottom'
+        });
+      }
   };
 
   const handleFeedbackSubmit = async () => {
@@ -284,11 +293,13 @@ const MealPlanScreen = () => {
 
     try {
       // This is in line with an agreed central feedback and request database.
+      const token = await AsyncStorage.getItem('authToken');
 
-      const response = await fetch(`${API_BASE_URL}/api/mealplan/feedbacks`, {
+      const response = await fetch(`${API_BASE_URL}/api/mealplan/feedbacks/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           mealplan: mealPlan_id,
@@ -327,6 +338,8 @@ const MealPlanScreen = () => {
 
   const handleDelete = async () => {
     try {
+      const token = await AsyncStorage.getItem('authToken');
+
       // // Replace with actual API call
       const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}/`, {
         method: 'DELETE',
@@ -423,13 +436,13 @@ const MealPlanScreen = () => {
                   keyboardType="numeric"
                 />
 
-                <Text style={styles.requestHeaders}>Allergen/s</Text>
+                <Text style={styles.requestHeaders}>Allergies</Text>
                 <TextInput
-                  placeholder="Enter Your Allergen/s"
+                  placeholder="Enter Your Allergies"
                   placeholderTextColor={Colors.textSecondary}
                   style={styles.input}
-                  value={allergens}
-                  onChangeText={setAllergens}
+                  value={allergies}
+                  onChangeText={setAllergies}
                 />
 
                 <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
@@ -500,34 +513,43 @@ const MealPlanScreen = () => {
           ) : (
             // Nutritional Meal Plan View
             <>
-              {mealPlan && mealPlan.meals ? (
-                <View style={styles.planContainer}>
-                  <Header />
-                  {mealPlan.meals.map((meal, index) => (
-                    <View key={index} style={styles.mealItem}>
-                      <Text style={styles.mealTitle}>{meal.meal_name}</Text>
-                      <Text style={styles.mealDescription}>Type of Food:</Text>
-                      <Text style={styles.mealData}>{meal.meal_type}</Text>
-                      <Text style={styles.mealDescription}>Calories:</Text>
-                      <Text style={styles.mealData}>{meal.calories} kcal</Text>
-                      <Text style={styles.mealDescription}>Protein:</Text>
-                      <Text style={styles.mealData}>{meal.protein} g</Text>
-                      <Text style={styles.mealDescription}>Carbs:</Text>
-                      <Text style={styles.mealData}>{meal.carbs} g</Text>
-                      <Text style={styles.mealDescription}>Description:</Text>
-                      <Text style={styles.mealData}>{meal.description}</Text>
+              {mealPlan ? (
+                (mealPlan.status === "completed") ? (
+                  <View style={styles.planContainer}>
+                    <Header />
+                    {mealPlan.meals.map((meal, index) => (
+                      <View key={index} style={styles.mealItem}>
+                        <Text style={styles.mealTitle}>{meal.meal_name}</Text>
+                        <Text style={styles.mealDescription}>Type of Food:</Text>
+                        <Text style={styles.mealData}>{meal.meal_type}</Text>
+                        <Text style={styles.mealDescription}>Calories:</Text>
+                        <Text style={styles.mealData}>{meal.calories} kcal</Text>
+                        <Text style={styles.mealDescription}>Protein:</Text>
+                        <Text style={styles.mealData}>{meal.protein} g</Text>
+                        <Text style={styles.mealDescription}>Carbs:</Text>
+                        <Text style={styles.mealData}>{meal.carbs} g</Text>
+                        <Text style={styles.mealDescription}>Description:</Text>
+                        <Text style={styles.mealData}>{meal.description}</Text>
+                      </View>
+                    ))}
+                    <TouchableOpacity style={styles.trashIcon} onPress={() => setViewState("delete")}>
+                      <FontAwesome name="trash" size={24} color={Colors.black} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.buttonFeedback} onPress={() => setViewState("feedback")}>
+                      <Text style={styles.buttonText}>Send Feedback</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.buttonBlack} onPress={() => setViewState("request")}>
+                      <Text style={styles.buttonText}>Request New Meal Plan</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View>
+                    <Header />
+                    <View style={styles.centerContainer}>
+                      <Text style={styles.subtitle2}>Your meal plan is under review and will be available once your trainer completes it.</Text>
                     </View>
-                  ))}
-                  <TouchableOpacity style={styles.trashIcon} onPress={() => setViewState("delete")}>
-                    <FontAwesome name="trash" size={24} color={Colors.black} />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.buttonFeedback} onPress={() => setViewState("feedback")}>
-                    <Text style={styles.buttonText}>Send Feedback</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.buttonBlack} onPress={() => setViewState("request")}>
-                    <Text style={styles.buttonText}>Request New Meal Plan</Text>
-                  </TouchableOpacity>
-                </View>
+                  </View>
+                )
               ) : (
                 <View>
                   <Header />
@@ -540,8 +562,7 @@ const MealPlanScreen = () => {
                 </View>
               )}
             </>
-          )}
-          
+          )}   
         </View>
       </ScrollView>
       <Toast />

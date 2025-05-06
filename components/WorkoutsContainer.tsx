@@ -28,6 +28,7 @@ interface Workout {
   exercises: Exercise[];
   visibleTo: string;
   feedbacks: Feedback[];
+  status: string;
 }
 interface WorkoutsContainerProps {
   workouts: Workout[];

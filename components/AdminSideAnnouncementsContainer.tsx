@@ -85,7 +85,7 @@ export default function AdminAnnouncements({ announcements, onDelete, isLoading 
             </View>
 
             <View style={styles.cardFooter}>
-              <Text style={styles.postedby}>posted by {item.admin}</Text>
+              <Text style={styles.postedby}>posted by admin</Text>
             </View>
           </View>
         )}
