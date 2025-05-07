@@ -147,7 +147,7 @@ export default function MembersScreen() {
               
               <TouchableOpacity onPress={() => router.push({
                   pathname: `/(admin)/member-profile`,
-                  params: { memberId: item.id }
+                  params: { memberId: item.id } // Pass the member id to member-profile screen
                 })}>
                 <MaterialCommunityIcons name="credit-card-edit-outline" size={24} color="black"  />
               </TouchableOpacity>

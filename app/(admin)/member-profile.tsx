@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Text, View, StyleSheet, Image, ScrollView, Platform, TouchableOpacity } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 
 import Header from '@/components/NavigateBackHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Profile {
   image: any,
@@ -19,14 +20,78 @@ interface Profile {
 export default function MemberProfileScreen() {
   const [profile, setProfile] = useState<Profile>({
       image: require("@/assets/images/icon.png"),
-      username: 'John',
-      fullName: 'John Doe',
-      membershipType: 'Tier 1',
-      subscriptionStatus: 'Active',
+      username: '',
+      fullName: '',
+      membershipType: '',
+      subscriptionStatus: '',
   });
+
+  const { memberId } = useLocalSearchParams();
 
   const [membershipType, setMembershipType] = useState<string | undefined>('');
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | undefined>('');
+
+  useEffect(() => {
+    // Fetch data for the member using memberId
+    console.log('Member ID:', memberId);
+    // You can now use this ID to fetch details of the member from your API
+  }, [memberId]);
+
+  const updateMemberDetails = async () => {
+    const API_BASE_URL = 
+      Platform.OS === 'web'
+        ? 'http://127.0.0.1:8000'
+        : 'http://192.168.1.11:8000';
+  
+    const token = await AsyncStorage.getItem('authToken');
+    const userId = 1; // <-- Replace with actual user ID (could be passed via props or navigation params)
+  
+    try {
+      // Update Membership Type
+      if (membershipType) {
+        const typeResponse = await fetch(`${API_BASE_URL}/api/account/admin/update-membership-type/${userId}/`, {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type_of_membership: membershipType.toLowerCase().replace(' ', ''), // e.g., "Tier 1" -> "tier1"
+          }),
+        });
+  
+        if (!typeResponse.ok) {
+          const err = await typeResponse.text();
+          console.error('Membership type update failed:', err);
+        }
+      }
+  
+      // Update Subscription Status
+      if (subscriptionStatus) {
+        const statusResponse = await fetch(`${API_BASE_URL}/api/account/admin/members/${userId}/status/`, {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            is_active: subscriptionStatus === 'active',
+          }),
+        });
+  
+        if (!statusResponse.ok) {
+          const err = await statusResponse.text();
+          console.error('Subscription status update failed:', err);
+        }
+      }
+  
+      // Optional: Navigate or give feedback
+      alert('Update successful!');
+      router.push('/(admin)/members');
+    } catch (error) {
+      console.error('Error updating member details:', error);
+    }
+  };  
 
   return (
     <View style={styles.container}>
@@ -101,7 +166,7 @@ export default function MemberProfileScreen() {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={() => router.push('/(admin)/members')}>
+            <TouchableOpacity style={styles.button} onPress={updateMemberDetails}>
               <Text style={styles.buttonText}>Update Details</Text>
             </TouchableOpacity>
           </View>
