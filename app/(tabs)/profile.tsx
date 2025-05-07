@@ -69,7 +69,7 @@ export default function ProfileScreen() {
           ? { uri: `${API_BASE_URL}${data.image}` } // Assuming image is a URL path
           : require("@/assets/images/icon.png"),
         username: data.username || '',
-        membershipType: data.membership_type || '',
+        membershipType: data.type_of_membership || '',
         membershipStatus: data.membership_status || '',
         fullName: data.full_name || '',
         email: data.email || '',

@@ -11,6 +11,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 type Member = {
   id: string;
   full_name: string;
+  membership_type: string,
+  membership_start_date: string,
+  membership_end_date: string,
 };
 
 export default function MembersScreen() {
@@ -19,6 +22,7 @@ export default function MembersScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [trainers, setTrainers] = useState<Member[]>([]);
+  const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
   
   // 👇 Fetch the trainer list from the API
   useEffect(() => {
@@ -28,7 +32,7 @@ export default function MembersScreen() {
           Platform.OS === 'web'
             ? 'http://127.0.0.1:8000'
             : 'http://192.168.1.11:8000';
-
+  
         const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/account/members/`, {
           headers: {
@@ -36,13 +40,11 @@ export default function MembersScreen() {
             'Content-Type': 'application/json',
           },
         });
-
+  
         if (response.ok) {
           const data = await response.json();
-          console.log('API Response:', data);
-
-          // Assuming your API returns something like [{ name: 'John', trainerId: 1 }, ...]
           setMembers(data);
+          setFilteredMembers(data); // initialize both
         } else {
           console.error('Failed to fetch members', await response.text());
         }
@@ -50,16 +52,16 @@ export default function MembersScreen() {
         console.error('Error fetching members:', error);
       }
     };
-
+  
     fetchMembers();
   }, []);
-
+  
   useEffect(() => {
     const filtered = members.filter(member =>
       member.full_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    setMembers(filtered);
-  }, [searchQuery]);
+    setFilteredMembers(filtered);
+  }, [searchQuery, members]);
 
   const handleAssignTrainer = async () => {
     if (selectedMember) {
@@ -127,7 +129,7 @@ export default function MembersScreen() {
       </View>
 
       <FlatList
-        data={members}
+        data={filteredMembers}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.card}>
@@ -147,7 +149,13 @@ export default function MembersScreen() {
               
               <TouchableOpacity onPress={() => router.push({
                   pathname: `/(admin)/member-profile`,
-                  params: { memberId: item.id } // Pass the member id to member-profile screen
+                  params: {
+                    memberId: item.id,
+                    fullName: item.full_name,
+                    membershipType: item.membership_type,
+                    startDate: item.membership_start_date,
+                    endDate: item.membership_end_date,
+                  } // Pass the member details to member-profile screen
                 })}>
                 <MaterialCommunityIcons name="credit-card-edit-outline" size={24} color="black"  />
               </TouchableOpacity>

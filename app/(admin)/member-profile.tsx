@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Text, View, StyleSheet, Image, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, Image, ScrollView, Platform, TouchableOpacity, TextInput } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 
@@ -14,7 +14,8 @@ interface Profile {
   username: string,
   fullName: string,
   membershipType: string,
-  subscriptionStatus: string,
+  startDate?: string,
+  endDate?: string,
 }
 
 export default function MemberProfileScreen() {
@@ -23,18 +24,46 @@ export default function MemberProfileScreen() {
       username: '',
       fullName: '',
       membershipType: '',
-      subscriptionStatus: '',
+      startDate: '',
+      endDate: '',
   });
 
-  const { memberId } = useLocalSearchParams();
+  const { memberId, fullName, membershipStartDate, membershipEndDate } = useLocalSearchParams();
 
   const [membershipType, setMembershipType] = useState<string | undefined>('');
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string | undefined>('');
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const validateDate = (dateString: string): boolean => {
+    // Simple regex check for mm/dd/yyyy format
+    return /^\d{2}\/\d{2}\/\d{4}$/.test(dateString);
+  };
+  
+  // Then in your update function:
+  if (startDate && !validateDate(startDate)) {
+    alert('Please enter start date in MM/DD/YYYY format');
+    return;
+  }
+
+  const formatDateForBackend = (dateString: string): string => {
+    // If the date is already in yyyy-mm-dd format, return as-is
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      return dateString;
+    }
+  
+    // Try to parse as mm/dd/yyyy
+    const parts = dateString.split('/');
+    if (parts.length === 3) {
+      const [month, day, year] = parts;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+  
+    // If format is unrecognized, return empty string or handle error
+    return '';
+  };
 
   useEffect(() => {
-    // Fetch data for the member using memberId
     console.log('Member ID:', memberId);
-    // You can now use this ID to fetch details of the member from your API
   }, [memberId]);
 
   const updateMemberDetails = async () => {
@@ -44,12 +73,11 @@ export default function MemberProfileScreen() {
         : 'http://192.168.1.11:8000';
   
     const token = await AsyncStorage.getItem('authToken');
-    const userId = 1; // <-- Replace with actual user ID (could be passed via props or navigation params)
   
     try {
       // Update Membership Type
       if (membershipType) {
-        const typeResponse = await fetch(`${API_BASE_URL}/api/account/admin/update-membership-type/${userId}/`, {
+        const typeResponse = await fetch(`${API_BASE_URL}/api/account/admin/update-membership-type/${memberId}/`, {
           method: 'PATCH',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -65,26 +93,28 @@ export default function MemberProfileScreen() {
           console.error('Membership type update failed:', err);
         }
       }
-  
-      // Update Subscription Status
-      if (subscriptionStatus) {
-        const statusResponse = await fetch(`${API_BASE_URL}/api/account/admin/members/${userId}/status/`, {
+
+      // Format dates for backend
+      const formattedStartDate = startDate ? formatDateForBackend(startDate) : '';
+      const formattedEndDate = endDate ? formatDateForBackend(endDate) : '';
+
+      if (formattedStartDate !== membershipStartDate || formattedEndDate !== membershipEndDate) {
+        const datesResponse = await fetch(`${API_BASE_URL}/api/account/admin/members/${memberId}/status/`, {
           method: 'PATCH',
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            is_active: subscriptionStatus === 'active',
+            membership_start_date: startDate,
+            membership_end_date: endDate,
           }),
         });
   
-        if (!statusResponse.ok) {
-          const err = await statusResponse.text();
-          console.error('Subscription status update failed:', err);
+        if (!datesResponse.ok) {
+          throw new Error('Subscription dates update failed');
         }
       }
-  
       // Optional: Navigate or give feedback
       alert('Update successful!');
       router.push('/(admin)/members');
@@ -106,7 +136,7 @@ export default function MemberProfileScreen() {
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.username}>{profile.username}</Text>
+          <Text style={styles.username}>{(fullName as string).split(' ')[0] || ''}</Text>
         </View>
       </View>
 
@@ -115,7 +145,7 @@ export default function MemberProfileScreen() {
           {/* Full Name Details*/}
           <View style={styles.field}>
             <Text style={styles.label}>Full Name</Text>
-            <Text style={styles.value}>{profile.fullName}</Text>
+            <Text style={styles.value}>{fullName}</Text>
           </View>
 
           {/* Membership Type Details*/}
@@ -142,27 +172,28 @@ export default function MemberProfileScreen() {
             </View>
           </View>
 
-          {/* Subscription Status Details*/}
+          {/* Subscription Start Date Details*/}
           <View style={styles.field}>
-            <Text style={styles.label}>Subscription Status</Text>
-            <View style={styles.typePicker}>
-              <RNPickerSelect
-                onValueChange={(value) => setSubscriptionStatus(value)}
-                items={[
-                  { label: 'Active', value: 'active' },
-                  { label: 'Inactive', value: 'inactive' },
-                ]}
-                style={pickerSelectStyles}
-                value={subscriptionStatus}
-                placeholder={{ label: 'Choose Subscription Status', value: null }}
-                useNativeAndroidPickerStyle={false}
-                Icon={() =>
-                  Platform.OS === "ios" ? (
-                    <MaterialCommunityIcons name="chevron-down" size={20} color="gray" />
-                  ) : null
-                }
-              />
-            </View>
+            <Text style={styles.label}>Subscription Start Date</Text>
+            <TextInput
+              placeholder="MM/DD/YYYY"
+              placeholderTextColor={Colors.textSecondary}
+              style={styles.input}
+              value={startDate}
+              onChangeText={setStartDate}
+            />
+          </View>
+
+          {/* Subscription Start Date Details*/}
+          <View style={styles.field}>
+            <Text style={styles.label}>Subscription End Date</Text>
+            <TextInput
+              placeholder="MM/DD/YYYY"
+              placeholderTextColor={Colors.textSecondary}
+              style={styles.input}
+              value={endDate}
+              onChangeText={setEndDate}
+            />
           </View>
 
           <View style={styles.buttonContainer}>
@@ -247,6 +278,16 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     fontSize: 14,
   },
+  input: {
+    marginBottom: 10,
+    borderColor: Colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginVertical: 5,
+    fontFamily: Fonts.regular,
+},
   buttonContainer: {
     marginTop: 30,
   },
