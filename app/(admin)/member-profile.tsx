@@ -34,39 +34,14 @@ export default function MemberProfileScreen() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const validateDate = (dateString: string): boolean => {
-    // Simple regex check for mm/dd/yyyy format
-    return /^\d{2}\/\d{2}\/\d{4}$/.test(dateString);
-  };
-  
-  // Then in your update function:
-  if (startDate && !validateDate(startDate)) {
-    alert('Please enter start date in MM/DD/YYYY format');
-    return;
-  }
-
-  const formatDateForBackend = (dateString: string): string => {
-    // If the date is already in yyyy-mm-dd format, return as-is
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-      return dateString;
-    }
-  
-    // Try to parse as mm/dd/yyyy
-    const parts = dateString.split('/');
-    if (parts.length === 3) {
-      const [month, day, year] = parts;
-      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-    }
-  
-    // If format is unrecognized, return empty string or handle error
-    return '';
-  };
-
+  // Initialize states with params
   useEffect(() => {
-    console.log('Member ID:', memberId);
-  }, [memberId]);
+    if (membershipStartDate) setStartDate(membershipStartDate as string);
+    if (membershipEndDate) setEndDate(membershipEndDate as string);
+  }, [membershipStartDate, membershipEndDate]);
 
   const updateMemberDetails = async () => {
+
     const API_BASE_URL = 
       Platform.OS === 'web'
         ? 'http://127.0.0.1:8000'
@@ -94,11 +69,7 @@ export default function MemberProfileScreen() {
         }
       }
 
-      // Format dates for backend
-      const formattedStartDate = startDate ? formatDateForBackend(startDate) : '';
-      const formattedEndDate = endDate ? formatDateForBackend(endDate) : '';
-
-      if (formattedStartDate !== membershipStartDate || formattedEndDate !== membershipEndDate) {
+      if (startDate !== membershipStartDate || endDate !== membershipEndDate) {
         const datesResponse = await fetch(`${API_BASE_URL}/api/account/admin/members/${memberId}/status/`, {
           method: 'PATCH',
           headers: {
@@ -176,7 +147,7 @@ export default function MemberProfileScreen() {
           <View style={styles.field}>
             <Text style={styles.label}>Subscription Start Date</Text>
             <TextInput
-              placeholder="MM/DD/YYYY"
+              placeholder="YYYY-MM-DD"
               placeholderTextColor={Colors.textSecondary}
               style={styles.input}
               value={startDate}
@@ -188,7 +159,7 @@ export default function MemberProfileScreen() {
           <View style={styles.field}>
             <Text style={styles.label}>Subscription End Date</Text>
             <TextInput
-              placeholder="MM/DD/YYYY"
+              placeholder="YYYY-MM-DD"
               placeholderTextColor={Colors.textSecondary}
               style={styles.input}
               value={endDate}
