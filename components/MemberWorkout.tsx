@@ -42,10 +42,10 @@ const MemberWorkout: React.FC<MemberWorkoutProps> = ({ workout, requesteeName, o
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Image
-                    source={workout.exercises[0].image ? { uri: workout.exercises[0].image } : require("@/assets/images/icon.png")}
-                    style={styles.image}
-                />
+            <Image
+                source={require("@/assets/images/icon.png")}
+                style={styles.image}
+            />
                 <View style={styles.textContainer}>
                     <Text style={styles.title}>{workout.title}</Text>
                     <Text style={styles.subtitle}>Accessible by:</Text>

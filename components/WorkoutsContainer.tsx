@@ -29,6 +29,7 @@ interface Workout {
   visibleTo: string;
   feedbacks: Feedback[];
   status: string;
+  requestee: string | null; // Added requestee property
 }
 interface WorkoutsContainerProps {
   workouts: Workout[];
@@ -47,8 +48,8 @@ const WorkoutsContainer: React.FC<WorkoutsContainerProps> = ({ workouts, onWorko
             <View key={workout.id}>
               <TouchableOpacity style={styles.workoutItem} onPress={() => onWorkoutPress(workout)}>
               <Image
-                source={workout.exercises[0].image ? { uri: workout.exercises[0].image } : require("@/assets/images/icon.png")}
-                style={styles.workoutImage}
+                  source={require("@/assets/images/icon.png")}
+                  style={styles.workoutImage}
               />
                 <View style={styles.textContainer}>
                   <Text style={styles.workoutTitle}>{workout.title}</Text>

@@ -34,11 +34,11 @@ const WorkoutRequest: React.FC<WorkoutRequestProps> = ({ memberName, fitnessGoal
                         </View>
                         <View style={styles.column}>
                             <Text style={styles.infoTitle}>Height:</Text>
-                            <Text style={styles.infoText}>{height}</Text>
+                            <Text style={styles.infoText}>{height} cm</Text>
                             <Text style={styles.infoTitle}>Weight:</Text>
-                            <Text style={styles.infoText}>{weight}</Text>
+                            <Text style={styles.infoText}>{weight} kg</Text>
                             <Text style={styles.infoTitle}>Age:</Text>
-                            <Text style={styles.infoText}>{age}</Text>
+                            <Text style={styles.infoText}>{age} Y.O.</Text>
                         </View>
                     </View>
                     <View style={styles.horizontalLine} />

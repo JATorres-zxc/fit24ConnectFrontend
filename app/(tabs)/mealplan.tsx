@@ -249,9 +249,9 @@ const MealPlanScreen = () => {
                 fitness_goal: fitnessGoal,
                 weight_goal: weightGoal,
                 user_allergies: allergies,
-                height,
-                weight,
-                age,
+                // height: profileData.height,
+                // weight: profileData.weight,
+                // age: profileData.age,
             }),
         });
 
