@@ -65,7 +65,7 @@ export default function HistoryScreen() {
             : 'http://192.168.1.11:8000';
   
         const token = await AsyncStorage.getItem('authToken');
-        const response = await fetch(`${API_BASE_URL}/api/reports/`, {
+        const response = await fetch(`${API_BASE_URL}/api/reports/reports/`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
