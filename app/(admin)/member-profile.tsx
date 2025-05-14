@@ -208,12 +208,11 @@ export default function MemberProfileScreen() {
                   { label: 'Tier 3', value: 'Tier 3' },
                 ]}
                 style={pickerSelectStyles}
-                value={""}
-                placeholder={{ 
-                  label: selectedMembershipType || hasMembership
-                    ? `${formatMembershipType(String(selectedMembershipType))}`
-                    : "Choose Membership Type",
-                  value: hasMembership ? String(selectedMembershipType) : null
+                value={selectedMembershipType || (hasMembership ? hasMembership : null)}
+                placeholder={{
+                  label: "Choose Membership Type",
+                  value: null,
+                  color: 'gray',
                 }}
                 useNativeAndroidPickerStyle={false}
                 Icon={() =>
