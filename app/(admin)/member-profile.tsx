@@ -184,7 +184,7 @@ export default function MemberProfileScreen() {
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.username}>{(fullName as string).split(' ')[0] || ''}</Text>
+          <Text style={styles.username}>{fullName ? (fullName as string).split(' ')[0] : 'User has not set up profile.'}</Text>
         </View>
       </View>
 
@@ -193,7 +193,7 @@ export default function MemberProfileScreen() {
           {/* Full Name Details*/}
           <View style={styles.field}>
             <Text style={styles.label}>Full Name</Text>
-            <Text style={styles.value}>{fullName}</Text>
+            <Text style={styles.value}>{fullName ? fullName : ''}</Text>
           </View>
 
           {/* Membership Type Details*/}

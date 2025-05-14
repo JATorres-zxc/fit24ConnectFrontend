@@ -18,13 +18,16 @@ type Member = {
 
 export default function MembersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [allMembers, setAllMembers] = useState<Member[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [trainers, setTrainers] = useState<Member[]>([]);
+  const hasMissingNames = members.some(member => !member.full_name?.trim());
+
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
   
-  // 👇 Fetch the trainer list from the API
+  // 👇 Fetch the member list from the API
   useEffect(() => {
     const fetchMembers = async () => {
       try {
@@ -43,6 +46,7 @@ export default function MembersScreen() {
   
         if (response.ok) {
           const data = await response.json();
+          setAllMembers(data);
           setMembers(data);
           setFilteredMembers(data); // initialize both
         } else {
@@ -57,11 +61,12 @@ export default function MembersScreen() {
   }, []);
   
   useEffect(() => {
-    const filtered = members.filter(member =>
-      member.full_name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredMembers(filtered);
-  }, [searchQuery, members]);
+    const filtered = allMembers.filter(member => {
+      const name = String(member.full_name || member.id || '');
+      return name.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+    setMembers(filtered);
+  }, [searchQuery, allMembers]);  
 
   const handleAssignTrainer = async () => {
     if (selectedMember) {
@@ -127,14 +132,22 @@ export default function MembersScreen() {
         </View>
       </View>
 
+      {hasMissingNames && (
+        <Text style={{ color: 'orange', fontStyle: 'italic', marginHorizontal: 20 }}>
+          Some members and/or trainers have not set up their profiles yet.
+        </Text>
+      )}
+
       <FlatList
-        data={filteredMembers}
+        data={members}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.card}>
             {/* Left Section - Member Name */}
             <View style={styles.leftSection}>
-              <Text style={styles.name}>{item.full_name}</Text>
+              <Text style={styles.name}>
+                {item.full_name || `Member ID: ${item.id}`}
+              </Text>
             </View>
 
             {/* Right Section - Icons */}
@@ -187,7 +200,7 @@ export default function MembersScreen() {
                 <Text style={styles.modalText}>
                   You're going to assign{' '}
                   <Text style={styles.selectedMember}>
-                    "{selectedMember?.full_name}"
+                    "{selectedMember?.full_name?.trim() || selectedMember?.id}"
                   </Text> 
                   {' '}as a trainer. Are you sure?
                 </Text>
