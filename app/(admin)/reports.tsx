@@ -16,6 +16,7 @@ export default function HistoryScreen() {
   const showExportPopup = async (reportType: string) => {
     setSelectedReportType(reportType);
     setModalVisible(true);
+    console.log('Exporting report for type:', reportType);
 
     try {
       const API_BASE_URL =
@@ -24,13 +25,11 @@ export default function HistoryScreen() {
           : 'http://192.168.1.11:8000';
   
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch(`${API_BASE_URL}/api/reports/facility-access-pdf/`, {
-        method: 'POST',
+      const response = await fetch(`${API_BASE_URL}/api/reports/reports/generate/`, {
+        method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ reportType }),
       });
   
       if (response.ok) {
@@ -75,13 +74,22 @@ export default function HistoryScreen() {
         if (response.ok) {
           const data = await response.json();
           console.log('API Response:', data);
+
+          const typeLabels = {
+            facility: 'Facility',
+            user: 'User',
+            trainer: 'Trainer',
+            general: 'General',
+            membership: 'Membership',
+            access_logs: 'Access Logs',
+          };
   
           const formattedReports = data.map((item) => ({
             id: item.id.toString(),
-            // reportType: item.report_type,
+            reportType: typeLabels[item.type] || item.type,
             startDate: formatDate(item.start_date),
             endDate: formatDate(item.end_date),
-            generatedDate: formatDate(item.generated_date),
+            generatedDate: formatDate(item.created_at),
           }));
   
           setReports(formattedReports);
