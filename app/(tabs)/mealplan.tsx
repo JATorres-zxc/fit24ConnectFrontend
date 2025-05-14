@@ -72,6 +72,13 @@ let userID: string | null = null;
 let mealPlan_id: number | null = null;
 
 const MealPlanScreen = () => {
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
+
+  // Trigger refresh on component mount
+    useEffect(() => {
+      setRefreshTrigger((prev) => !prev);
+    }, []);
+
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State to store meal plan
   const [trainer, setTrainer] = useState<Trainer | null>(null);
@@ -119,7 +126,7 @@ const MealPlanScreen = () => {
     };
   
     fetchTrainers();
-  }, []);
+  }, [refreshTrigger]);
 
   // Fetching Meal Plan from API
   
@@ -195,7 +202,7 @@ const MealPlanScreen = () => {
     };
   
     fetchMealPlan();
-  }, []);    
+  }, [refreshTrigger]);    
 
   const handleSubmit = async () => {
     if (!trainer || !fitnessGoal || !weightGoal || !allergies) {
@@ -249,9 +256,9 @@ const MealPlanScreen = () => {
                 fitness_goal: fitnessGoal,
                 weight_goal: weightGoal,
                 user_allergies: allergies,
-                height,
-                weight,
-                age,
+                // height: profileData.height,
+                // weight: profileData.weight,
+                // age: profileData.age,
             }),
         });
 
@@ -278,6 +285,8 @@ const MealPlanScreen = () => {
             position: 'bottom'
         });
       }
+    // Trigger useEffect by toggling refreshTrigger
+    setRefreshTrigger((prev) => !prev);
   };
 
   const handleFeedbackSubmit = async () => {
@@ -334,6 +343,8 @@ const MealPlanScreen = () => {
         position: 'bottom'
       });
     }
+    // Trigger useEffect by toggling refreshTrigger
+    setRefreshTrigger((prev) => !prev);
   };
 
   const handleDelete = async () => {
@@ -381,6 +392,8 @@ const MealPlanScreen = () => {
         position: 'bottom'
       });
     }
+    // Trigger useEffect by toggling refreshTrigger
+    setRefreshTrigger((prev) => !prev);
   };
 
   return (
@@ -488,7 +501,6 @@ const MealPlanScreen = () => {
                     }
                   />
                 </View>
-
                 <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
                   <Text style={styles.buttonText}>Submit Feedback</Text>
                 </TouchableOpacity>
@@ -513,8 +525,9 @@ const MealPlanScreen = () => {
           ) : (
             // Nutritional Meal Plan View
             <>
-              {mealPlan ? (
-                (mealPlan.status === "completed") ? (
+              {mealPlan && 
+                typeof mealPlan === "object" && mealPlan.status && mealPlan.requestee_id === userID ? (
+                  mealPlan.status === "completed" && Array.isArray(mealPlan.meals) && mealPlan.meals.length > 0 ? (
                   <View style={styles.planContainer}>
                     <Header />
                     {mealPlan.meals.map((meal, index) => (

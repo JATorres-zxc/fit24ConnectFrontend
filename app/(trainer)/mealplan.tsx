@@ -78,6 +78,13 @@ let requesteeID: string | null = null;
 let mealPlan_id: number | null = null;
 
 const MealPlanScreen = () => {
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
+
+  // Trigger refresh on component mount
+  useEffect(() => {
+    setRefreshTrigger((prev) => !prev);
+  }, []);
+  
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]); // State for multiple meal plans
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null); // State for singular meal plan
@@ -88,28 +95,28 @@ const MealPlanScreen = () => {
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
   const [memberData, setMemberData] = useState<SelectedMemberData[]>([
-    {
-      requesteeID: '1',
-      requesteeName: 'John Daks',
-      height: '170',
-      weight: '65',
-      age: '25',
-      fitnessGoal: 'Gain Weight',
-      weightGoal: '60',
-      allergies: 'Peanuts, Dairy',
-      status: 'in_progress',
-    },
-    {
-      requesteeID: '3',
-      requesteeName: 'Jane Smith',
-      height: '165',
-      weight: '55',
-      age: '28',
-      fitnessGoal: 'Lose Fat',
-      weightGoal: '50',
-      allergies: 'Shellfish',
-      status: 'in_progress',
-    },
+    // {
+    //   requesteeID: '1',
+    //   requesteeName: 'John Daks',
+    //   height: '170',
+    //   weight: '65',
+    //   age: '25',
+    //   fitnessGoal: 'Gain Weight',
+    //   weightGoal: '60',
+    //   allergies: 'Peanuts, Dairy',
+    //   status: 'in_progress',
+    // },
+    // {
+    //   requesteeID: '3',
+    //   requesteeName: 'Jane Smith',
+    //   height: '165',
+    //   weight: '55',
+    //   age: '28',
+    //   fitnessGoal: 'Lose Fat',
+    //   weightGoal: '50',
+    //   allergies: 'Shellfish',
+    //   status: 'in_progress',
+    // },
     // You can add more members in this list as needed
   ]);
   const [selectedMemberData, setSelectedMemberData] = useState<SelectedMemberData | null>(null); // Default to the first member in the list
@@ -131,9 +138,6 @@ const MealPlanScreen = () => {
     requestee: selectedMemberData?.requesteeID || '', // Default to the first member's ID
     status: "in_progress", // Default status
   });
- 
-  // Refreshing state
-  const [refreshTrigger, setRefreshTrigger] = useState(false);
 
   // Fetch only mealplan requests and retrieve corresponding member profiles
   
@@ -222,7 +226,7 @@ const MealPlanScreen = () => {
     };
   
     fetchMealplanRequests();
-  }, []);
+  }, [refreshTrigger]);
     
   // Fetching Meal Plan from API
   
@@ -302,7 +306,7 @@ const MealPlanScreen = () => {
     };
   
     fetchMealPlans();
-  }, []);  
+  }, [refreshTrigger]);  
 
   const handlePublish = async (currentMealPlan?: MealPlan) => {
     if (!currentMealPlan || !currentMealPlan.meals || currentMealPlan.meals.length === 0) {
@@ -625,7 +629,6 @@ const MealPlanScreen = () => {
                     style={styles.submitButton}
                     onPress={() => {
                       if (!mealPlan) return; // Prevent passing null
-                      console.log("Meal Plan to publish:", mealPlan);
                       handlePublish(mealPlan);
                     }}
                   >

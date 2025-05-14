@@ -54,7 +54,7 @@ interface Workout {
   visibleTo: string;
   feedbacks: Feedback[];
   status: string;
-  member_id?: string; // Added member_id property
+  requestee: string | null; // Added member_id property
 }
 
 const API_BASE_URL =
@@ -124,7 +124,7 @@ const WorkoutScreen = () => {
         token = await AsyncStorage.getItem('authToken');
         userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
         
-        const response = await fetch(`${API_BASE_URL}/api/workout/workouts/`, {
+        const response = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
@@ -136,6 +136,8 @@ const WorkoutScreen = () => {
         }
   
         const programsData = await response.json();
+
+        console.log("Programs Data Member: ", programsData);
         
         // Based on backend, the requestee contains the userID or "everyone" that it is visible to.
         // Filter workout programs based on requestee matching userID or "everyone" and status is completed
@@ -143,8 +145,6 @@ const WorkoutScreen = () => {
           program.status === "completed" &&
           (String(program.requestee) === String(userID) || program.requestee === null) // means that it is visible to everyone
         );
-  
-        console.log('Filtered Programs:', filteredPrograms);
   
         if (filteredPrograms.length === 0) {
           throw new Error('No workouts available for the user');
@@ -159,14 +159,10 @@ const WorkoutScreen = () => {
           trainer: userProgram.trainer || "N/A",
           exercises: userProgram.workout_exercises.map((exercise: any) => ({
             id: exercise.id.toString(),
-            name: exercise.exercise_details.name,
-            description: exercise.exercise_details.description,
-            image: "", // Add image URL if available
-            sets: exercise.sets,
-            reps: exercise.reps,
-            restTime: exercise.rest_time,
-            durationPerSet: exercise.duration_per_set,
-            notes: exercise.notes,
+            image: "", // Add image URL if available in the backend
+            name: exercise.name,
+            description: exercise.description,
+            muscle_group: exercise.muscle_group,
           })),
           visibleTo: userProgram.requestee || "everyone",
           feedbacks: [], // Adjust if feedback is available
@@ -190,45 +186,47 @@ const WorkoutScreen = () => {
   }, []);    
 
   const [workouts, setWorkouts] = useState<Workout[]>([
-    {
-      id: "WO1",
-      title: "Full Body Workout",
-      fitnessGoal: "Strength and Conditioning",
-      intensityLevel: "High",
-      trainer: "Trainer A",
-      exercises: [
-        { id: "EX1", name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: require("@/assets/images/icon.png") },
-        { id: "EX2", name: "Squats", description: "Perform squats to work on lower body strength.", image: require("@/assets/images/icon.png") },
-      ],
-      visibleTo: "everyone",
-      feedbacks: [
-        { id: "feedback1", feedback: "Great workout!", rating: 5, createdAt: new Date() },
-      ],
-      status: "completed",
-    },
-    {
-      id: "WO2",
-      title: "Cardio Blast",
-      fitnessGoal: "Cardiovascular Health",
-      intensityLevel: "Medium",
-      trainer: "Trainer B",
-      exercises: [
-        { id: "EX3", name: "Jumping Jacks", description: "Perform jumping jacks to get your heart rate up.", image: "https://example.com/jumpingjacks.jpg" },
-        { id: "EX4", name: "Burpees", description: "Perform burpees to improve endurance.", image: "https://example.com/burpees.jpg" },
-      ],
-      visibleTo: "1",
-      feedbacks: [
-        { id: "feedback2", feedback: "Intense but effective!", rating: 4, createdAt: new Date() },
-      ],
-      status: "completed",
-    },
+    // {
+    //   id: "WO1",
+    //   title: "Full Body Workout",
+    //   fitnessGoal: "Strength and Conditioning",
+    //   intensityLevel: "High",
+    //   trainer: "Trainer A",
+    //   exercises: [
+    //     { id: "EX1", name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: require("@/assets/images/icon.png") },
+    //     { id: "EX2", name: "Squats", description: "Perform squats to work on lower body strength.", image: require("@/assets/images/icon.png") },
+    //   ],
+    //   visibleTo: "everyone",
+    //   feedbacks: [
+    //     { id: "feedback1", feedback: "Great workout!", rating: 5, createdAt: new Date() },
+    //   ],
+    //   status: "completed",
+    //   requestee: null,
+    // },
+    // {
+    //   id: "WO2",
+    //   title: "Cardio Blast",
+    //   fitnessGoal: "Cardiovascular Health",
+    //   intensityLevel: "Medium",
+    //   trainer: "Trainer B",
+    //   exercises: [
+    //     { id: "EX3", name: "Jumping Jacks", description: "Perform jumping jacks to get your heart rate up.", image: require("@/assets/images/icon.png") },
+    //     { id: "EX4", name: "Burpees", description: "Perform burpees to improve endurance.", image: require("@/assets/images/icon.png") },
+    //   ],
+    //   visibleTo: "1",
+    //   feedbacks: [
+    //     { id: "feedback2", feedback: "Intense but effective!", rating: 4, createdAt: new Date() },
+    //   ],
+    //   status: "completed",
+    //   requestee: "1",
+    // },
   ]);
 
   const handleDelete = async (workout: Workout) => {
     try {
       token = await AsyncStorage.getItem('authToken');
 
-      const response = await fetch(`${API_BASE_URL}/api/workout/workouts/${workout.id}/`, {
+      const response = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/${workout.id}/`, {
         method: 'DELETE',
         headers: {
           'Accept': 'application/json',
@@ -297,7 +295,7 @@ const WorkoutScreen = () => {
     // This is in line with an agreed central feedback and request database.
     const token = await AsyncStorage.getItem('authToken');
 
-    const response = await fetch(`${API_BASE_URL}/api/workout/feedbacks/`, {
+    const response = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/feedbacks/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -352,34 +350,9 @@ const WorkoutScreen = () => {
 
     try {
       const token = await AsyncStorage.getItem('authToken');  
-      
-      // Fetch member data from the profile API
-        // const profileResponse = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
-        //     headers: {
-        //         'Accept': 'application/json',
-        //         'Authorization': `Bearer ${token}`,
-        //     },
-        // });
 
-        // if (!profileResponse.ok) {
-        //     throw new Error(`Profile API error! Status: ${profileResponse.status}`);
-        // }
-
-        // Placeholder profile data since API is currently disabled
-        const profileData = {
-            height: 0,
-            weight: 0,
-            age: 0
-        };
-
-        const {
-            height = 0,
-            weight = 0,
-            age = 0
-        } = profileData;
-
-        // Use the request_workout endpoint to request a new workout
-        const requestResponse = await fetch(`${API_BASE_URL}/api/workout/workouts/request_workout/`, {
+        // Use the endpoint to request a new workout
+        const requestResponse = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -391,9 +364,6 @@ const WorkoutScreen = () => {
                 intensity_level: intensityLevel,
                 status: "pending",
                 requestee: userID, // User ID is required
-                height,
-                weight,
-                age,
             }),
         });
 
@@ -555,12 +525,17 @@ const WorkoutScreen = () => {
               <View style={styles.planContainer}>
                 <PersonalWorkoutsHeader setViewState={setViewState} />
                 {workouts.filter(w => w.visibleTo?.toString() === userID?.toString()).length > 0 ? (
-                  <WorkoutsContainer
-                    workouts={workouts.filter(w => w.visibleTo?.toString() === userID?.toString())}
-                    onWorkoutPress={handleWorkoutPress}
-                    onTrashPress={handleTrashPress}
-                  />
-                ) : workouts.some(workout => workout.status === "pending" || workout.status === "created") ? (
+                  <View>
+                    <WorkoutsContainer
+                      workouts={workouts.filter(w => w.visibleTo?.toString() === userID?.toString())}
+                      onWorkoutPress={handleWorkoutPress}
+                      onTrashPress={handleTrashPress}
+                    />
+                    <TouchableOpacity style={styles.buttonBlack} onPress={() => setViewState("request")}>
+                      <Text style={styles.buttonText}>Request New Workout</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : workouts.some(workout => workout.status === "pending") ? (
                   <View style={styles.centerContainer}>
                     <Text style={styles.subtitle2}>
                       You have a pending workout request. Please wait for your trainer to complete it. You cannot request a new workout at this time.
@@ -580,7 +555,7 @@ const WorkoutScreen = () => {
             </>
           ) : (
             <>
-              {workouts.filter(w => w.visibleTo === "everyone").length > 0 ? (
+              {workouts.filter(w => w.visibleTo === "everyone" && w.status === "completed").length > 0 ? (
                 <View style={styles.planContainer}>
                   <Header />
                   <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("personalWO")}>
