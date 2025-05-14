@@ -11,7 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 type Member = {
   id: string;
   full_name: string;
-  membership_type: string,
+  type_of_membership: string,
   membership_start_date: string,
   membership_end_date: string,
 };
@@ -109,7 +109,6 @@ export default function MembersScreen() {
       }
     }
   };
-  
 
   return (
     <View style={styles.container}>
@@ -152,9 +151,9 @@ export default function MembersScreen() {
                   params: {
                     memberId: item.id,
                     fullName: item.full_name,
-                    membershipType: item.membership_type,
-                    startDate: item.membership_start_date,
-                    endDate: item.membership_end_date,
+                    membershipType: item.type_of_membership,
+                    membershipStartDate: item.membership_start_date,
+                    membershipEndDate: item.membership_end_date,
                   } // Pass the member details to member-profile screen
                 })}>
                 <MaterialCommunityIcons name="credit-card-edit-outline" size={24} color="black"  />
