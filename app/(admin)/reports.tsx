@@ -1,31 +1,105 @@
-import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity, Modal } from 'react-native';
-import { useState } from 'react';
+import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity, Modal, Platform } from 'react-native';
+import { useState, useEffect } from 'react';
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HistoryScreen() {
-  const [reports, setReports] = useState([
-    {id: "1", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
-    {id: "2", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
-    {id: "3", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
-    {id: "4", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
-    {id: "5", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
-  ]); // Replace with actual data fetching logic
+  const [reports, setReports] = useState([]); // Replace with actual data fetching logic
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedReportType, setSelectedReportType] = useState('');
 
-  const showExportPopup = (reportType: string) => {
+  const showExportPopup = async (reportType: string) => {
     setSelectedReportType(reportType);
     setModalVisible(true);
+
+    try {
+      const API_BASE_URL =
+        Platform.OS === 'web'
+          ? 'http://127.0.0.1:8000'
+          : 'http://192.168.1.11:8000';
+  
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${API_BASE_URL}/api/reports/facility-access-pdf/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reportType }),
+      });
+  
+      if (response.ok) {
+        const blob = await response.blob();
+        const fileURL = URL.createObjectURL(blob);
+  
+        // Web: open PDF in new tab
+        if (Platform.OS === 'web') {
+          window.open(fileURL);
+        } else {
+          // Mobile: use FileSystem API like expo-file-system to save/view file
+          console.warn('File preview/download not implemented for mobile.');
+        }
+      } else {
+        console.error('Failed to export report', await response.text());
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
+
     setTimeout(() => {
       setModalVisible(false);
     }, 2000); // Hide after 2 seconds
   };
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const API_BASE_URL = 
+          Platform.OS === 'web'
+            ? 'http://127.0.0.1:8000'
+            : 'http://192.168.1.11:8000';
   
+        const token = await AsyncStorage.getItem('authToken');
+        const response = await fetch(`${API_BASE_URL}/api/reports/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          console.log('API Response:', data);
+  
+          const formattedReports = data.map((item) => ({
+            id: item.id.toString(),
+            // reportType: item.report_type,
+            startDate: formatDate(item.start_date),
+            endDate: formatDate(item.end_date),
+            generatedDate: formatDate(item.generated_date),
+          }));
+  
+          setReports(formattedReports);
+        } else {
+          console.error('Failed to fetch reports', await response.text());
+        }
+      } catch (error) {
+        console.error('Error fetching reports:', error);
+      }
+    };
+  
+    fetchReports();
+  }, []);
+  
+  const formatDate = (dateString: string) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' } as const;
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };  
 
   return (
     <View style={styles.container}>

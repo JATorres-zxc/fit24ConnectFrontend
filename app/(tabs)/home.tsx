@@ -16,6 +16,37 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [firstName, setFirstName] = useState("");
 
+  // Load name from params or AsyncStorage
+  useEffect(() => {
+    const handleName = async () => {
+      if (params.full_name && typeof params.full_name === "string") {
+        // Store and set immediately
+        await AsyncStorage.setItem("full_name", params.full_name);
+        setFirstName(params.full_name.split(" ")[0]);
+      } else {
+        // Fallback to AsyncStorage
+        const storedName = await AsyncStorage.getItem("full_name");
+        if (storedName) {
+          setFirstName(storedName.split(" ")[0]);
+        }
+      }
+    };
+
+    handleName();
+  }, [params.full_name]);
+
+  // Show toast after login
+  useEffect(() => {
+    if (params.showToast === "true" && params.full_name) {
+      Toast.show({
+        type: "success",
+        text1: "Login Success!",
+        text2: `Logged in as ${params.full_name}`,
+        visibilityTime: 1500
+      });
+    }
+  }, [params.showToast, params.full_name]);
+
   useEffect(() => {
     // Fetch announcements when component mounts
     const fetchAnnouncements = async () => {
@@ -54,35 +85,6 @@ export default function Home() {
 
     fetchAnnouncements();
   }, []);
-
-  useEffect(() => {
-    const loadName = async () => {
-      const storedName = await AsyncStorage.getItem("full_name");
-      if (storedName) {
-        const first = storedName.split(" ")[0];
-        setFirstName(first);
-      }
-    };
-  
-    loadName();
-  }, []);
-
-  useEffect(() => {
-    if (params.full_name) {
-      if (typeof params.full_name === "string") {
-        AsyncStorage.setItem("full_name", params.full_name);
-      }
-    }
-
-    if (params.showToast === "true") {
-      Toast.show({
-        type: "success",
-        text1: "Login Success!",
-        text2: `Logged in as ${params.full_name}`,
-        visibilityTime: 1500
-      });
-    }
-  }, [params.showToast, params.full_name]);
 
   return (
     <View style={styles.container}>

@@ -11,16 +11,23 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 type Member = {
   id: string;
   full_name: string;
+  type_of_membership: string,
+  membership_start_date: string,
+  membership_end_date: string,
 };
 
 export default function MembersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [allMembers, setAllMembers] = useState<Member[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [trainers, setTrainers] = useState<Member[]>([]);
+  const hasMissingNames = members.some(member => !member.full_name?.trim());
+
+  const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
   
-  // 👇 Fetch the trainer list from the API
+  // 👇 Fetch the member list from the API
   useEffect(() => {
     const fetchMembers = async () => {
       try {
@@ -28,7 +35,7 @@ export default function MembersScreen() {
           Platform.OS === 'web'
             ? 'http://127.0.0.1:8000'
             : 'http://192.168.1.11:8000';
-
+  
         const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/account/members/`, {
           headers: {
@@ -36,13 +43,12 @@ export default function MembersScreen() {
             'Content-Type': 'application/json',
           },
         });
-
+  
         if (response.ok) {
           const data = await response.json();
-          console.log('API Response:', data);
-
-          // Assuming your API returns something like [{ name: 'John', trainerId: 1 }, ...]
+          setAllMembers(data);
           setMembers(data);
+          setFilteredMembers(data); // initialize both
         } else {
           console.error('Failed to fetch members', await response.text());
         }
@@ -50,16 +56,17 @@ export default function MembersScreen() {
         console.error('Error fetching members:', error);
       }
     };
-
+  
     fetchMembers();
   }, []);
-
+  
   useEffect(() => {
-    const filtered = members.filter(member =>
-      member.full_name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filtered = allMembers.filter(member => {
+      const name = String(member.full_name || member.id || '');
+      return name.toLowerCase().includes(searchQuery.toLowerCase());
+    });
     setMembers(filtered);
-  }, [searchQuery]);
+  }, [searchQuery, allMembers]);  
 
   const handleAssignTrainer = async () => {
     if (selectedMember) {
@@ -107,7 +114,6 @@ export default function MembersScreen() {
       }
     }
   };
-  
 
   return (
     <View style={styles.container}>
@@ -126,6 +132,12 @@ export default function MembersScreen() {
         </View>
       </View>
 
+      {hasMissingNames && (
+        <Text style={{ color: 'orange', fontStyle: 'italic', marginHorizontal: 20 }}>
+          Some members and/or trainers have not set up their profiles yet.
+        </Text>
+      )}
+
       <FlatList
         data={members}
         keyExtractor={(item) => item.id.toString()}
@@ -133,7 +145,9 @@ export default function MembersScreen() {
           <View style={styles.card}>
             {/* Left Section - Member Name */}
             <View style={styles.leftSection}>
-              <Text style={styles.name}>{item.full_name}</Text>
+              <Text style={styles.name}>
+                {item.full_name || `Member ID: ${item.id}`}
+              </Text>
             </View>
 
             {/* Right Section - Icons */}
@@ -147,7 +161,13 @@ export default function MembersScreen() {
               
               <TouchableOpacity onPress={() => router.push({
                   pathname: `/(admin)/member-profile`,
-                  params: { memberId: item.id }
+                  params: {
+                    memberId: item.id,
+                    fullName: item.full_name,
+                    membershipType: item.type_of_membership,
+                    membershipStartDate: item.membership_start_date,
+                    membershipEndDate: item.membership_end_date,
+                  } // Pass the member details to member-profile screen
                 })}>
                 <MaterialCommunityIcons name="credit-card-edit-outline" size={24} color="black"  />
               </TouchableOpacity>
@@ -180,7 +200,7 @@ export default function MembersScreen() {
                 <Text style={styles.modalText}>
                   You're going to assign{' '}
                   <Text style={styles.selectedMember}>
-                    "{selectedMember?.full_name}"
+                    "{selectedMember?.full_name?.trim() || selectedMember?.id}"
                   </Text> 
                   {' '}as a trainer. Are you sure?
                 </Text>
