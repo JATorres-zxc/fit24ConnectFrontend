@@ -200,14 +200,14 @@ const MealPlanScreen = () => {
           
           return {
             requesteeID: request?.requestee.toString() || "Unknown",
-            requesteeName: profileData?.full_name || "Unknown",
+            requesteeName: profileData?.full_name || "User Name Not Set",
             height: profileData?.height || "N/A",
             weight: profileData?.weight || "N/A",
             age: profileData?.age || "N/A",
             fitnessGoal: request?.fitness_goal || "Not Specified",
             weightGoal: request?.weight_goal || "Not Specified",
             allergies: request?.user_allergies || "None",
-            status: request?.status || "unknown",
+            status: request?.status || "Unknown Status",
           };
         }).filter(Boolean); // Remove any nulls
   
@@ -280,7 +280,7 @@ const MealPlanScreen = () => {
   
           return {
             requesteeID: plan.requestee.toString(),
-            requesteeName: member.full_name || "Unknown",
+            requesteeName: member.full_name || "User Name Not Set",
             height: member.height,
             weight: member.weight,
             age: member.age,
@@ -658,7 +658,7 @@ const MealPlanScreen = () => {
                   <TouchableOpacity key={plan.mealplan_id} onPress={() => handleMealPlanSelect(plan)}>
                     <MemberMealPlan 
                       mealPlan={plan} 
-                      requesteeName={member ? member.requesteeName : 'Unknown'}  // Use the matched requesteeName
+                      requesteeName={member ? member.requesteeName : 'User Name Not Set'}  // Use the matched requesteeName
                       onEditPress={() => handleMealPlanSelect(plan)} 
                     />
                   </TouchableOpacity>
