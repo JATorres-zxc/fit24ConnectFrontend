@@ -25,6 +25,7 @@ export default function ScanScreen() {
   const [accessStatus, setAccessStatus] = useState<'granted' | 'denied' | null>(null);
   const [scanData, setScanData] = useState<{ type: string; data: string } | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const getCameraPermissions = async () => {
@@ -41,6 +42,7 @@ export default function ScanScreen() {
       setAccessStatus(null); // Reset access status when returning to the scan page
       setScanned(false);
       setScanData(null);
+      setErrorMessage(null);
       return () => setIsCameraActive(false); // Deactivate camera when leaving
     }, [])
   );
@@ -51,6 +53,7 @@ export default function ScanScreen() {
     setScanned(true);
     setScanData({ type, data });
     setIsLoading(true);
+    setErrorMessage(null);
 
     try {
       const API_BASE_URL =
@@ -58,44 +61,89 @@ export default function ScanScreen() {
               ? 'http://127.0.0.1:8000' // Web uses localhost
               : 'http://172.16.15.51:8000'; // Mobile uses local network IP
 
-      // Replace with your actual API endpoint 
+      // Get auth token
       const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Authentication token not found. Please log in again.');
+      }
+
+      // API call to validate QR code
       const response = await fetch(`${API_BASE_URL}/api/facility/qr-scan/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify({ qrCode: data }),
+        body: JSON.stringify({ 
+          qrCode: data,
+          scan_method: "qr",
+          location: "mobile-app"
+         }),
       });
   
+      if (!response.ok) {
+        // Handle HTTP errors
+        if (response.status === 404) {
+          const errorData = await response.json();
+          setAccessStatus("denied");
+          setErrorMessage(errorData.error || 'Facility not found. Please scan a valid QR code.');
+          setShowPopup(true);
+          return;
+        } else if (response.status === 403) {
+          const errorData = await response.json();
+          setAccessStatus("denied");
+          setErrorMessage(errorData.reason || 'Access denied due to membership tier restrictions.');
+          setShowPopup(true);
+          return;
+        } else {
+          throw new Error(`Server error: ${response.status}`);
+        }
+      }
+
       const result = await response.json();
   
-      // Assuming the API response has a field "accessGranted"
-      const hasAccess = result.status;
+      // Check access status from the response
+      const hasAccess = result.status === 'success';
   
       setAccessStatus(hasAccess ? "granted" : "denied");
+      if (!hasAccess && result.reason) {
+        setErrorMessage(result.reason);
+      }
       setShowPopup(true);
     } catch (error) {
       console.error("API Error:", error);
       setAccessStatus("denied");
+      setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred.');
       setShowPopup(true);
     } finally {
       setIsLoading(false);
-  
-      setTimeout(() => {
+    }
+  };
+
+  // Auto-close popup and navigate after a delay
+  useEffect(() => {
+    let navigationTimer: number | undefined;
+    
+    if (showPopup) {
+      navigationTimer = setTimeout(() => {
         setShowPopup(false);
         setScanned(false);
         setScanData(null);
-  
+        setErrorMessage(null);
+        
+        // Navigate based on access status
         if (accessStatus === "granted") {
           router.replace("/(tabs)/home");
-        } else {
+        } else { 
           router.replace("/(tabs)/scan");
         }
-      }, 2000);
+      }, 2000); // 2 second delay before automatic navigation
     }
-  };
+    
+    return () => {
+      if (navigationTimer) clearTimeout(navigationTimer);
+    };
+  }, [showPopup, accessStatus]);
 
   if (hasPermission === null) {
     return <Text>Requesting for camera permission</Text>;
@@ -134,10 +182,6 @@ export default function ScanScreen() {
         transparent={true}
         visible={showPopup}
         animationType='fade'
-        onRequestClose={() => {
-          setShowPopup(false);
-          router.push('/(tabs)/home');
-        }}
       >
         <View style={styles.modalOverlay}>
           <View style={[
@@ -161,7 +205,7 @@ export default function ScanScreen() {
             <Text style={styles.statusMessage}>
               {accessStatus === 'granted' 
                 ? 'You may now enter the facility.' 
-                : 'You do not have permission to enter this facility.'}
+                : errorMessage || 'An error occured during verification.'}
             </Text>
           </View>
         </View>
