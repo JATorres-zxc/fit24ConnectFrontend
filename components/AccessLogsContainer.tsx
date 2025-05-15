@@ -1,6 +1,5 @@
 import { 
-  View, Text, StyleSheet, FlatList,
-  TouchableOpacity, Modal, TouchableWithoutFeedback
+  View, Text, StyleSheet, FlatList
   } from "react-native";
 import React, { useMemo } from "react";
 import { format } from "date-fns";

@@ -8,7 +8,15 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HistoryScreen() {
-  const [reports, setReports] = useState([]); // Replace with actual data fetching logic
+  interface Report {
+    id: string;
+    reportType: keyof typeof typeLabels;
+    startDate: string;
+    endDate: string;
+    generatedDate: string;
+  }
+
+  const [reports, setReports] = useState<Report[]>([]); // Replace with actual data fetching logic
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedReportType, setSelectedReportType] = useState('');
