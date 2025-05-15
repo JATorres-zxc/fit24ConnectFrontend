@@ -13,6 +13,15 @@ export default function HistoryScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedReportType, setSelectedReportType] = useState('');
 
+  const typeLabels = {
+    facility: 'Facility',
+    user: 'User',
+    trainer: 'Trainer',
+    general: 'General',
+    membership: 'Membership',
+    access_logs: 'Access Logs',
+  };
+
   const showExportPopup = async (reportType: string) => {
     setSelectedReportType(reportType);
     setModalVisible(true);
@@ -74,19 +83,10 @@ export default function HistoryScreen() {
         if (response.ok) {
           const data = await response.json();
           console.log('API Response:', data);
-
-          const typeLabels = {
-            facility: 'Facility',
-            user: 'User',
-            trainer: 'Trainer',
-            general: 'General',
-            membership: 'Membership',
-            access_logs: 'Access Logs',
-          };
   
           const formattedReports = data.map((item) => ({
             id: item.id.toString(),
-            reportType: typeLabels[item.type] || item.type,
+            reportType: item.type,
             startDate: formatDate(item.start_date),
             endDate: formatDate(item.end_date),
             generatedDate: formatDate(item.created_at),
@@ -126,7 +126,7 @@ export default function HistoryScreen() {
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.headerLabel}>Report Type:{' '}
-                    <Text style={styles.headerValue}>{item.reportType}</Text>
+                    <Text style={styles.headerValue}>{typeLabels[item.reportType]}</Text>
                   </Text>
                   <TouchableOpacity onPress={() => showExportPopup(item.reportType)}>
                     <MaterialCommunityIcons name="export" size={24} color="black" />
