@@ -1,5 +1,6 @@
 import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity, Modal, Platform } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
@@ -93,45 +94,46 @@ export default function HistoryScreen() {
     }, 2000); // Hide after 2 seconds
   };
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.11:8000';
+  useFocusEffect(
+    useCallback(() => {
+      const fetchReports = async () => {
+        try {
+          const API_BASE_URL = 
+            Platform.OS === 'web'
+              ? 'http://127.0.0.1:8000'
+              : 'http://192.168.1.11:8000';
   
-        const token = await AsyncStorage.getItem('authToken');
-        const response = await fetch(`${API_BASE_URL}/api/reports/reports/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+          const token = await AsyncStorage.getItem('authToken');
+          const response = await fetch(`${API_BASE_URL}/api/reports/reports/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
   
-        if (response.ok) {
-          const data = await response.json();
-          console.log('API Response:', data);
+          if (response.ok) {
+            const data = await response.json();
+            console.log('API Response:', data);
   
-          const formattedReports = data.map((item) => ({
-            id: item.id.toString(),
-            reportType: item.type,
-            startDate: formatDate(item.start_date),
-            endDate: formatDate(item.end_date),
-            generatedDate: formatDate(item.created_at),
-          }));
+            const formattedReports = (data as any[]).map((item) => ({
+              id: item.id.toString(),
+              reportType: item.type,
+              startDate: formatDate(item.start_date),
+              endDate: formatDate(item.end_date),
+              generatedDate: formatDate(item.created_at),
+            }));
   
-          setReports(formattedReports);
-        } else {
-          console.error('Failed to fetch reports', await response.text());
+            setReports(formattedReports);
+          } else {
+            console.error('Failed to fetch reports', await response.text());
+          }
+        } catch (error) {
+          console.error('Error fetching reports:', error);
         }
-      } catch (error) {
-        console.error('Error fetching reports:', error);
-      }
-    };
-  
-    fetchReports();
-  }, []);
+      };
+      fetchReports();
+    }, [])
+  );
   
   const formatDate = (dateString: string) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' } as const;
