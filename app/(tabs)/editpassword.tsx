@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState, useEffect } from "react";
 import { router, useNavigation } from 'expo-router';
 import Toast from 'react-native-toast-message';
@@ -153,11 +153,15 @@ export default function EditPasswordScreen() {
       }, 1500);
     } catch (error) {
       setIsSubmitting(false);
+
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Unable to update password. Please try again later';
       
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: error.message || 'Unable to update password. Please try again later',
+        text2: errorMessage,
         topOffset: 100,
       });
     }

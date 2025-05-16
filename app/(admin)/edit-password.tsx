@@ -147,10 +147,14 @@ export default function EditPasswordScreen() {
     } catch (error) {
       setIsSubmitting(false);
       
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Unable to update password. Please try again later';
+            
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: error.message || 'Unable to update password. Please try again later',
+        text2: errorMessage,
         topOffset: 100,
       });
     }
