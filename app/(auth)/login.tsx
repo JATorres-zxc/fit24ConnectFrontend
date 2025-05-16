@@ -78,6 +78,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             if (response.ok && result.success && result.tokens.access) {
                 // Store the token and user ID securely for future use
                 await AsyncStorage.setItem('authToken', result.tokens.access);
+                await AsyncStorage.setItem('refreshToken', result.tokens.refresh);
                 await AsyncStorage.setItem('userID', result.user.id.toString());
 
                 // Navigate based on user role

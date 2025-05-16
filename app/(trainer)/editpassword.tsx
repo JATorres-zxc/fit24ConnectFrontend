@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { router, useNavigation } from 'expo-router';
 import Toast from 'react-native-toast-message';
 
-import Header from '@/components/TrainerEditPasswordHeader';
+import Header from '@/components/EditPasswordHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
@@ -175,7 +175,7 @@ export default function EditPasswordScreen() {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header userType='trainer' />
 
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
