@@ -1,6 +1,6 @@
 import { Text, View, StyleSheet, Platform } from "react-native";
-import { useEffect, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -10,9 +10,18 @@ import AnnouncementsContainer from "@/components/AnnouncementsContainer";
 import { Colors } from '@/constants/Colors';
 import { Fonts } from "@/constants/Fonts";
 
+
+// Define the interface for the announcement object
+interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  updated_at: string;
+}
+
 export default function Home() {
   const params = useLocalSearchParams();
-  const [announcements, setAnnouncements] = useState([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [firstName, setFirstName] = useState("");
 
@@ -47,7 +56,6 @@ export default function Home() {
     }
   }, [params.showToast, params.full_name]);
 
-  useEffect(() => {
     // Fetch announcements when component mounts
     const fetchAnnouncements = async () => {
       try {
@@ -70,7 +78,15 @@ export default function Home() {
         }
         
         const data = await response.json();
-        setAnnouncements(data);
+
+        // Sort announcements by updated_at date (most recent first)
+        const sortedAnnouncements: Announcement[] = [...data].sort((a, b) => {
+          const dateA = new Date(a.updated_at).getTime();
+          const dateB = new Date(b.updated_at).getTime();
+          return dateB - dateA;
+        });
+
+        setAnnouncements(sortedAnnouncements);
       } catch (error) {
         console.error("Error fetching announcements:", error);
         Toast.show({
@@ -83,8 +99,12 @@ export default function Home() {
       }
     };
 
-    fetchAnnouncements();
-  }, []);
+  // Fetch announcements when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchAnnouncements();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
