@@ -64,7 +64,7 @@ export default function HistoryScreen() {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header userType='member' />
 
       <View style={styles.logsContainer}>
         {loading ? (

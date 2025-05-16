@@ -1,6 +1,6 @@
 import { Text, View, StyleSheet, Platform } from 'react-native';
 
-import Header from '@/components/TrainerHistoryHeader';
+import Header from '@/components/HistoryHeader';
 import { Colors } from '@/constants/Colors';
 import AccessLogsContainer from '@/components/AccessLogsContainer';
 
@@ -64,7 +64,7 @@ export default function HistoryScreen() {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header userType='trainer' />
 
       <View style={styles.logsContainer}>
         {loading ? (
