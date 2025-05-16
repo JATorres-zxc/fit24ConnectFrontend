@@ -7,12 +7,8 @@ import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { Feather, AntDesign, FontAwesome6 } from '@expo/vector-icons';
 
-type Trainer = {
-  id: string;
-  user: {
-    full_name: string;
-  };
-};
+// Import interface for the trainer object
+import { Trainer } from '@/types/interface';
 
 export default function TrainersScreen() {
   const [searchQuery, setSearchQuery] = useState('');

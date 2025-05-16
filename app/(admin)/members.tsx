@@ -8,13 +8,8 @@ import { Fonts } from '@/constants/Fonts';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type Member = {
-  id: string;
-  full_name: string;
-  type_of_membership: string,
-  membership_start_date: string,
-  membership_end_date: string,
-};
+// Import interface for the member object
+import { Member } from '@/types/interface';
 
 export default function MembersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
