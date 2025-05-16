@@ -7,20 +7,6 @@ import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { Feather, AntDesign, FontAwesome6 } from '@expo/vector-icons';
 
-// Initial trainers data
-const initialTrainers = [
-  { trainerId: "1", name: 'John' },
-  { trainerId: "2", name: 'Alexis' },
-  { trainerId: "3", name: 'Ezra' },
-  { trainerId: "4", name: 'Ruel' },
-  { trainerId: "5", name: 'Matthew' },
-  { trainerId: "6", name: 'Samuel' },
-  { trainerId: "7", name: 'Mark' },
-  { trainerId: "8", name: 'Paul' },
-  { trainerId: "9", name: 'Andres' },
-  { trainerId: "10", name: 'Lovely' },
-];
-
 type Trainer = {
   id: string;
   full_name: string;
