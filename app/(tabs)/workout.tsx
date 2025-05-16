@@ -136,8 +136,6 @@ const WorkoutScreen = () => {
         }
   
         const programsData = await response.json();
-
-        console.log("Programs Data Member: ", programsData);
         
         // Based on backend, the requestee contains the userID or "everyone" that it is visible to.
         // Filter workout programs based on requestee matching userID or "everyone" and status is completed
@@ -149,7 +147,7 @@ const WorkoutScreen = () => {
         if (filteredPrograms.length === 0) {
           throw new Error('No workouts available for the user');
         }
-  
+
         // Map all filtered programs to Workout objects
         const formattedWorkouts: Workout[] = filteredPrograms.map((userProgram: any) => ({
           id: userProgram.id.toString(),
@@ -165,10 +163,13 @@ const WorkoutScreen = () => {
             muscle_group: exercise.muscle_group,
           })),
           visibleTo: userProgram.requestee || "everyone",
+          status: userProgram.status,
           feedbacks: [], // Adjust if feedback is available
         }));
   
         setWorkouts((prevWorkouts) => [...prevWorkouts, ...formattedWorkouts]);
+
+        console.log("Workouts: ", workouts);
       } catch (error) {
         console.error('Error fetching workout:', error);
   
@@ -571,7 +572,10 @@ const WorkoutScreen = () => {
                 <View>
                   <Header />
                   <View style={styles.centerContainer}>
-                    <Text style={styles.subtitle2}>You have no existing workout plan.</Text>
+                    <Text style={styles.subtitle2}>No existing general workout plan.</Text>
+                    <TouchableOpacity style={styles.button} onPress={() => setViewState("personalWO")}>
+                      <Text style={styles.buttonText}>Personal Workout Programs</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
                       <Text style={styles.buttonText}>Request Workout Plan</Text>
                     </TouchableOpacity>

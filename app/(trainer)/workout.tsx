@@ -150,8 +150,6 @@ const WorkoutScreen = () => {
             (String(request.trainer_id) === String(userID) || request.requestee === null)
         );
 
-        console.log("Trainer Requests: ", trainerRequests);
-
         // Extract requestee IDs from pending workout plans
         const requesteeIDs = trainerRequests.map((request: any) => request.requestee);
   
@@ -308,9 +306,6 @@ const WorkoutScreen = () => {
         }
   
         const programsData = await response.json();
-
-        console.log("Programs Data: ", programsData);
-        console.log("Trainer ID: ", userID);
   
         // Get all completed programs where the user is the trainer OR it's a free program
         const userPrograms = programsData.filter(
@@ -605,8 +600,6 @@ const WorkoutScreen = () => {
                   weight={request.weight}
                   age={request.age}
                   onEditPress={() => {
-                  console.log("Selected Requestee ID: ", request.requesteeID);
-                  console.log("Workouts: ", workouts);
                     const matchingWorkout = workouts.find(
                     (workout) => workout.requestee === request.requesteeID
                   );
