@@ -12,7 +12,7 @@
   import AsyncStorage from '@react-native-async-storage/async-storage';
   import Toast from 'react-native-toast-message';
 
-  import Header from '@/components/TrainerEditProfileHeader';
+  import Header from '@/components/EditProfileHeader';
   import { Fonts } from '@/constants/Fonts';
   import { Colors } from '@/constants/Colors';
 
@@ -308,7 +308,7 @@
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         >
-          <Header onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
+          <Header userType='trainer' onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
 
           <ScrollView style={styles.scrollViewCont}>
             <View style={styles.profileContainer}>

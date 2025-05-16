@@ -328,7 +328,7 @@ export default function EditProfileScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
     >
-      <Header onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
+      <Header userType='member' onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
 
       <ScrollView 
         style={styles.scrollViewCont}
