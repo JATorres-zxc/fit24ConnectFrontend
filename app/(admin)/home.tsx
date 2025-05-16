@@ -10,13 +10,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 
-// Define the interface for the announcement object
-interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  updated_at: string;
-}
+// Import interface for the announcement object
+import { Announcement } from "@/types/interface";
 
 export default function AdminHome() {
   // Use state to manage announcements instead of static import

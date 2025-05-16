@@ -1,6 +1,6 @@
 import { Text, View, StyleSheet, Platform } from "react-native";
-import { useEffect, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -10,11 +10,14 @@ import AnnouncementsContainer from "@/components/AnnouncementsContainer";
 import { Colors } from '@/constants/Colors';
 import { Fonts } from "@/constants/Fonts";
 
+// Import interface for the announcement object
+import { Announcement } from "@/types/interface";
+
 export default function Home() {
   const params = useLocalSearchParams();
-  const [firstName, setFirstName] = useState("");
-  const [announcements, setAnnouncements] = useState([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [firstName, setFirstName] = useState("");
 
   // Load name from params or AsyncStorage
   useEffect(() => {
@@ -47,9 +50,8 @@ export default function Home() {
     }
   }, [params.showToast, params.full_name]);
 
-  useEffect(() => {
-    // Fetch announcements when component mounts
-    const fetchAnnouncements = async () => {
+  // Fetch announcements when component mounts
+  const fetchAnnouncements = async () => {
       try {
         const API_BASE_URL = 
           Platform.OS === 'web'
@@ -70,7 +72,16 @@ export default function Home() {
         }
         
         const data = await response.json();
-        setAnnouncements(data);
+
+        // Sort announcements by updated_at date (most recent first)
+        const sortedAnnouncements: Announcement[] = [...data].sort((a, b) => {
+          const dateA = new Date(a.updated_at).getTime();
+          const dateB = new Date(b.updated_at).getTime();
+          return dateB - dateA;
+        });
+
+        // Set sorted announcements to state
+        setAnnouncements(sortedAnnouncements);
       } catch (error) {
         console.error("Error fetching announcements:", error);
         Toast.show({
@@ -81,10 +92,14 @@ export default function Home() {
       } finally {
         setLoading(false);
       }
-    };
+  };
 
-    fetchAnnouncements();
-  }, []);
+  // Fetch announcements when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchAnnouncements();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>

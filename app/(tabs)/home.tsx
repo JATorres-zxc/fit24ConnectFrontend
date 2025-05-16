@@ -10,14 +10,8 @@ import AnnouncementsContainer from "@/components/AnnouncementsContainer";
 import { Colors } from '@/constants/Colors';
 import { Fonts } from "@/constants/Fonts";
 
-
-// Define the interface for the announcement object
-interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  updated_at: string;
-}
+// Import interface for the announcement object
+import { Announcement } from "@/types/interface";
 
 export default function Home() {
   const params = useLocalSearchParams();
@@ -86,6 +80,7 @@ export default function Home() {
           return dateB - dateA;
         });
 
+        // Set sorted announcements to state
         setAnnouncements(sortedAnnouncements);
       } catch (error) {
         console.error("Error fetching announcements:", error);
