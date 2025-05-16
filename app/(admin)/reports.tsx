@@ -42,7 +42,28 @@ export default function HistoryScreen() {
           : 'http://192.168.1.11:8000';
   
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch(`${API_BASE_URL}/api/reports/reports/generate/`, {
+
+      // Find the corresponding report to get date range
+      const selectedReport = reports.find(report => report.reportType === reportType);
+      
+      // Build the API URL with query parameters
+      let apiUrl = `${API_BASE_URL}/api/reports/reports/generate/?type=${reportType}`;
+      
+      // Add date parameters if we have a selected report
+      if (selectedReport) {
+        // Convert displayed dates back to API format (YYYY-MM-DD)
+        const startDateObj = new Date(selectedReport.startDate);
+        const endDateObj = new Date(selectedReport.endDate);
+        
+        const formattedStartDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`;
+        const formattedEndDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`;
+        
+        apiUrl += `&start_date=${formattedStartDate}&end_date=${formattedEndDate}`;
+      }
+  
+      console.log('Requesting report from:', apiUrl);
+
+      const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
