@@ -9,8 +9,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { Fonts } from '@/constants/Fonts';
 
+interface AccessLog {
+  id: string;
+  facility_name: string;
+  status: string;
+  timestamp: string;
+}
+
 export default function HistoryScreen() {
-  const [accessLogs, setAccessLogs] = useState([]);
+  const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,7 +43,14 @@ export default function HistoryScreen() {
         }
         
         const data = await response.json();
-        setAccessLogs(data);
+        
+        // Sort the logs in descending order (most recent first)
+        setAccessLogs(
+          data.sort(
+            (a: AccessLog, b: AccessLog) =>
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          )
+        );
       } catch (error) {
         console.error("Error fetching access logs:", error);
         Toast.show({
@@ -52,16 +66,6 @@ export default function HistoryScreen() {
     fetchAccessLogs();
   }, []);
 
-  // Sort the logs in descending order (most recent first)
-  const sortedLogs = [...accessLogs].sort((a, b) => {
-    // Combine date and time for comparison
-    const dateTimeA = new Date(`${a.date} ${a.time}`).getTime();
-    const dateTimeB = new Date(`${b.date} ${b.time}`).getTime();
-    
-    // Sort in descending order (most recent first)
-    return dateTimeB - dateTimeA;
-  });
-
   return (
     <View style={styles.container}>
       <Header userType='member' />
@@ -71,8 +75,12 @@ export default function HistoryScreen() {
           <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Loading access logs...</Text>
           </View>
+        ) : accessLogs.length === 0 ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>No access logs found.</Text>
+          </View>
         ) : (
-          <AccessLogsContainer accessLogs={sortedLogs} />
+          <AccessLogsContainer accessLogs={accessLogs} />
         )}
       </View>
 
