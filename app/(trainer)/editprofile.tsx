@@ -51,11 +51,11 @@
     const [isLoading, setIsLoading] = useState(true);
 
     // References for TextInput fields to improve focus management
-      const nameInputRef = useRef(null);
-      const emailInputRef = useRef(null);
-      const experienceInputRef = useRef(null);
-      const addressInputRef = useRef(null);
-      const phoneInputRef = useRef(null);
+    const nameInputRef = useRef<TextInput>(null);
+    const emailInputRef = useRef<TextInput>(null);
+    const experienceInputRef = useRef<TextInput>(null);
+    const addressInputRef = useRef<TextInput>(null);
+    const phoneInputRef = useRef<TextInput>(null);
 
     const fetchProfile = async () => {
       try {
@@ -244,11 +244,16 @@
         
       } catch (error) {
         console.error('Error saving profile:', error);
+
+        // Handle error and show a toast message
+        const errorMessage = error instanceof Error
+          ? error.message
+          : 'Could not save changes. Please try again.';
+        
         Toast.show({
           type: 'error',
           text1: 'Update Failed',
-          text2: error.message || 'Could not save changes. Please try again.',
-          position: 'top',
+          text2: errorMessage,
           topOffset: 100,
         });
       }
