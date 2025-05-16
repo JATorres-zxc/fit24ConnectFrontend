@@ -1,7 +1,6 @@
-import { Text, View, StyleSheet, Platform, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, Platform, TouchableOpacity, TextInput } from 'react-native';
 import { useState, useCallback, useEffect } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
-import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
 
@@ -10,34 +9,24 @@ import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ReportsFormScreen() {
   const [reportType, setReportType] = useState<string | number | undefined>('');
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset state when the screen is focused
   useFocusEffect(
     useCallback(() => {
       setReportType('');
-      setStartDate(new Date());
-      setEndDate(new Date());
+      setStartDate('');
+      setEndDate('');
     }, [])
   );
 
-  // Handle date change for start date
-  const handleStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date | null) => {
-    const currentDate = selectedDate || startDate;
-    setStartDate(currentDate);
-  };
-
-  // Handle date change for end date
-  const handleEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date | null) => {
-    const currentDate = selectedDate || endDate;
-    setEndDate(currentDate);
-  };
-
-  const handleGenerateReport = () => {
+  const handleGenerateReport = async () => {
     if (!reportType) {
       Toast.show({
         type: 'error',
@@ -68,7 +57,7 @@ export default function ReportsFormScreen() {
       return;
     }
 
-    const today = new Date();
+    const today = new Date().toISOString().split('T')[0];
 
     if (endDate > today) {
       Toast.show({
@@ -80,16 +69,64 @@ export default function ReportsFormScreen() {
       return;
     }
   
-    // Proceed to generate report
-    Toast.show({
-      type: 'success',
-      text1: 'Generating Report',
-      text2: 'Your report is being processed...',
-      topOffset: 100,
-      visibilityTime: 2000,
-      autoHide: true,
-      onHide: () => router.push('/(admin)/reports')
-    });
+    try {
+      setIsSubmitting(true);
+      const API_BASE_URL = Platform.OS === 'web' 
+        ? 'http://127.0.0.1:8000' 
+        : 'http://192.168.1.11:8000';
+
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) throw new Error('No authentication token found');
+
+      // Map frontend report types to backend values
+      const typeMapping: { [key: string]: string } = {
+        'memberships': 'membership',
+        'history': 'access_logs'
+      };
+
+      const reportData = {
+        title: `${reportType} Report (${startDate} - ${endDate})`,
+        type: typeMapping[reportType],
+        start_date: startDate,
+        end_date: endDate,
+        facility: null // Add facility ID here if needed
+      };
+
+      const response = await fetch(`${API_BASE_URL}/api/reports/reports/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reportData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to create report');
+      }
+
+      Toast.show({
+        type: 'success',
+        text1: 'Report Generated',
+        text2: 'Your report has been created successfully',
+        topOffset: 100,
+        visibilityTime: 2000,
+        autoHide: true,
+        onHide: () => router.push('/(admin)/reports')
+      });
+
+    } catch (error) {
+      console.error('Report generation error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Generation Failed',
+        text2: error instanceof Error ? error.message : 'Failed to create report',
+        topOffset: 100,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -120,12 +157,13 @@ export default function ReportsFormScreen() {
         <View style={styles.dateForm}>
           <Text style={styles.dateHeader}> Start Date </Text>
           <View style={styles.datePicker}>
-            <RNDateTimePicker
-              mode="date"
-              display="default"
-              themeVariant="light"
-              value={startDate || new Date()}
-              onChange={handleStartDateChange}
+            <TextInput
+              placeholder={startDate ? String(startDate) : "YYYY-MM-DD"}
+              placeholderTextColor={Colors.textSecondary}
+              style={styles.input}
+              value={startDate}
+              onChangeText={setStartDate}
+              keyboardType='numbers-and-punctuation'
             />
           </View>
         </View>
@@ -133,18 +171,25 @@ export default function ReportsFormScreen() {
         <View style={styles.dateForm}>
           <Text style={styles.dateHeader}> End Date </Text>
           <View style={styles.datePicker}>
-            <RNDateTimePicker
-              mode="date"
-              display="default"
-              themeVariant="light"
-              value={endDate || new Date()}
-              onChange={handleEndDateChange}
+            <TextInput
+              placeholder={endDate ? String(endDate) : "YYYY-MM-DD"}
+              placeholderTextColor={Colors.textSecondary}
+              style={styles.input}
+              value={endDate}
+              onChangeText={setEndDate}
+              keyboardType='numbers-and-punctuation'
             />
           </View>
         </View>
 
-        <TouchableOpacity style={styles.generateButton} onPress={handleGenerateReport}>
-          <Text style={styles.buttonText}>Generate Report</Text>
+        <TouchableOpacity 
+          style={[styles.generateButton, isSubmitting && styles.disabledButton]}
+          onPress={handleGenerateReport}
+          disabled={isSubmitting}
+        >
+          <Text style={styles.buttonText}>
+            {isSubmitting ? 'Generating...' : 'Generate Report'}
+          </Text>
         </TouchableOpacity>
       </View>
     
@@ -185,16 +230,15 @@ const styles = StyleSheet.create({
     textAlign: "left",
     fontFamily: Fonts.semibold,
     paddingTop: 8,
+    marginBottom: 10,
   },
   dateForm: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
     width: '100%',
     marginBottom: 20,
   },
   datePicker: {
-    alignSelf: "flex-start",
-    marginBottom: 20,
+    width: '100%',
   },
   generateButton: {
     backgroundColor: Colors.gold,
@@ -208,7 +252,20 @@ const styles = StyleSheet.create({
     color: Colors.white,
     textAlign: 'center',
     fontFamily: Fonts.medium,
-  }
+  },
+  input: {
+    marginBottom: 10,
+    borderColor: Colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontFamily: Fonts.regular,
+  },
+  disabledButton: {
+    backgroundColor: Colors.textSecondary,
+    opacity: 0.7,
+  },
 });
 
 const trainerpickerSelectStyles = {

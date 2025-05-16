@@ -1,5 +1,6 @@
 import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity, Modal, Platform } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
@@ -8,14 +9,32 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HistoryScreen() {
-  const [reports, setReports] = useState([]); // Replace with actual data fetching logic
+  interface Report {
+    id: string;
+    reportType: keyof typeof typeLabels;
+    startDate: string;
+    endDate: string;
+    generatedDate: string;
+  }
+
+  const [reports, setReports] = useState<Report[]>([]); // Replace with actual data fetching logic
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedReportType, setSelectedReportType] = useState('');
 
+  const typeLabels = {
+    facility: 'Facility',
+    user: 'User',
+    trainer: 'Trainer',
+    general: 'General',
+    membership: 'Membership',
+    access_logs: 'Access Logs',
+  };
+
   const showExportPopup = async (reportType: string) => {
     setSelectedReportType(reportType);
     setModalVisible(true);
+    console.log('Exporting report for type:', reportType);
 
     try {
       const API_BASE_URL =
@@ -24,13 +43,32 @@ export default function HistoryScreen() {
           : 'http://192.168.1.11:8000';
   
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch(`${API_BASE_URL}/api/reports/facility-access-pdf/`, {
-        method: 'POST',
+
+      // Find the corresponding report to get date range
+      const selectedReport = reports.find(report => report.reportType === reportType);
+      
+      // Build the API URL with query parameters
+      let apiUrl = `${API_BASE_URL}/api/reports/reports/generate/?type=${reportType}`;
+      
+      // Add date parameters if we have a selected report
+      if (selectedReport) {
+        // Convert displayed dates back to API format (YYYY-MM-DD)
+        const startDateObj = new Date(selectedReport.startDate);
+        const endDateObj = new Date(selectedReport.endDate);
+        
+        const formattedStartDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`;
+        const formattedEndDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`;
+        
+        apiUrl += `&start_date=${formattedStartDate}&end_date=${formattedEndDate}`;
+      }
+  
+      console.log('Requesting report from:', apiUrl);
+
+      const response = await fetch(apiUrl, {
+        method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ reportType }),
       });
   
       if (response.ok) {
@@ -56,45 +94,46 @@ export default function HistoryScreen() {
     }, 2000); // Hide after 2 seconds
   };
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.11:8000';
+  useFocusEffect(
+    useCallback(() => {
+      const fetchReports = async () => {
+        try {
+          const API_BASE_URL = 
+            Platform.OS === 'web'
+              ? 'http://127.0.0.1:8000'
+              : 'http://192.168.1.11:8000';
   
-        const token = await AsyncStorage.getItem('authToken');
-        const response = await fetch(`${API_BASE_URL}/api/reports/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+          const token = await AsyncStorage.getItem('authToken');
+          const response = await fetch(`${API_BASE_URL}/api/reports/reports/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
   
-        if (response.ok) {
-          const data = await response.json();
-          console.log('API Response:', data);
+          if (response.ok) {
+            const data = await response.json();
+            console.log('API Response:', data);
   
-          const formattedReports = data.map((item) => ({
-            id: item.id.toString(),
-            // reportType: item.report_type,
-            startDate: formatDate(item.start_date),
-            endDate: formatDate(item.end_date),
-            generatedDate: formatDate(item.generated_date),
-          }));
+            const formattedReports = (data as any[]).map((item) => ({
+              id: item.id.toString(),
+              reportType: item.type,
+              startDate: formatDate(item.start_date),
+              endDate: formatDate(item.end_date),
+              generatedDate: formatDate(item.created_at),
+            }));
   
-          setReports(formattedReports);
-        } else {
-          console.error('Failed to fetch reports', await response.text());
+            setReports(formattedReports);
+          } else {
+            console.error('Failed to fetch reports', await response.text());
+          }
+        } catch (error) {
+          console.error('Error fetching reports:', error);
         }
-      } catch (error) {
-        console.error('Error fetching reports:', error);
-      }
-    };
-  
-    fetchReports();
-  }, []);
+      };
+      fetchReports();
+    }, [])
+  );
   
   const formatDate = (dateString: string) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' } as const;
@@ -118,7 +157,7 @@ export default function HistoryScreen() {
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.headerLabel}>Report Type:{' '}
-                    <Text style={styles.headerValue}>{item.reportType}</Text>
+                    <Text style={styles.headerValue}>{typeLabels[item.reportType]}</Text>
                   </Text>
                   <TouchableOpacity onPress={() => showExportPopup(item.reportType)}>
                     <MaterialCommunityIcons name="export" size={24} color="black" />
