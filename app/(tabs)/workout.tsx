@@ -273,6 +273,7 @@ const WorkoutScreen = () => {
   const handleWorkoutPress = (selectedWorkout: Workout) => {
     setWorkout(selectedWorkout);
     workout_id = selectedWorkout.id; // Store the selected workout ID for feedback submission
+    console.log("Workout ID: ", workout_id);
     setViewState("exercises");
   };
 
@@ -296,14 +297,14 @@ const WorkoutScreen = () => {
     // This is in line with an agreed central feedback and request database.
     const token = await AsyncStorage.getItem('authToken');
 
-    const response = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/feedbacks/`, {
+    const response = await fetch(`${API_BASE_URL}/api/workouts/feedbacks/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({
-        workout: workout_id,
+        program: workout_id,
         comment: feedback,
         rating: rating,
       }),
