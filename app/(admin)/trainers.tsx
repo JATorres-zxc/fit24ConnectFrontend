@@ -9,17 +9,19 @@ import { Feather, AntDesign, FontAwesome6 } from '@expo/vector-icons';
 
 type Trainer = {
   id: string;
-  full_name: string;
+  user: {
+    full_name: string;
+  };
 };
 
 export default function TrainersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [trainers, setTrainers] = useState<Trainer[]>([]); // Convert trainers to state
+  const [trainers, setTrainers] = useState<Trainer[]>([]);
   const [filteredTrainers, setFilteredTrainers] = useState<Trainer[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null> (null);
 
-  // 👇 Fetch the trainer list from the API
+  // Fetch the trainer list from the API
   useEffect(() => {
     const fetchTrainers = async () => {
       try {
@@ -40,7 +42,7 @@ export default function TrainersScreen() {
           const data = await response.json();
           console.log('API Response:', data);
 
-          // Assuming your API returns something like [{ name: 'John', trainerId: 1 }, ...]
+          // Set trainers to state
           setTrainers(data);
           setFilteredTrainers(data);
         } else {
@@ -57,14 +59,16 @@ export default function TrainersScreen() {
   // Filter trainers when search query changes or when trainers change
   useEffect(() => {
     if (searchQuery) {
-      const filtered = trainers.filter(trainer =>
-        trainer.full_name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const filtered = trainers.filter(trainer => {
+        // Safely access the full_name property
+        const trainerName = trainer.user?.full_name || '';
+        return trainerName.toLowerCase().includes(searchQuery.toLowerCase());
+      });
       setFilteredTrainers(filtered);
     } else {
       setFilteredTrainers(trainers);
     }
-  }, [searchQuery, trainers]); // Add trainers as dependency
+  }, [searchQuery, trainers]);
 
   const handleRemoveTrainer = async () => {
     if (selectedTrainer) {
@@ -118,13 +122,15 @@ export default function TrainersScreen() {
       </View>
 
       <FlatList
-        data={trainers}
+        data={filteredTrainers}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.card}>
             {/* Left Section - Trainer Name */}
             <View style={styles.leftSection}>
-              <Text style={styles.name}>{item.user.full_name}</Text>
+              <Text style={styles.name}>
+                {item.user?.full_name || `Trainer ID: ${item.id}`}
+              </Text>
             </View>
 
             {/* Right Section - Icon */}
@@ -165,7 +171,7 @@ export default function TrainersScreen() {
                 <Text style={styles.modalText}>
                   You're going to remove{' '}
                   <Text style={styles.selectedTrainer}>
-                    "{selectedTrainer?.full_name}"
+                    "{selectedTrainer?.user?.full_name || `Trainer ID: ${selectedTrainer?.id}`}"
                   </Text> 
                   {' '}as a trainer. Are you sure?
                 </Text>

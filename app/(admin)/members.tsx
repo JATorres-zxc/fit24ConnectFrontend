@@ -27,7 +27,7 @@ export default function MembersScreen() {
 
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
   
-  // 👇 Fetch the member list from the API
+  // Fetch the member list from the API
   useEffect(() => {
     const fetchMembers = async () => {
       try {
@@ -46,9 +46,11 @@ export default function MembersScreen() {
   
         if (response.ok) {
           const data = await response.json();
+
+          // Set members to state
           setAllMembers(data);
           setMembers(data);
-          setFilteredMembers(data); // initialize both
+          setFilteredMembers(data);
         } else {
           console.error('Failed to fetch members', await response.text());
         }
