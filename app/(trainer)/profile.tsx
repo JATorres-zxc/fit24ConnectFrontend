@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Text, View, StyleSheet, Image, ScrollView, Platform, ActivityIndicator, Touchable, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams } from "expo-router";
+import Toast from "react-native-toast-message";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Header from '@/components/ProfileHeader';
@@ -24,9 +26,23 @@ export default function ProfileScreen() {
     address: '',
     contact_number: '',
   });
+  const params = useLocalSearchParams();    
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+    
+  useEffect(() => {
+    if (params.showToast === "true") {
+      setTimeout(() => {
+        Toast.show({
+          type: "error",
+          text1: "Profile Incomplete",
+          text2: "Please complete all profile details before proceeding.",
+          position: 'bottom'
+        });
+      }, 4000); // Adding a short delay to ensure Toast renders properly
+    }
+  }, [params.showToast]);
 
   const fetchProfile = async () => {
     try {

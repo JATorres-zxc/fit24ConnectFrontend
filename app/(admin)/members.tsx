@@ -1,5 +1,6 @@
 import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList, TouchableWithoutFeedback, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
+import Toast from "react-native-toast-message";
 import { AntDesign, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import Header from '@/components/AdminSectionHeaders';
@@ -21,7 +22,7 @@ export default function MembersScreen() {
   const hasMissingNames = members.some(member => !member.full_name?.trim());
 
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
-  
+
   // Fetch the member list from the API
   useEffect(() => {
     const fetchMembers = async () => {
@@ -30,7 +31,7 @@ export default function MembersScreen() {
           Platform.OS === 'web'
             ? 'http://127.0.0.1:8000'
             : 'http://192.168.1.11:8000';
-  
+
         const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/account/members/`, {
           headers: {
@@ -38,7 +39,7 @@ export default function MembersScreen() {
             'Content-Type': 'application/json',
           },
         });
-  
+
         if (response.ok) {
           const data = await response.json();
 
@@ -53,17 +54,17 @@ export default function MembersScreen() {
         console.error('Error fetching members:', error);
       }
     };
-  
+
     fetchMembers();
   }, []);
-  
+
   useEffect(() => {
     const filtered = allMembers.filter(member => {
       const name = String(member.full_name || member.id || '');
       return name.toLowerCase().includes(searchQuery.toLowerCase());
     });
     setMembers(filtered);
-  }, [searchQuery, allMembers]);  
+  }, [searchQuery, allMembers]);
 
   const handleAssignTrainer = async () => {
     if (selectedMember) {

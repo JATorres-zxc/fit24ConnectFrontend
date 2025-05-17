@@ -1,5 +1,8 @@
 import { View, StyleSheet, Platform, } from "react-native";
-import { useCallback, useState } from "react";
+import { useEffect, useCallback, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
+import Toast from "react-native-toast-message";
 
 import Button from '@/components/CreateAnnouncementButton';
 import Header from '@/components/AdminHomeHeader';
@@ -14,9 +17,22 @@ import Toast from "react-native-toast-message";
 import { Announcement } from "@/types/interface";
 
 export default function AdminHome() {
+  const params = useLocalSearchParams();
   // Use state to manage announcements instead of static import
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Show toast after login
+  useEffect(() => {
+    if (params.showToast === "true") {
+      Toast.show({
+        type: "success",
+        text1: "Login Success!",
+        text2: `Logged in as Admin`,
+        visibilityTime: 1500
+      });
+    }
+  }, [params.showToast]);
 
   // Function to fetch announcements from API
   const fetchAnnouncements = async () => {
