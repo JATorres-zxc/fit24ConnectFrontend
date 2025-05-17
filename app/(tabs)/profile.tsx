@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Text, View, StyleSheet, Image, ScrollView, Platform, ActivityIndicator } from 'react-native';
+import { Text, View, StyleSheet, Image, ScrollView, Platform, ActivityIndicator, Touchable, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useLocalSearchParams } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -9,6 +9,7 @@ import Header from '@/components/ProfileHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import { FontAwesome6 } from '@expo/vector-icons';
 
 interface Profile {
   image: any,
@@ -55,6 +56,7 @@ export default function ProfileScreen() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   const fetchProfile = async () => {
     try {
@@ -135,6 +137,52 @@ export default function ProfileScreen() {
       fetchProfile();
     }, [])
   );
+
+  const handleLogout = () => {
+      setLogoutModalVisible(true); // open the modal
+    };
+  
+    const handleConfirmLogout = async () => {
+      try {
+        const API_BASE_URL =
+          Platform.OS === 'web'
+            ? 'http://127.0.0.1:8000'
+            : 'http://192.168.1.11:8000';
+        
+        const refreshToken = await AsyncStorage.getItem('refreshToken');
+        if (!refreshToken) {
+          console.error('No refresh token found.');
+          setLogoutModalVisible(false);
+          return;
+        }
+    
+        const response = await fetch(`${API_BASE_URL}/api/account/logout/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ refresh: refreshToken}),
+        });
+    
+        if (response.ok) {
+          console.log('Logged out successfully');
+        } else {
+          const errorData = await response.json();
+          console.error('Logout API call failed:', errorData);
+        }
+  
+        // Clear all authentication tokens from AsyncStorage
+        await AsyncStorage.removeItem('accessToken');
+        await AsyncStorage.removeItem('refreshToken');
+        await AsyncStorage.removeItem('userID');
+        
+        setLogoutModalVisible(false);
+        router.push('/login');
+      } catch (error) {
+        console.error('Error logging out:', error);
+        setLogoutModalVisible(false);
+      }
+    };
 
   if (loading) {
     return (
@@ -220,8 +268,55 @@ export default function ProfileScreen() {
             <Text style={styles.label}>Phone Number</Text>
             <Text style={styles.value}>{profile.phoneNo}</Text>
           </View>
+
+          {/* Logout Button */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.button}
+              onPress={handleLogout}
+            >
+              <Text style={styles.buttonText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
+      {/* Logout Confirmation Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={logoutModalVisible}
+        onRequestClose={() => setLogoutModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setLogoutModalVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <View style={styles.modalIconContainer}>
+                  <FontAwesome6 name="right-from-bracket" size={36} color={Colors.black} />
+                </View>
+                <Text style={styles.modalTitle}>Confirm Logout</Text>
+                <Text style={styles.modalText}>
+                  Are you sure you want to log out?
+                </Text>
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.cancelButton]} 
+                    onPress={() => setLogoutModalVisible(false)}
+                  >
+                    <Text style={styles.buttonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.logoutButton]} 
+                    onPress={handleConfirmLogout}
+                  >
+                    <Text style={[styles.buttonText, styles.logoutButtonText]}>Logout</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
       <Toast />
     </View>
   );
@@ -288,5 +383,75 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.semibold,
     fontSize: 16,
     marginTop: 10,
+  },
+  buttonContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: Colors.black,
+    padding: 10,
+    borderRadius: 10,
+    width: '50%',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: Colors.white,
+    fontFamily: Fonts.medium,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalIconContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontFamily: Fonts.bold,
+    fontSize: 20,
+    marginBottom: 15,
+  },
+  modalText: {
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  selectedMember: {
+    fontFamily: Fonts.semiboldItalic,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    flex: 1,
+    marginHorizontal: 5,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: Colors.red,
+  },
+  logoutButton: {
+    backgroundColor: Colors.black,
+  },
+  logoutButtonText: {
+    color: Colors.white,
   },
 });

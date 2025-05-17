@@ -175,7 +175,7 @@ export default function EditPasswordScreen() {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header userType='member' />
 
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

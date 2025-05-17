@@ -1,18 +1,19 @@
 import { 
-  View, Text, StyleSheet, FlatList,
-  TouchableOpacity, Modal, TouchableWithoutFeedback
+  View, Text, StyleSheet, FlatList
   } from "react-native";
-import React, { useState } from "react";
+import React, { useMemo } from "react";
+import { format } from "date-fns";
 
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
 interface Logs {
   id: string;
-  facilityName: string;
-  accessStatus: string;
+  facility_name: string;
+  status: string;
   date: string;
   time: string;
+  timestamp: string;
 }
 
 interface Props {
@@ -20,21 +21,32 @@ interface Props {
 }
 
 export default function AccessLogsContainer({ accessLogs }: Props) {
+  const formattedLogs = useMemo(() => {
+    return accessLogs.map(log => {
+      const dateObj = new Date(log.timestamp);
+      return {
+        ...log,
+        date: format(dateObj, 'dd/MM/yyyy'),
+        time: format(dateObj, 'hh:mm a'),
+      };
+    });
+  }, [accessLogs]);
+
   return (
     <View style={styles.container}>
       <FlatList
-        data={accessLogs}
+        data={formattedLogs}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View 
             style={styles.card}
           >
             <View style={styles.leftSection}>
-              <Text style={styles.title}>{item.facilityName}</Text>
+              <Text style={styles.title}>{item.facility_name}</Text>
               <Text style={styles.content}>
                 Access Status:{' '}
                 <Text style={styles.status}>
-                  {item.accessStatus}
+                  {item.status}
                 </Text>
               </Text>
             </View>

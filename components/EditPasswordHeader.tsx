@@ -5,7 +5,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AntDesign from '@expo/vector-icons/AntDesign'
 import { Fonts } from '@/constants/Fonts';
 
-export default function Header() {
+type HeaderProps = {
+  userType: 'member' | 'trainer';
+};
+
+export default function Header({ userType }: HeaderProps) {
+  const handleBackPress = () => {
+    if (userType === 'trainer') {
+      router.push('/(trainer)/editprofile');
+    } else {
+      router.push('/editprofile');
+    }
+  };
+
   return (
     <SafeAreaView>
       <View style={styles.header}>
@@ -14,7 +26,7 @@ export default function Header() {
             name='arrowleft' 
             color={'black'} 
             size={24} 
-            onPress={() => router.push('/editprofile')} 
+            onPress={handleBackPress} 
           />
           <Text style={styles.headerText}>
             Edit Password
