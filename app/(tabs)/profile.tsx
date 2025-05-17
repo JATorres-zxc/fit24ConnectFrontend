@@ -11,37 +11,11 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { FontAwesome6 } from '@expo/vector-icons';
 
-interface Profile {
-  image: any,
-  username: string,
-  membershipType: string,
-  membershipStatus: string,
-  fullName: string,
-  email: string,
-  age: string,
-  height: string,
-  weight: string,
-  address: string,
-  phoneNo: string,
-}
+// Import interface for the profile object
+import { MemberProfileDetails } from '@/types/interface';
 
 export default function ProfileScreen() {
-  const params = useLocalSearchParams();
-
-  // useEffect(() => {
-  //   if (params.showToast === "true") {
-  //     setTimeout(() => {
-  //       Toast.show({
-  //         type: "error",
-  //         text1: "Profile Incomplete",
-  //         text2: "Please complete all profile details before proceeding.",
-  //         position: 'bottom'
-  //       });
-  //     }, 2500); // Adding a short delay to ensure Toast renders properly
-  //   }
-  // }, [params.showToast]);
-  
-  const [profile, setProfile] = useState<Profile>({
+  const [profile, setProfile] = useState<MemberProfileDetails>({
     image: require("@/assets/images/icon.png"),
     username: '',
     membershipType: '',
@@ -57,6 +31,20 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const params = useLocalSearchParams();
+
+  // useEffect(() => {
+  //   if (params.showToast === "true") {
+  //     setTimeout(() => {
+  //       Toast.show({
+  //         type: "error",
+  //         text1: "Profile Incomplete",
+  //         text2: "Please complete all profile details before proceeding.",
+  //         position: 'bottom'
+  //       });
+  //     }, 2500); // Adding a short delay to ensure Toast renders properly
+  //   }
+  // }, [params.showToast]);
 
   const fetchProfile = async () => {
     try {

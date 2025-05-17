@@ -7,11 +7,12 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
 interface HeaderProps {
+  userType: 'member' | 'trainer';
   onSave: () => void;
   hasUnsavedChanges?: boolean;
 }
 
-export default function Header({ onSave, hasUnsavedChanges = false }: HeaderProps) {
+export default function Header({ userType, onSave, hasUnsavedChanges = false }: HeaderProps) {
   const handleBackNavigation = () => {
     if (hasUnsavedChanges) {
       Alert.alert(
@@ -20,7 +21,7 @@ export default function Header({ onSave, hasUnsavedChanges = false }: HeaderProp
         [
           {
             text: "Discard",
-            onPress: () => router.replace('/profile'),
+            onPress: navigateBackBasedOnUserType , 
             style: "cancel"
           },
           { 
@@ -33,9 +34,17 @@ export default function Header({ onSave, hasUnsavedChanges = false }: HeaderProp
         ]
       );
     } else {
-      router.replace('/profile');
+      navigateBackBasedOnUserType();
     }
   };
+
+  const navigateBackBasedOnUserType  = () => {
+    if (userType === 'trainer') {
+      router.replace('/(trainer)/profile');
+    } else {
+      router.replace('/(tabs)/editprofile');
+    }
+  }
 
   return (
     <SafeAreaView>

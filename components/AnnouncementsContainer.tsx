@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: 5,
+    justifyContent: "space-between",
   },
   title: {
     fontSize: 16,

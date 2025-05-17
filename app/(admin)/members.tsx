@@ -9,13 +9,8 @@ import { Fonts } from '@/constants/Fonts';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type Member = {
-  id: string;
-  full_name: string;
-  type_of_membership: string,
-  membership_start_date: string,
-  membership_end_date: string,
-};
+// Import interface for the member object
+import { Member } from '@/types/interface';
 
 export default function MembersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,8 +22,9 @@ export default function MembersScreen() {
   const hasMissingNames = members.some(member => !member.full_name?.trim());
 
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
-  
- useEffect(() => {
+
+  // Fetch the member list from the API
+  useEffect(() => {
     const fetchMembers = async () => {
       try {
         const API_BASE_URL = 
@@ -46,23 +42,11 @@ export default function MembersScreen() {
 
         if (response.ok) {
           const data = await response.json();
+
+          // Set members to state
           setAllMembers(data);
           setMembers(data);
-          setFilteredMembers(data); // Initialize both
-
-          // Check for members with incomplete profiles
-          const membersWithMissingFields = data.filter((member:any) => {
-            return !member.full_name || !member.email || !member.contact_number || !member.complete_address;
-          });
-
-          if (membersWithMissingFields.length > 0) {
-            Toast.show({
-              type: "error",
-              text1: "Incomplete Profiles",
-              text2: "Some members haven't set up their profiles. Please remind them.",
-              visibilityTime: 4000,
-            });
-          }
+          setFilteredMembers(data);
         } else {
           console.error('Failed to fetch members', await response.text());
         }
