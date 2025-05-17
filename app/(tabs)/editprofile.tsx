@@ -16,24 +16,10 @@ import Header from '@/components/EditProfileHeader';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
-interface ProfileBase {
-  image: any;
-  membershipType: string;
-  membershipStatus: string;
-}
+// Import interface for the profile object
+import { ProfileBase, EditableMemberProfile } from '@/types/interface';
 
-interface EditableProfile {
-  username: string;
-  fullName: string;
-  email: string;
-  age: string;
-  height: string;
-  weight: string;
-  complete_address: string;
-  contact_number: string;
-}
-
-type Profile = ProfileBase & EditableProfile;
+type Profile = ProfileBase & EditableMemberProfile;
 
 export default function EditProfileScreen() {
   const [originalProfile, setOriginalProfile] = useState<Profile>({
@@ -291,7 +277,7 @@ export default function EditProfileScreen() {
   const renderInput = (
     label: string, 
     value: string, 
-    fieldName: keyof EditableProfile, 
+    fieldName: keyof EditableMemberProfile, 
     ref: any,
     keyboardType: 'default' | 'email-address' | 'number-pad' | 'phone-pad' = 'default',
     autoCapitalize: 'none' | 'sentences' | 'words' | 'characters' = 'none',

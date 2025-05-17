@@ -16,22 +16,10 @@
   import { Fonts } from '@/constants/Fonts';
   import { Colors } from '@/constants/Colors';
 
-  interface ProfileBase {
-    image: any;
-    membershipType: string;
-    membershipStatus: string;
-  }
+  // Import interface for the profile object
+  import { ProfileBase, EditableTrainerProfile } from '@/types/interface';
 
-  interface EditableProfile {
-    username: string;
-    fullName: string;
-    email: string;
-    experience: string;
-    address: string;
-    phoneNo: string;
-  }
-
-  type Profile = ProfileBase & EditableProfile;
+  type Profile = ProfileBase & EditableTrainerProfile;
 
   export default function EditProfileScreen() {
     const [originalProfile, setOriginalProfile] = useState<Profile>({
@@ -271,7 +259,7 @@
       const renderInput = (
         label: string, 
         value: string, 
-        fieldName: keyof EditableProfile, 
+        fieldName: keyof EditableTrainerProfile, 
         ref: any,
         keyboardType: 'default' | 'email-address' | 'phone-pad' = 'default',
         autoCapitalize: 'none' | 'sentences' | 'words' | 'characters' = 'none',

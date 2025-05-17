@@ -9,20 +9,11 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { FontAwesome6 } from '@expo/vector-icons';
 
-interface Profile {
-  image: any,
-  username: string,
-  membershipType: string,
-  membershipStatus: string,
-  fullName: string,
-  email: string,
-  address: string,
-  contact_number: string,
-  experience: string,
-}
+// Import interface for the profile object
+import { TrainerProfileDetails } from '@/types/interface';
 
 export default function ProfileScreen() {
-  const [profile, setProfile] = useState<Profile>({
+  const [profile, setProfile] = useState<TrainerProfileDetails>({
     image: require("@/assets/images/icon.png"),
     username: '',
     membershipType: '',

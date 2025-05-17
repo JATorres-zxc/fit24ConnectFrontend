@@ -9,12 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { Fonts } from '@/constants/Fonts';
 
-interface AccessLog {
-  id: string;
-  facility_name: string;
-  status: string;
-  timestamp: string;
-}
+// Import interface for the access log object
+import { AccessLog } from '@/types/interface';
 
 export default function HistoryScreen() {
   const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
