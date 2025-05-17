@@ -1,5 +1,6 @@
 import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList, TouchableWithoutFeedback, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
+import Toast from "react-native-toast-message";
 import { AntDesign, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import Header from '@/components/AdminSectionHeaders';
@@ -27,15 +28,14 @@ export default function MembersScreen() {
 
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
   
-  // 👇 Fetch the member list from the API
-  useEffect(() => {
+ useEffect(() => {
     const fetchMembers = async () => {
       try {
         const API_BASE_URL = 
           Platform.OS === 'web'
             ? 'http://127.0.0.1:8000'
             : 'http://192.168.1.11:8000';
-  
+
         const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/account/members/`, {
           headers: {
@@ -43,12 +43,26 @@ export default function MembersScreen() {
             'Content-Type': 'application/json',
           },
         });
-  
+
         if (response.ok) {
           const data = await response.json();
           setAllMembers(data);
           setMembers(data);
-          setFilteredMembers(data); // initialize both
+          setFilteredMembers(data); // Initialize both
+
+          // Check for members with incomplete profiles
+          const membersWithMissingFields = data.filter((member:any) => {
+            return !member.full_name || !member.email || !member.contact_number || !member.complete_address;
+          });
+
+          if (membersWithMissingFields.length > 0) {
+            Toast.show({
+              type: "error",
+              text1: "Incomplete Profiles",
+              text2: "Some members haven't set up their profiles. Please remind them.",
+              visibilityTime: 4000,
+            });
+          }
         } else {
           console.error('Failed to fetch members', await response.text());
         }
@@ -56,17 +70,17 @@ export default function MembersScreen() {
         console.error('Error fetching members:', error);
       }
     };
-  
+
     fetchMembers();
   }, []);
-  
+
   useEffect(() => {
     const filtered = allMembers.filter(member => {
       const name = String(member.full_name || member.id || '');
       return name.toLowerCase().includes(searchQuery.toLowerCase());
     });
     setMembers(filtered);
-  }, [searchQuery, allMembers]);  
+  }, [searchQuery, allMembers]);
 
   const handleAssignTrainer = async () => {
     if (selectedMember) {

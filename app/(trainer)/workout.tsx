@@ -150,8 +150,6 @@ const WorkoutScreen = () => {
             (String(request.trainer_id) === String(userID) || request.requestee === null)
         );
 
-        console.log("Trainer Requests: ", trainerRequests);
-
         // Extract requestee IDs from pending workout plans
         const requesteeIDs = trainerRequests.map((request: any) => request.requestee);
   
@@ -179,13 +177,13 @@ const WorkoutScreen = () => {
   
           return {
             requesteeID: request?.requestee.toString() || "Unknown",
-            requesteeName: profileData?.full_name || "Unknown",
+            requesteeName: profileData?.full_name || "User Name Not Set",
             height: profileData?.height || "N/A",
             weight: profileData?.weight || "N/A",
             age: profileData?.age || "N/A",
             fitnessGoal: request?.fitness_goal || "Not Specified",
             intensityLevel: request?.intensity_level || "Not Specified",
-            status: request?.status || "unknown", // Add status here for later filtering
+            status: request?.status || "Unknown Status", // Add status here for later filtering
           };
         }).filter((data: any) => data !== null);
   
@@ -263,13 +261,13 @@ const WorkoutScreen = () => {
             const workout = filteredWorkouts.find((workout: any) => workout.requestee === member.id);
             return {
               requesteeID: member.id.toString(),
-              requesteeName: member.full_name || "Unknown",
+              requesteeName: member.full_name || "User Name Not Set",
               height: member.height || "N/A",
               weight: member.weight || "N/A",
               age: member.age || "N/A",
               fitnessGoal: workout?.fitness_goal || "Not Specified",
               intensityLevel: workout?.intensity_level || "Not Specified",
-              status: workout?.status || "unknown",
+              status: workout?.status || "Unknown Status",
             };
           });
   
@@ -308,9 +306,6 @@ const WorkoutScreen = () => {
         }
   
         const programsData = await response.json();
-
-        console.log("Programs Data: ", programsData);
-        console.log("Trainer ID: ", userID);
   
         // Get all completed programs where the user is the trainer OR it's a free program
         const userPrograms = programsData.filter(
@@ -343,7 +338,7 @@ const WorkoutScreen = () => {
           // requestee from backend is treated as the userID or "everyone" it is visible to.
           visibleTo: (String(userProgram.requestee) === 'null') 
             ? 'everyone' 
-            : memberData.find((member) => String(member.requesteeID) === String(userProgram.requestee))?.requesteeName || 'unknown',
+            : memberData.find((member) => String(member.requesteeID) === String(userProgram.requestee))?.requesteeName || 'User Name Not Set',
           feedbacks: [], // Adjust if feedback data is available in the backend
           requestee: userProgram.requestee ? userProgram.requestee.toString() : null, // Added requestee property
         }));
@@ -605,8 +600,6 @@ const WorkoutScreen = () => {
                   weight={request.weight}
                   age={request.age}
                   onEditPress={() => {
-                  console.log("Selected Requestee ID: ", request.requesteeID);
-                  console.log("Workouts: ", workouts);
                     const matchingWorkout = workouts.find(
                     (workout) => workout.requestee === request.requesteeID
                   );

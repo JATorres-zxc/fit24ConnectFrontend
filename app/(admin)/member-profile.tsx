@@ -61,6 +61,24 @@ export default function MemberProfileScreen() {
     console.log('Membership Type:', membershipType);
     console.log('Dates:', membershipStartDate, membershipEndDate);
     
+    // Fields that must not be empty
+    const requiredFields = [
+      fullName,
+      membershipType,
+    ];
+
+    const missingFields = requiredFields.filter(field => !field || field === "");
+
+    if (missingFields.length > 0) {
+      Toast.show({
+        type: "error",
+        text1: "Incomplete Profile",
+        text2: "Some members have not set up their profiles. Please remind them.",
+        position: "bottom",
+        visibilityTime: 4000,
+      });
+    }
+    
     // Reset all state to ensure no data from previous member persists
     setProfile({
       image: require("@/assets/images/icon.png"),
