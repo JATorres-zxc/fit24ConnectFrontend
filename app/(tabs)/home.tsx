@@ -87,7 +87,7 @@ export default function Home() {
               pathname: '/profile',
               params: { showToast: 'true' },
             });
-          }, 5000); // 5-second delay
+          }, 2500); // 2.5-second delay
         }
       }
     } catch (error) {

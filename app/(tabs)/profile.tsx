@@ -28,18 +28,18 @@ interface Profile {
 export default function ProfileScreen() {
   const params = useLocalSearchParams();
 
-  useEffect(() => {
-    if (params.showToast === "true") {
-      setTimeout(() => {
-        Toast.show({
-          type: "error",
-          text1: "Profile Incomplete",
-          text2: "Please complete all profile details before proceeding.",
-          position: 'bottom'
-        });
-      }, 4000); // Adding a short delay to ensure Toast renders properly
-    }
-  }, [params.showToast]);
+  // useEffect(() => {
+  //   if (params.showToast === "true") {
+  //     setTimeout(() => {
+  //       Toast.show({
+  //         type: "error",
+  //         text1: "Profile Incomplete",
+  //         text2: "Please complete all profile details before proceeding.",
+  //         position: 'bottom'
+  //       });
+  //     }, 2500); // Adding a short delay to ensure Toast renders properly
+  //   }
+  // }, [params.showToast]);
   
   const [profile, setProfile] = useState<Profile>({
     image: require("@/assets/images/icon.png"),
@@ -134,8 +134,18 @@ export default function ProfileScreen() {
   // Refresh profile when screen comes into focus
   useFocusEffect(
     useCallback(() => {
+      if (params.showToast === "true") {
+        setTimeout(() => {
+          Toast.show({
+            type: "error",
+            text1: "Profile Incomplete",
+            text2: "Please complete all profile details before proceeding.",
+            position: 'bottom'
+          });
+        }, 500); // Adding a short delay to ensure Toast renders properly
+      }
       fetchProfile();
-    }, [])
+    }, [params.showToast])
   );
 
   const handleLogout = () => {
