@@ -46,6 +46,17 @@ export default function EditPasswordScreen() {
 
   const handleSavePassword = async () => {
     // Validate inputs
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      Toast.show({
+        type: 'error',
+        text1: 'Input Required Fields',
+        text2: 'Please fill in all fields',
+        topOffset: 100,
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     if (!currentPassword) {
       Toast.show({
         type: 'error',
@@ -70,7 +81,7 @@ export default function EditPasswordScreen() {
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Passwords don\'t match',
+        text2: 'New passwords do not match',
         topOffset: 100,
       });
       return;
