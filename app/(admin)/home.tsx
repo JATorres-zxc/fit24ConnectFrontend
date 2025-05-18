@@ -11,7 +11,6 @@ import AdminAnnouncements from "@/components/AdminSideAnnouncementsContainer";
 import { Colors } from "@/constants/Colors";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Toast from "react-native-toast-message";
 
 // Import interface for the announcement object
 import { Announcement } from "@/types/interface";

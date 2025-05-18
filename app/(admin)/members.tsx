@@ -98,17 +98,45 @@ export default function MembersScreen() {
   
           // Remove from members list
           setMembers(prev => prev.filter(m => m.id !== selectedMember.id));
-          
           setModalVisible(false);
+          
+          // Show success toast
+          Toast.show({
+            type: 'success',
+            text1: 'Trainer Assigned',
+            text2: `${selectedMember.full_name || selectedMember.id} has been assigned as a trainer.`,
+            position: 'top',
+            topOffset: 100,
+          });
+
+          
           setSelectedMember(null);
         } else {
           const errorData = await response.json();
           console.error('Failed to assign trainer:', errorData);
-          alert(errorData.detail || 'Failed to assign trainer');
+          setModalVisible(false);
+
+          // Show error toast
+          Toast.show({
+            type: 'error',
+            text1: 'Assignment Failed',
+            text2: errorData.message || 'Failed to assign trainer. Please try again.',
+            position: 'top',
+            topOffset: 100,
+          });
         }
       } catch (error) {
         console.error('Error assigning trainer:', error);
-        alert('An error occurred while assigning trainer');
+        setModalVisible(false);
+        
+        // Show error toast for exception
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'An error occurred while assigning the trainer. Please try again.',
+          position: 'top',
+          topOffset: 100,
+        });
       }
     }
   };
@@ -221,7 +249,7 @@ export default function MembersScreen() {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-
+      <Toast />
     </View>
   );
 }
