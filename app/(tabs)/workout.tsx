@@ -18,44 +18,9 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface Exercise {
-  id: string;
-  name: string;
-  description: string;
-  image: ImageSourcePropType | null;
-}
-
-interface User{
-  id: string;
-  email: string;
-  full_name: string;
-}
-interface Trainer{
-  id: string;
-  name: string;
-  user: User;
-  experience?: string;
-  contact?: string;
-}
-interface Feedback {
-  id: string;
-  feedback: string;
-  rating: number;
-  createdAt: Date;
-}
-
-interface Workout {
-  id: string;
-  title: string;
-  fitnessGoal: string;
-  intensityLevel: string;
-  trainer: string;
-  exercises: Exercise[];
-  visibleTo: string;
-  feedbacks: Feedback[];
-  status: string;
-  requestee: string | null; // Added member_id property
-}
+// Import interfaces for workouts
+import { Exercise, User, Feedback, Workout } from "@/types/interface";
+import { Trainer2 as Trainer } from "@/types/interface";
 
 const API_BASE_URL =
   Platform.OS === 'web'

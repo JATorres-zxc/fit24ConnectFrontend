@@ -1,3 +1,7 @@
+// For interfaces with image attributes
+
+import { ImageSourcePropType } from "react-native";
+
 export interface Announcement {
   id: string;
   title: string;
@@ -109,4 +113,153 @@ export interface EditableTrainerProfile {
   experience: string;
   address: string;
   phoneNo: string;
+}
+
+// Meal Plan Interfaces
+export interface MealPlan {
+  mealplan_id: number;
+  meals: Meal[];
+  member_id: string;
+  trainer_id: string;
+  mealplan_name: string;
+  fitness_goal: string;
+  calorie_intake: number;
+  protein: number;
+  carbs: number;
+  weight_goal: number;
+  allergies: string;
+  instructions: string;
+  visibleTo: string;
+  requestee_id: string;
+  requestee: string;
+  status: string;
+}
+export interface Meal {
+  id: string | null;
+  mealplan: string;
+  meal_name: string;
+  description: string;
+  meal_type: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+}
+
+export interface User{
+  id: string;
+  email: string;
+  full_name: string;
+}
+
+// Used in Trainer Meal Plan Interface
+export interface SelectedMemberData {
+  requesteeID: string;
+  requesteeName: string;
+  height: string;
+  weight: string;
+  age: string;
+  fitnessGoal: string;
+  weightGoal: string;
+  allergies: string;
+  status: string;
+}
+
+
+// Second Trainer Interface for Meals and Workouts
+export interface Trainer2{
+  id: string;
+  user: User;
+  experience?: string;
+  contact?: string;
+}
+
+export interface Feedback {
+  id: string;
+  feedback: string;
+  rating: number;
+  createdAt: Date;
+}
+
+export interface MealPlan2 {
+  mealplan_id: string | null;
+  meals: Meal2[];
+  member_id: string;
+  trainer_id: string;
+  mealplan_name: string;
+  fitness_goal: string;
+  calorie_intake: number;
+  protein: number;
+  carbs: number;
+  weight_goal: string;
+  allergies: string;
+  instructions: string;
+  requestee_id: string;
+  requestee: string;
+  status: string;
+}
+
+export interface Meal2 {
+  id: string | null;
+  mealplan: string;
+  meal_name: string;
+  description: string;
+  meal_type: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+}
+
+// Workout Interfaces
+
+export interface Exercise {
+  id: string;
+  name: string;
+  description: string;
+  image: ImageSourcePropType | null;
+}
+
+export interface Workout {
+  id: string;
+  title: string;
+  fitnessGoal: string;
+  intensityLevel: string;
+  trainer: string;
+  exercises: Exercise[];
+  visibleTo: string;
+  feedbacks: Feedback[];
+  status: string;
+  requestee: string | null; // Added member_id property
+}
+
+// For Trainer Workout Interfaces
+export interface Exercise2 {
+  id: string | null; // ID can be null for new exercises
+  name: string;
+  description: string;
+  image: ImageSourcePropType | null; // Image can be null if not set
+}
+
+export interface Workout2 {
+  id: string | null; // ID can be null for new workouts
+  title: string;
+  duration: number;
+  fitnessGoal: string;
+  intensityLevel: string;
+  trainer: string;
+  exercises: Exercise2[];
+  visibleTo: string;
+  feedbacks: Feedback[];
+  status: string;
+  requestee: string | null;
+}
+
+export interface SelectedMemberData2 {
+  requesteeID: string;
+  requesteeName: string;
+  height: string;
+  weight: string;
+  age: string;
+  fitnessGoal: string;
+  intensityLevel: string;
+  status: string;
 }

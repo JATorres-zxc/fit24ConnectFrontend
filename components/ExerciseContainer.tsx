@@ -3,12 +3,8 @@ import { View, Text, StyleSheet, Image, ImageSourcePropType } from "react-native
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
-interface Exercise {
-    id: string;
-    name: string;
-    description: string;
-    image: ImageSourcePropType | null; // Accepts an image or null if not set
-}
+// Import interface
+import { Exercise } from "@/types/interface";
 
 interface ExerciseContainerProps {
     exercises: Exercise[];

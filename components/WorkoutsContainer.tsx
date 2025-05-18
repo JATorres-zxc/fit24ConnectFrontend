@@ -5,32 +5,9 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import * as ImagePicker from "expo-image-picker";
 
-interface Exercise {
-  id: string;
-  name: string;
-  description: string;
-  image: ImageSourcePropType | null;
-}
+// Import interfaces for workouts
+import { Exercise2 as Exercise, Feedback, Workout } from "@/types/interface";
 
-interface Feedback {
-  id: string;
-  feedback: string;
-  rating: number;
-  createdAt: Date;
-}
-
-interface Workout {
-  id: string;
-  title: string;
-  fitnessGoal: string;
-  intensityLevel: string;
-  trainer: string;
-  exercises: Exercise[];
-  visibleTo: string;
-  feedbacks: Feedback[];
-  status: string;
-  requestee: string | null; // Added requestee property
-}
 interface WorkoutsContainerProps {
   workouts: Workout[];
   onWorkoutPress: (workout: Workout) => void;

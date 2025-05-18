@@ -4,32 +4,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
-interface Meal {
-    id: string | null;
-    mealplan: string;
-    meal_name: string;
-    description: string;
-    meal_type: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-}
-
-interface MealPlan {
-    mealplan_id: string | null;
-    meals: Meal[];
-    member_id: string;
-    trainer_id: string;
-    mealplan_name: string;
-    fitness_goal: string;
-    calorie_intake: number;
-    protein: number;
-    carbs: number;
-    weight_goal: string;
-    allergies: string;
-    instructions: string;
-    status: string;
-}
+// Import interfaces
+import { Meal2 as Meal, MealPlan2 as MealPlan } from "@/types/interface";
 
 interface MemberMealPlanProps {
     mealPlan: MealPlan;
