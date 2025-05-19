@@ -6,9 +6,9 @@ import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '../constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
-import { HeaderProps } from '@/types/interface';
+import { HeaderPropsName } from '@/types/interface';
 
-export default function Header({ name }: HeaderProps) {
+export default function Header({ name }: HeaderPropsName) {
   return (
     <SafeAreaView>
       <View style={styles.header}>

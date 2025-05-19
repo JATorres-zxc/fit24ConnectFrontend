@@ -5,9 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
 
-import { HeaderProps } from '@/types/interface';
+import { HeaderPropsUserType } from '@/types/interface';
 
-export default function Header({ userType }: HeaderProps) {
+export default function Header({ userType }: HeaderPropsUserType) {
   const handleHomePress = () => {
     if (userType === 'trainer') {
       router.push('/(trainer)/home');

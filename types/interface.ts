@@ -265,9 +265,15 @@ export interface SelectedMemberData2 {
 }
 
 // Header Interface
-export type HeaderProps = {
-  name: string;
+export type HeaderPropsUserType = {
   userType: 'member' | 'trainer';
+}
+
+export type HeaderPropsName = {
+  name: string;
+}
+
+export type HeaderPropsNavigation = {
   screen: string;
   prevScreen: `/${string}`;
 };
