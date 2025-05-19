@@ -95,7 +95,7 @@ export default function CreateAnnouncement() {
         text2: 'Announcement created successfully',
         position: 'top',
         topOffset: 100,
-        visibilityTime: 2000,
+        visibilityTime: 10000,
         autoHide: true,
         onHide: () => router.push('/(admin)/home') // Navigate back after toast disappears
       });
@@ -132,6 +132,7 @@ export default function CreateAnnouncement() {
           <TextInput
             style={styles.input}
             placeholder="Enter Title for Announcement"
+            placeholderTextColor={Colors.textSecondary}
             value={announcementTitle}
             onChangeText={handleTitleChange}
           />

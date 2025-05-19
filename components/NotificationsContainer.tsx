@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { 
   View, Text, StyleSheet, FlatList,
-  TouchableOpacity, Modal, Pressable
+  TouchableOpacity, Modal, TouchableWithoutFeedback
 } from "react-native";
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
@@ -57,9 +57,9 @@ export default function NotificationsContainer({ notifications, token, onNotific
         visible={!!selectedNotification}
         onRequestClose={closeNotificationModal}
       >
-        <Pressable onPress={closeNotificationModal}>
+        <TouchableWithoutFeedback onPress={closeNotificationModal}>
           <View style={styles.modalOverlay}>
-            <Pressable>
+            <TouchableWithoutFeedback>
               <View style={styles.modalContainer}>
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>{selectedNotification.title}</Text>
@@ -74,9 +74,9 @@ export default function NotificationsContainer({ notifications, token, onNotific
                   <Text style={styles.modalTime}>{time}</Text>
                 </View>
               </View>
-            </Pressable>
+            </TouchableWithoutFeedback>
           </View>
-        </Pressable>
+        </TouchableWithoutFeedback>
       </Modal>
     );
   };

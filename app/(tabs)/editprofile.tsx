@@ -6,7 +6,7 @@ import {
   ScrollView, KeyboardAvoidingView,
   Keyboard,
   ActivityIndicator,
-  Pressable
+  TouchableWithoutFeedback
 } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -278,7 +278,7 @@ export default function EditProfileScreen() {
     return (
       <View style={styles.inputContainerOuter}>
         <Text style={styles.inputLabel}>{label}</Text>
-        <Pressable 
+        <TouchableWithoutFeedback 
           style={styles.inputWrapper}
           onPress={() => ref.current && ref.current.focus()}
         >
@@ -293,7 +293,7 @@ export default function EditProfileScreen() {
             returnKeyType={returnKeyType}
             onSubmitEditing={onSubmitEditing}
           />
-        </Pressable>
+        </TouchableWithoutFeedback>
       </View>
     );
   };
@@ -316,8 +316,8 @@ export default function EditProfileScreen() {
         contentContainerStyle={{paddingBottom: 20}}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Background pressable to dismiss keyboard when tapping empty areas */}
-        <Pressable style={styles.backgroundPressable} onPress={dismissKeyboard}>
+        {/* Background TouchableWithoutFeedback to dismiss keyboard when tapping empty areas */}
+        <TouchableWithoutFeedback style={styles.backgroundPressable} onPress={dismissKeyboard}>
           <View style={styles.profileContainer}>
             <View style={styles.imageContainer}>
               <Image 
@@ -420,7 +420,7 @@ export default function EditProfileScreen() {
               <Text style={styles.buttonText}>Edit Password</Text>
             </TouchableOpacity>
           </View>
-        </Pressable>
+        </TouchableWithoutFeedback>
       </ScrollView>
         
       <Toast />

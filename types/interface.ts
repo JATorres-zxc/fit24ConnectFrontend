@@ -13,6 +13,7 @@ export interface Announcement {
 export type Trainer = {
   id: string;
   user: {
+    id: string;
     full_name: string;
   };
 };

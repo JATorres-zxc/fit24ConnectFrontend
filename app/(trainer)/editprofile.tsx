@@ -3,7 +3,7 @@
   import { 
     Text, View, StyleSheet, Image, 
     TextInput, TouchableOpacity, Platform, 
-    ScrollView, KeyboardAvoidingView, Pressable, 
+    ScrollView, KeyboardAvoidingView, TouchableWithoutFeedback, 
     Keyboard,
     ActivityIndicator
   } from 'react-native';
@@ -264,7 +264,7 @@
         return (
           <View style={styles.inputContainerOuter}>
             <Text style={styles.inputLabel}>{label}</Text>
-            <Pressable 
+            <TouchableWithoutFeedback 
               style={styles.inputWrapper}
               onPress={() => ref.current && ref.current.focus()}
             >
@@ -279,7 +279,7 @@
                 returnKeyType={returnKeyType}
                 onSubmitEditing={onSubmitEditing}
               />
-            </Pressable>
+            </TouchableWithoutFeedback>
           </View>
         );
       };
@@ -290,7 +290,7 @@
     };
 
     return (
-      <Pressable onPress={Keyboard.dismiss}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView 
           style={styles.container}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -381,7 +381,7 @@
             
           <Toast />
         </KeyboardAvoidingView>
-      </Pressable>
+      </TouchableWithoutFeedback>
       
     );
   }

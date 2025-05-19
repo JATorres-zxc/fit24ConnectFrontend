@@ -4,7 +4,7 @@ import Header from '@/components/HistoryHeader';
 import { Colors } from '@/constants/Colors';
 import AccessLogsContainer from '@/components/AccessLogsContainer';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { Fonts } from '@/constants/Fonts';
@@ -12,13 +12,13 @@ import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the access log object
 import { AccessLog } from '@/types/interface';
+import { useFocusEffect } from 'expo-router';
 
 export default function HistoryScreen() {
   const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Fetch access logs when component mounts
+    // Fetch access logs from the API
     const fetchAccessLogs = async () => {
       try {
         const token = await AsyncStorage.getItem('authToken');
@@ -55,8 +55,11 @@ export default function HistoryScreen() {
       }
     };
 
-    fetchAccessLogs();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchAccessLogs();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>

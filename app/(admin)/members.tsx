@@ -1,12 +1,12 @@
-import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList, Pressable, Platform } from 'react-native';
-import { useState, useEffect } from 'react';
+import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList, TouchableWithoutFeedback, Platform } from 'react-native';
+import { useState, useEffect, useCallback } from 'react';
 import Toast from "react-native-toast-message";
 import { AntDesign, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '@/constants/ApiConfig';
 
@@ -25,7 +25,6 @@ export default function MembersScreen() {
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
 
   // Fetch the member list from the API
-  useEffect(() => {
     const fetchMembers = async () => {
       try {
         const token = await AsyncStorage.getItem('authToken');
@@ -51,8 +50,11 @@ export default function MembersScreen() {
       }
     };
 
-    fetchMembers();
-  }, []);
+  useFocusEffect (
+    useCallback(() => {
+      fetchMembers();
+    }, [])
+  )
 
   useEffect(() => {
     const filtered = allMembers.filter(member => {
@@ -206,9 +208,9 @@ export default function MembersScreen() {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <Pressable onPress={() => setModalVisible(false)}>
+        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
           <View style={styles.modalOverlay}>
-            <Pressable>
+            <TouchableWithoutFeedback>
               <View style={styles.modalContent}>
                 <View style={styles.modalIconContainer}>
                   <FontAwesome6 name="dumbbell" size={36} color={Colors.black} />
@@ -236,9 +238,9 @@ export default function MembersScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-            </Pressable>
+            </TouchableWithoutFeedback>
           </View>
-        </Pressable>
+        </TouchableWithoutFeedback>
       </Modal>
       <Toast />
     </View>

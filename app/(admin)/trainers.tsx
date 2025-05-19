@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, FlatList, TextInput, Modal, TouchableOpacity, Pressable, Platform } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Text, View, StyleSheet, FlatList, TextInput, Modal, TouchableOpacity, TouchableWithoutFeedback, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Header from '@/components/AdminSectionHeaders';
@@ -10,6 +10,7 @@ import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the trainer object
 import { Trainer } from '@/types/interface';
+import { useFocusEffect } from 'expo-router';
 
 export default function TrainersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,7 +20,6 @@ export default function TrainersScreen() {
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null> (null);
 
   // Fetch the trainer list from the API
-  useEffect(() => {
     const fetchTrainers = async () => {
       try {
         const token = await AsyncStorage.getItem('authToken');
@@ -45,8 +45,11 @@ export default function TrainersScreen() {
       }
     };
 
-    fetchTrainers();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchTrainers();
+    }, [])
+  );
 
   // Filter trainers when search query changes or when trainers change
   useEffect(() => {
@@ -67,7 +70,7 @@ export default function TrainersScreen() {
       try {
         const token = await AsyncStorage.getItem('authToken');
   
-        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedTrainer.id}/remove/`, {
+        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedTrainer.user.id}/remove/`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -147,9 +150,9 @@ export default function TrainersScreen() {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <Pressable onPress={() => setModalVisible(false)}>
+        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
           <View style={styles.modalOverlay}>
-            <Pressable>
+            <TouchableWithoutFeedback>
               <View style={styles.modalContent}>
                 <View style={styles.modalIconContainer}>
                   <FontAwesome6 name="dumbbell" size={36} color={Colors.black} />
@@ -177,9 +180,9 @@ export default function TrainersScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-            </Pressable>
+            </TouchableWithoutFeedback>
           </View>
-        </Pressable>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
