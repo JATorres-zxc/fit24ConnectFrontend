@@ -18,43 +18,8 @@ import MemberWorkout from "@/components/MemberWorkout";
 import WorkoutRequest from "@/components/WorkoutRequest";
 import TrainerWOHeader from "@/components/TrainerWOHeader";
 
-interface Exercise {
-  id: string | null; // ID can be null for new exercises
-  name: string;
-  description: string;
-  image: ImageSourcePropType | null; // Image can be null if not set
-}
-interface Feedback {
-  id: string;
-  feedback: string;
-  rating: number;
-  createdAt: Date;
-}
-
-interface Workout {
-  id: string | null; // ID can be null for new workouts
-  title: string;
-  duration: number;
-  fitnessGoal: string;
-  intensityLevel: string;
-  trainer: string;
-  exercises: Exercise[];
-  visibleTo: string;
-  feedbacks: Feedback[];
-  status: string;
-  requestee: string | null;
-}
-
-interface SelectedMemberData {
-  requesteeID: string;
-  requesteeName: string;
-  height: string;
-  weight: string;
-  age: string;
-  fitnessGoal: string;
-  intensityLevel: string;
-  status: string;
-}
+// Import interfaces for workouts
+import { Exercise2 as Exercise, Feedback, Workout2 as Workout, SelectedMemberData2 as SelectedMemberData } from "@/types/interface";
 
 const API_BASE_URL =
   Platform.OS === 'web'

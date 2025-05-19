@@ -9,15 +9,16 @@ import Header from '@/components/AdminHomeHeader';
 import AdminAnnouncements from "@/components/AdminSideAnnouncementsContainer";
 
 import { Colors } from "@/constants/Colors";
-import { announcements as initialAnnouncements } from "@/context/announcements";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function Home() {
+// Import interface for the announcement object
+import { Announcement } from "@/types/interface";
+
+export default function AdminHome() {
   const params = useLocalSearchParams();
-  
   // Use state to manage announcements instead of static import
-  const [announcements, setAnnouncements] = useState(initialAnnouncements);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Show toast after login
@@ -53,21 +54,22 @@ export default function Home() {
       }
       
       const data = await response.json();
-      setAnnouncements(data);
-      
-      // Optionally, also update AsyncStorage
-      await AsyncStorage.setItem('announcements', JSON.stringify(data));
+
+      // Sort announcements by updated_at date (most recent first)
+      const sortedAnnouncements: Announcement[] = [...data].sort((a, b) => {
+        const dateA = new Date(a.updated_at).getTime();
+        const dateB = new Date(b.updated_at).getTime();
+        return dateB - dateA;
+      });
+
+      setAnnouncements(sortedAnnouncements);
     } catch (error) {
       console.error("Error fetching announcements:", error);
-      // Fallback to cached data if API call fails
-      try {
-        const storedAnnouncements = await AsyncStorage.getItem('announcements');
-        if (storedAnnouncements) {
-          setAnnouncements(JSON.parse(storedAnnouncements));
-        }
-      } catch (storageError) {
-        console.error("Error fetching from storage:", storageError);
-      }
+      Toast.show({
+        type: "error",
+        text1: "Failed to load announcements",
+        text2: "Please try again later",
+      });
     } finally {
       setLoading(false);
     }

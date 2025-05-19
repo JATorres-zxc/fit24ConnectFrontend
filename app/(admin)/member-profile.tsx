@@ -10,14 +10,8 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface Profile {
-  image: any,
-  username: string,
-  fullName: string,
-  membershipType: string,
-  startDate?: string,
-  endDate?: string,
-}
+// Import MemberProfile interface
+import { MemberProfile } from '@/types/interface';
 
 export default function MemberProfileScreen() {
   const { memberId, fullName, membershipType, membershipStartDate, membershipEndDate } = useLocalSearchParams();
@@ -39,7 +33,7 @@ export default function MemberProfileScreen() {
       .trim();
   };
 
-  const [profile, setProfile] = useState<Profile>({
+  const [profile, setProfile] = useState<MemberProfile>({
     image: require("@/assets/images/icon.png"),
     username: '',
     fullName: '',

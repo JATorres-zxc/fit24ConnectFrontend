@@ -13,54 +13,9 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface Meal {
-  id: string;
-  mealplan: string;
-  meal_name: string;
-  description: string;
-  meal_type: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-}
-
-interface User{
-  id: string;
-  email: string;
-  full_name: string;
-}
-interface Trainer{
-  id: string;
-  user: User;
-  experience?: string;
-  contact?: string;
-}
-
-interface Feedback {
-  id: string;
-  feedback: string;
-  rating: number;
-  createdAt: Date;
-}
-
-interface MealPlan {
-  mealplan_id: number;
-  meals: Meal[];
-  member_id: string;
-  trainer_id: string;
-  mealplan_name: string;
-  fitness_goal: string;
-  calorie_intake: number;
-  protein: number;
-  carbs: number;
-  weight_goal: number;
-  allergies: string;
-  instructions: string;
-  visibleTo: string;
-  requestee_id: string;
-  requestee: string;
-  status: string;
-}
+// Import interfaces for meals
+import { Meal, User, Feedback, MealPlan } from "@/types/interface";
+import { Trainer2 as Trainer } from "@/types/interface";
 
 const API_BASE_URL =
   Platform.OS === 'web'
@@ -525,9 +480,8 @@ const MealPlanScreen = () => {
           ) : (
             // Nutritional Meal Plan View
             <>
-              {mealPlan && 
-                typeof mealPlan === "object" && mealPlan.status && mealPlan.requestee_id === userID ? (
-                  mealPlan.status === "completed" && Array.isArray(mealPlan.meals) && mealPlan.meals.length > 0 ? (
+              {mealPlan ? (
+                  mealPlan.status === "completed" && mealPlan.meals.length > 0 ? (
                   <View style={styles.planContainer}>
                     <Header />
                     {mealPlan.meals.map((meal, index) => (

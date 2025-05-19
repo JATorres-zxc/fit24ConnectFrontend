@@ -4,15 +4,8 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons'; // Import Ionicons for the trash icon
 
-interface Meal {
-  id: string | null;
-  meal_name: string;
-  description: string;
-  meal_type: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-}
+// Import interface
+import { Meal } from "@/types/interface";
 
 interface TrainerMealPlanFormProps {
   meals: Meal[];

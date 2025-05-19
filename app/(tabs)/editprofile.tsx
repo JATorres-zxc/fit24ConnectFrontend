@@ -16,24 +16,10 @@ import Header from '@/components/EditProfileHeader';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
-interface ProfileBase {
-  image: any;
-  membershipType: string;
-  membershipStatus: string;
-}
+// Import interface for the profile object
+import { ProfileBase, EditableMemberProfile } from '@/types/interface';
 
-interface EditableProfile {
-  username: string;
-  fullName: string;
-  email: string;
-  age: string;
-  height: string;
-  weight: string;
-  complete_address: string;
-  contact_number: string;
-}
-
-type Profile = ProfileBase & EditableProfile;
+type Profile = ProfileBase & EditableMemberProfile;
 
 export default function EditProfileScreen() {
   const [originalProfile, setOriginalProfile] = useState<Profile>({
@@ -55,13 +41,13 @@ export default function EditProfileScreen() {
   const [isLoading, setIsLoading] = useState(true);
   
   // References for TextInput fields to improve focus management
-  const nameInputRef = useRef(null);
-  const emailInputRef = useRef(null);
-  const ageInputRef = useRef(null);
-  const heightInputRef = useRef(null);
-  const weightInputRef = useRef(null);
-  const addressInputRef = useRef(null);
-  const phoneInputRef = useRef(null);
+  const nameInputRef = useRef<TextInput>(null);
+  const emailInputRef = useRef<TextInput>(null);
+  const ageInputRef = useRef<TextInput>(null);
+  const heightInputRef = useRef<TextInput>(null);
+  const weightInputRef = useRef<TextInput>(null);
+  const addressInputRef = useRef<TextInput>(null);
+  const phoneInputRef = useRef<TextInput>(null);
 
   const fetchProfile = async () => {
     try {
@@ -265,11 +251,15 @@ export default function EditProfileScreen() {
       
     } catch (error) {
       console.error('Error saving profile:', error);
+
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'Could not save changes. Please try again.';
+
       Toast.show({
         type: 'error',
         text1: 'Update Failed',
-        text2: error.message || 'Could not save changes. Please try again.',
-        position: 'top',
+        text2: errorMessage,
         topOffset: 100,
       });
     }
@@ -287,7 +277,7 @@ export default function EditProfileScreen() {
   const renderInput = (
     label: string, 
     value: string, 
-    fieldName: keyof EditableProfile, 
+    fieldName: keyof EditableMemberProfile, 
     ref: any,
     keyboardType: 'default' | 'email-address' | 'number-pad' | 'phone-pad' = 'default',
     autoCapitalize: 'none' | 'sentences' | 'words' | 'characters' = 'none',
@@ -328,7 +318,7 @@ export default function EditProfileScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
     >
-      <Header onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
+      <Header userType='member' onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
 
       <ScrollView 
         style={styles.scrollViewCont}

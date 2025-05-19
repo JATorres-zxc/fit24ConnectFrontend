@@ -7,12 +7,8 @@ import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from "expo-image-picker";
 
-interface Exercise {
-  id: string | null;
-  name: string;
-  description: string;
-  image: ImageSourcePropType | null; 
-}
+// Import interface
+import { Exercise2 as Exercise } from "@/types/interface";
 
 interface TrainerWorkoutFormProps {
   exercises: Exercise[];

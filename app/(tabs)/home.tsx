@@ -1,7 +1,8 @@
 import { Text, View, StyleSheet, Platform } from "react-native";
-import { useEffect, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
+
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -11,10 +12,13 @@ import AnnouncementsContainer from "@/components/AnnouncementsContainer";
 import { Colors } from '@/constants/Colors';
 import { Fonts } from "@/constants/Fonts";
 
+// Import interface for the announcement object
+import { Announcement } from "@/types/interface";
+
 export default function Home() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const [announcements, setAnnouncements] = useState([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [firstName, setFirstName] = useState("");
 
@@ -98,43 +102,56 @@ export default function Home() {
     checkProfileCompletion();
   }, []);
 
-  useEffect(() => {
-    const fetchAnnouncements = async () => {
-      try {
-        const API_BASE_URL =
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.5:8000';
+  // Fetch announcements function
+  const fetchAnnouncements = async () => {
+    try {
+      const API_BASE_URL =
+        Platform.OS === 'web'
+          ? 'http://127.0.0.1:8000'
+          : 'http://192.168.1.5:8000';
 
-        const token = await AsyncStorage.getItem("authToken");
-        const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
+      const token = await AsyncStorage.getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         }
+      });
 
-        const data = await response.json();
-        setAnnouncements(data);
-      } catch (error) {
-        console.error("Error fetching announcements:", error);
-        Toast.show({
-          type: "error",
-          text1: "Failed to load announcements",
-          text2: "Please try again later",
-        });
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error('Failed to fetch announcements');
       }
-    };
 
-    fetchAnnouncements();
-  }, []);
+      const data = await response.json();
+
+      // Sort announcements by updated_at date (most recent first)
+      const sortedAnnouncements: Announcement[] = [...data].sort((a, b) => {
+        const dateA = new Date(a.updated_at).getTime();
+        const dateB = new Date(b.updated_at).getTime();
+        return dateB - dateA;
+      });
+
+      // Set sorted announcements to state
+      setAnnouncements(sortedAnnouncements);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+      Toast.show({
+        type: "error",
+        text1: "Failed to load announcements",
+        text2: "Please try again later",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Fetch announcements when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchAnnouncements();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>

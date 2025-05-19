@@ -18,53 +18,8 @@ import MemberMealPlan from "@/components/MemberMealPlan";
 import MealPlanRequest from "@/components/MealPlanRequest";
 import TrainerMPHeader from "@/components/TrainerMPHeader";
 
-interface Meal {
-  id: string | null;
-  mealplan: string;
-  meal_name: string;
-  description: string;
-  meal_type: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-}
-
-interface Feedback {
-  id: string;
-  feedback: string;
-  rating: number;
-  createdAt: Date;
-}
-
-interface MealPlan {
-  mealplan_id: string | null;
-  meals: Meal[];
-  member_id: string;
-  trainer_id: string;
-  mealplan_name: string;
-  fitness_goal: string;
-  calorie_intake: number;
-  protein: number;
-  carbs: number;
-  weight_goal: string;
-  allergies: string;
-  instructions: string;
-  requestee_id: string;
-  requestee: string;
-  status: string;
-}
-
-interface SelectedMemberData {
-  requesteeID: string;
-  requesteeName: string;
-  height: string;
-  weight: string;
-  age: string;
-  fitnessGoal: string;
-  weightGoal: string;
-  allergies: string;
-  status: string;
-}
+// Import interfaces for meals
+import { Meal2 as Meal, Feedback, MealPlan2 as MealPlan, SelectedMemberData } from "@/types/interface";
 
 const API_BASE_URL =
   Platform.OS === 'web'

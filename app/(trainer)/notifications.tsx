@@ -1,6 +1,6 @@
 import { Text, View, StyleSheet } from 'react-native';
 
-import Header from '@/components/TrainerNotificationsHeader';
+import Header from '@/components/NotificationsHeader';
 import { Colors } from '@/constants/Colors';
 import NotificationsContainer from '@/components/NotificationsContainer';
 
@@ -28,7 +28,7 @@ export default function NotificationScreen() {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header userType='trainer' />
 
       <View style={styles.notificationsContainer}>
         <NotificationsContainer notifications={sortedNotifications} />

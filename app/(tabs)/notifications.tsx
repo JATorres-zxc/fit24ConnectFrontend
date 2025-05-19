@@ -28,7 +28,7 @@ export default function NotificationScreen() {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header userType='member' />
 
       <View style={styles.notificationsContainer}>
         <NotificationsContainer notifications={sortedNotifications} />

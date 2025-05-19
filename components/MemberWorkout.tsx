@@ -4,32 +4,8 @@ import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
-interface Exercise {
-    id: string | null;
-    name: string;
-    description: string;
-    image: ImageSourcePropType | null; // Accepts an image or null if not set
-  }
-
-  interface Feedback {
-    id: string;
-    feedback: string;
-    rating: number;
-    createdAt: Date;
-  }
-  
-  interface Workout {
-    id: string | null;
-    title: string;
-    duration: number; // in days
-    fitnessGoal: string;
-    intensityLevel: string;
-    trainer: string;
-    exercises: Exercise[];
-    visibleTo: string;
-    feedbacks: Feedback[];
-    member_id?: string; // Added member_id property
-  }
+// Import interfaces for workouts
+import { Exercise2 as Exercise, Feedback, Workout2 as Workout } from "@/types/interface";
 
 interface MemberWorkoutProps {
     workout: Workout;

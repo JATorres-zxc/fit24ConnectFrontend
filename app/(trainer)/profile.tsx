@@ -11,21 +11,26 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { FontAwesome6 } from '@expo/vector-icons';
 
-interface Profile {
-  image: any,
-  username: string,
-  membershipType: string,
-  membershipStatus: string,
-  fullName: string,
-  email: string,
-  address: string,
-  contact_number: string,
-  experience: string,
-}
+// Import interface for the profile object
+import { TrainerProfileDetails } from '@/types/interface';
 
 export default function ProfileScreen() {
-  const params = useLocalSearchParams();
-  
+  const [profile, setProfile] = useState<TrainerProfileDetails>({
+    image: require("@/assets/images/icon.png"),
+    username: '',
+    membershipType: '',
+    membershipStatus: '',
+    fullName: '',
+    email: '',
+    experience: '',
+    address: '',
+    contact_number: '',
+  });
+  const params = useLocalSearchParams();    
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+    
   useEffect(() => {
     if (params.showToast === "true") {
       setTimeout(() => {
@@ -38,21 +43,6 @@ export default function ProfileScreen() {
       }, 4000); // Adding a short delay to ensure Toast renders properly
     }
   }, [params.showToast]);
-  
-  const [profile, setProfile] = useState<Profile>({
-    image: require("@/assets/images/icon.png"),
-    username: '',
-    membershipType: '',
-    membershipStatus: '',
-    fullName: '',
-    email: '',
-    experience: '',
-    address: '',
-    contact_number: '',
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   const fetchProfile = async () => {
     try {
