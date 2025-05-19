@@ -5,8 +5,7 @@
     TextInput, TouchableOpacity, Platform, 
     ScrollView, KeyboardAvoidingView, Pressable, 
     Keyboard,
-    ActivityIndicator,
-    Pressable
+    ActivityIndicator
   } from 'react-native';
   import { router } from 'expo-router';
   import AsyncStorage from '@react-native-async-storage/async-storage';
