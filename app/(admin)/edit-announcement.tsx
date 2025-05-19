@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Alert, Platform } from "react-native";
+import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity } from "react-native";
 import { useState, useEffect } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";

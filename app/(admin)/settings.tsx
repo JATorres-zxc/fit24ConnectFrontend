@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text, TouchableOpacity, Alert, Platform, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import Header from '@/components/AdminSectionHeaders';
