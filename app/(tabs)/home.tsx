@@ -9,6 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "@/components/HomeHeader";
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
 
+import { API_BASE_URL } from '@/constants/ApiConfig';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from "@/constants/Fonts";
 
@@ -105,11 +106,6 @@ export default function Home() {
   // Fetch announcements function
   const fetchAnnouncements = async () => {
     try {
-      const API_BASE_URL =
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.5:8000';
-
       const token = await AsyncStorage.getItem("authToken");
       const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
         method: "GET",

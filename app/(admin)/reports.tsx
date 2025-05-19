@@ -7,6 +7,7 @@ import { Fonts } from '@/constants/Fonts';
 import { router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the report object
 import { Report, typeLabels } from '@/types/interface';
@@ -22,11 +23,6 @@ export default function HistoryScreen() {
     console.log('Exporting report for type:', reportType);
 
     try {
-      const API_BASE_URL =
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.11:8000';
-  
       const token = await AsyncStorage.getItem('authToken');
 
       // Find the corresponding report to get date range
@@ -83,11 +79,6 @@ export default function HistoryScreen() {
     useCallback(() => {
       const fetchReports = async () => {
         try {
-          const API_BASE_URL = 
-            Platform.OS === 'web'
-              ? 'http://127.0.0.1:8000'
-              : 'http://192.168.1.11:8000';
-  
           const token = await AsyncStorage.getItem('authToken');
           const response = await fetch(`${API_BASE_URL}/api/reports/reports/`, {
             headers: {

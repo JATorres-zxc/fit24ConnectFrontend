@@ -16,6 +16,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function ScanScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -56,11 +57,6 @@ export default function ScanScreen() {
     setErrorMessage(null);
 
     try {
-      const API_BASE_URL =
-          Platform.OS === 'web'
-              ? 'http://127.0.0.1:8000' // Web uses localhost
-              : 'http://172.16.15.51:8000'; // Mobile uses local network IP
-
       // Get auth token
       const token = await AsyncStorage.getItem('authToken');
       if (!token) {

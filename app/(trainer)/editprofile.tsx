@@ -15,6 +15,7 @@
   import Header from '@/components/EditProfileHeader';
   import { Fonts } from '@/constants/Fonts';
   import { Colors } from '@/constants/Colors';
+  import { API_BASE_URL } from '@/constants/ApiConfig';
 
   // Import interface for the profile object
   import { ProfileBase, EditableTrainerProfile } from '@/types/interface';
@@ -47,11 +48,6 @@
 
     const fetchProfile = async () => {
       try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.254.199:8000';
-    
         const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
           headers: {

@@ -8,13 +8,7 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { FontAwesome } from "@expo/vector-icons";
 
-interface Notification {
-  id: string;
-  title: string;
-  content: string;
-  date: string;
-  time: string;
-}
+import { Notification } from "@/types/interface";
 
 interface Props {
   notifications: Notification[];

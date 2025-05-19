@@ -15,6 +15,7 @@ import Toast from 'react-native-toast-message';
 import Header from '@/components/EditProfileHeader';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the profile object
 import { ProfileBase, EditableMemberProfile } from '@/types/interface';
@@ -51,11 +52,6 @@ export default function EditProfileScreen() {
 
   const fetchProfile = async () => {
     try {
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.5:8000';
-  
       const token = await AsyncStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
         headers: {
@@ -192,11 +188,6 @@ export default function EditProfileScreen() {
     }
   
     try {
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.5:8000';
-  
       const token = await AsyncStorage.getItem('authToken');
       
       // Prepare the data for API request

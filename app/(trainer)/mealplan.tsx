@@ -17,14 +17,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MemberMealPlan from "@/components/MemberMealPlan";
 import MealPlanRequest from "@/components/MealPlanRequest";
 import TrainerMPHeader from "@/components/TrainerMPHeader";
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interfaces for meals
 import { Meal2 as Meal, Feedback, MealPlan2 as MealPlan, SelectedMemberData } from "@/types/interface";
-
-const API_BASE_URL =
-  Platform.OS === 'web'
-    ? 'http://127.0.0.1:8000' // Web uses localhost
-    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
 
 let token: string | null = null;
 let userID: string | null = null;

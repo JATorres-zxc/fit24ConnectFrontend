@@ -12,15 +12,11 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interfaces for meals
 import { Meal, User, Feedback, MealPlan } from "@/types/interface";
 import { Trainer2 as Trainer } from "@/types/interface";
-
-const API_BASE_URL =
-  Platform.OS === 'web'
-    ? 'http://127.0.0.1:8000' // Web uses localhost
-    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
 
 let token: string | null = null;
 let userID: string | null = null;

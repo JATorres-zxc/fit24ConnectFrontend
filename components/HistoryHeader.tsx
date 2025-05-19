@@ -5,9 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
 
-type HeaderProps = {
-  userType: 'member' | 'trainer';
-};
+import { HeaderProps } from '@/types/interface';
 
 export default function Header({ userType }: HeaderProps) {
   const handleHomePress = () => {

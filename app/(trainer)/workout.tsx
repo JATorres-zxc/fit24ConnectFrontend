@@ -17,14 +17,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MemberWorkout from "@/components/MemberWorkout";
 import WorkoutRequest from "@/components/WorkoutRequest";
 import TrainerWOHeader from "@/components/TrainerWOHeader";
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interfaces for workouts
 import { Exercise2 as Exercise, Feedback, Workout2 as Workout, SelectedMemberData2 as SelectedMemberData } from "@/types/interface";
-
-const API_BASE_URL =
-  Platform.OS === 'web'
-    ? 'http://127.0.0.1:8000' // Web uses localhost
-    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
 
 let token: string | null = null;
 let userID: string | null = null;

@@ -8,6 +8,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function EditPasswordScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -106,12 +107,6 @@ export default function EditPasswordScreen() {
     
   
     try {
-      // Get API base URL based on platform
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.5:8000';
-  
       // Get auth token
       const token = await AsyncStorage.getItem('authToken');
       

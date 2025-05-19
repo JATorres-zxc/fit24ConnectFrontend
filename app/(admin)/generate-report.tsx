@@ -10,6 +10,7 @@ import { Fonts } from '@/constants/Fonts';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function ReportsFormScreen() {
   const [reportType, setReportType] = useState<string | number | undefined>('');
@@ -71,9 +72,6 @@ export default function ReportsFormScreen() {
   
     try {
       setIsSubmitting(true);
-      const API_BASE_URL = Platform.OS === 'web' 
-        ? 'http://127.0.0.1:8000' 
-        : 'http://192.168.1.11:8000';
 
       const token = await AsyncStorage.getItem('authToken');
       if (!token) throw new Error('No authentication token found');

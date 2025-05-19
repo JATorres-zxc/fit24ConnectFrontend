@@ -11,6 +11,7 @@ import AdminAnnouncements from "@/components/AdminSideAnnouncementsContainer";
 import { Colors } from "@/constants/Colors";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the announcement object
 import { Announcement } from "@/types/interface";
@@ -37,11 +38,6 @@ export default function AdminHome() {
   const fetchAnnouncements = async () => {
     setLoading(true);
     try {
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://172.16.15.51:8000';
-      
       const token = await AsyncStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
         headers: {
@@ -85,11 +81,6 @@ export default function AdminHome() {
   // Handle deletion
   const handleDelete = async (id: string) => {
     try {
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://172.16.15.51:8000';
-      
       const token = await AsyncStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/announcement/${id}/`, {
         method: 'DELETE',

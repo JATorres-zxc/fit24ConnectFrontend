@@ -9,6 +9,8 @@ import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
 import Toast from "react-native-toast-message";
 
+import { API_BASE_URL } from '@/constants/ApiConfig';
+
 export default function CreateAnnouncement() {
   const [announcementTitle, setAnnouncementTitle] = useState("");
   const [announcementContent, setAnnouncementContent] = useState("");
@@ -54,12 +56,6 @@ export default function CreateAnnouncement() {
 
     try {
       setIsLoading(true);
-      
-      // Use the same API_BASE_URL pattern as in Home component
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://172.16.15.51:8000';
       
       // Create a new announcement object
       const newAnnouncement = {

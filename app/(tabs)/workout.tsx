@@ -16,16 +16,12 @@ import SendFeedbackHeader from '@/components/SendFeedbackHeaderWO';
 import PersonalWorkoutsHeader from '@/components/MemberPersonalWOHeader';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Import interfaces for workouts
 import { Exercise, User, Feedback, Workout } from "@/types/interface";
 import { Trainer2 as Trainer } from "@/types/interface";
-
-const API_BASE_URL =
-  Platform.OS === 'web'
-    ? 'http://127.0.0.1:8000' // Web uses localhost
-    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
 
 let token: string | null = null;
 let userID: string | null = null;

@@ -263,3 +263,20 @@ export interface SelectedMemberData2 {
   intensityLevel: string;
   status: string;
 }
+
+// Header Interface
+export type HeaderProps = {
+  name: string;
+  userType: 'member' | 'trainer';
+  screen: string;
+  prevScreen: `/${string}`;
+};
+
+// Notification Interface
+export interface Notification {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+  time: string;
+}

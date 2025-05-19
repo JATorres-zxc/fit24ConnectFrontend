@@ -7,6 +7,7 @@ import Header from "@/components/NavigateBackHeader";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function CreateAnnouncement() {
   const { id, title, content } = useLocalSearchParams();
@@ -46,11 +47,6 @@ export default function CreateAnnouncement() {
 
     try {
       setIsLoading(true);
-
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000' // Web uses localhost
-          : 'http://172.16.15.51:8000'; // Mobile uses local network IP (adjust as needed)
     
       const token = await AsyncStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/announcement/${id}/`, {

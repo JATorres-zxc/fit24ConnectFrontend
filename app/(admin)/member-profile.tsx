@@ -9,6 +9,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import MemberProfile interface
 import { MemberProfile } from '@/types/interface';
@@ -119,11 +120,6 @@ export default function MemberProfileScreen() {
       });
       return;
     }
-
-    const API_BASE_URL = 
-      Platform.OS === 'web'
-        ? 'http://127.0.0.1:8000'
-        : 'http://192.168.1.11:8000';
   
     const token = await AsyncStorage.getItem('authToken');
   

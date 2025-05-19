@@ -6,6 +6,7 @@ import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { Feather, AntDesign, FontAwesome6 } from '@expo/vector-icons';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the trainer object
 import { Trainer } from '@/types/interface';
@@ -21,11 +22,6 @@ export default function TrainersScreen() {
   useEffect(() => {
     const fetchTrainers = async () => {
       try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.9:8000';
-
         const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/account/trainers/`, {
           headers: {
@@ -69,11 +65,6 @@ export default function TrainersScreen() {
   const handleRemoveTrainer = async () => {
     if (selectedTrainer) {
       try {
-        const API_BASE_URL =
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.9:8000';
-  
         const token = await AsyncStorage.getItem('authToken');
   
         const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedTrainer.id}/remove/`, {

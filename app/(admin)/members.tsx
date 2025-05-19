@@ -8,6 +8,7 @@ import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the member object
 import { Member } from '@/types/interface';
@@ -27,11 +28,6 @@ export default function MembersScreen() {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.11:8000';
-
         const token = await AsyncStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/account/members/`, {
           headers: {
@@ -69,11 +65,6 @@ export default function MembersScreen() {
   const handleAssignTrainer = async () => {
     if (selectedMember) {
       try {
-        const API_BASE_URL =
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.11:8000';
-  
         const token = await AsyncStorage.getItem('authToken');
   
         const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedMember.id}/assign/`, {

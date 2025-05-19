@@ -10,6 +10,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { FontAwesome6 } from '@expo/vector-icons';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the profile object
 import { TrainerProfileDetails } from '@/types/interface';
@@ -48,11 +49,6 @@ export default function ProfileScreen() {
     try {
       setLoading(true);
       setError('');
-      
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.11:8000';
 
       const token = await AsyncStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
@@ -128,11 +124,6 @@ export default function ProfileScreen() {
 
   const handleConfirmLogout = async () => {
     try {
-      const API_BASE_URL =
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.11:8000';
-      
       const refreshToken = await AsyncStorage.getItem('refreshToken');
       if (!refreshToken) {
         console.error('No refresh token found.');

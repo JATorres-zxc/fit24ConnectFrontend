@@ -16,6 +16,7 @@ import { NavigationProp } from '@react-navigation/native';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { Dimensions } from 'react-native'
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -87,13 +88,6 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
         }
 
         try {
-            // Perform the API login call
-            const API_BASE_URL =
-                Platform.OS === 'web'
-                ? 'http://127.0.0.1:8000' // Web uses localhost
-                : 'http://172.16.6.198:8000'; // Mobile uses local network IP
-
-            // Commented out API call for testing
             const response = await fetch(`${API_BASE_URL}/api/account/register/`, {
                 method: 'POST',
                 headers: {

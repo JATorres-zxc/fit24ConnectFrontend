@@ -5,10 +5,7 @@ import { router } from "expo-router";
 import { AntDesign } from '@expo/vector-icons';
 import { Fonts } from '../constants/Fonts';
 
-interface HeaderProps {
-  screen: string;
-  prevScreen: `/${string}`;
-}
+import { HeaderProps } from '@/types/interface';
 
 export default function Header({ screen, prevScreen }: HeaderProps) {
 

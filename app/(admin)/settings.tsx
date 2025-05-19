@@ -7,6 +7,7 @@ import { Colors } from '@/constants/Colors';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome6 } from '@expo/vector-icons';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -17,11 +18,6 @@ export default function SettingsScreen() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const API_BASE_URL =
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.11:8000';
-  
         const authToken = await AsyncStorage.getItem('authToken');
         if (!authToken) {
           console.error('Access token not found');
@@ -58,11 +54,6 @@ export default function SettingsScreen() {
 
   const handleConfirmLogout = async () => {
     try {
-      const API_BASE_URL =
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.11:8000';
-      
       const refreshToken = await AsyncStorage.getItem('refreshToken');
       if (!refreshToken) {
         console.error('No refresh token found.');
