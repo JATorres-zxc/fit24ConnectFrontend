@@ -1,7 +1,6 @@
-import { View, StyleSheet, Platform, } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useEffect, useCallback, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 
 import Button from '@/components/CreateAnnouncementButton';

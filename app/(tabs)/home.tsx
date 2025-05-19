@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, Platform } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
