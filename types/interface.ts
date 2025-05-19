@@ -285,4 +285,5 @@ export interface Notification {
   content: string;
   date: string;
   time: string;
+  is_read?: boolean;
 }

@@ -1,24 +1,43 @@
+// NotificationsContainer.tsx
+import React, { useState } from "react";
 import { 
   View, Text, StyleSheet, FlatList,
   TouchableOpacity, Modal, TouchableWithoutFeedback
-  } from "react-native";
-import React, { useState } from "react";
-
+} from "react-native";
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { FontAwesome } from "@expo/vector-icons";
+import { markNotificationAsRead } from '@/api/notifications';
 
-import { Notification } from "@/types/interface";
+import { Notification } from '@/types/interface';
 
 interface Props {
   notifications: Notification[];
+  token?: string | null;
+  onNotificationRead?: (id: string) => void;
 }
 
-export default function NotificationsContainer({ notifications }: Props) {
-  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+export default function NotificationsContainer({ notifications, token, onNotificationRead }: Props) {
+  const [selectedNotification, setSelectedNotification] = useState<any | null>(null);
+  const [localNotifications, setLocalNotifications] = useState<any[]>(notifications);
 
-  const openNotificationModal = (notification: Notification) => {
+  // Update localNotifications if notifications prop changes
+  React.useEffect(() => {
+    setLocalNotifications(notifications);
+  }, [notifications]);
+
+  const openNotificationModal = async (notification: any) => {
     setSelectedNotification(notification);
+    if (!notification.is_read && token) {
+      try {
+        await markNotificationAsRead(token, notification.id);
+        // Update local state
+        setLocalNotifications((prev) => prev.map(n => n.id === notification.id ? { ...n, is_read: true } : n));
+        if (onNotificationRead) onNotificationRead(notification.id);
+      } catch (e) {
+        // Optionally handle error
+      }
+    }
   };
 
   const closeNotificationModal = () => {
@@ -27,7 +46,10 @@ export default function NotificationsContainer({ notifications }: Props) {
 
   const renderNotificationModal = () => {
     if (!selectedNotification) return null;
-
+    let date = '', time = '';
+    if (selectedNotification.created_at && typeof selectedNotification.created_at === 'string' && selectedNotification.created_at.includes(' ')) {
+      [date, time] = selectedNotification.created_at.split(' ');
+    }
     return (
       <Modal
         animationType="slide"
@@ -43,15 +65,13 @@ export default function NotificationsContainer({ notifications }: Props) {
                   <Text style={styles.modalTitle}>{selectedNotification.title}</Text>
                   <FontAwesome name="close" color={Colors.white} size={24} onPress={closeNotificationModal} />
                 </View>
-                
                 <View style={styles.modalContentContainer}>
                   <Text style={styles.modalContent}>{selectedNotification.content}</Text>
                 </View>
-                
                 <View style={styles.modalDetailsContainer}>
-                  <Text style={styles.modalDate}>{selectedNotification.date}</Text>
+                  <Text style={styles.modalDate}>{date}</Text>
                   <View style={styles.modalDivider} />
-                  <Text style={styles.modalTime}>{selectedNotification.time}</Text>
+                  <Text style={styles.modalTime}>{time}</Text>
                 </View>
               </View>
             </TouchableWithoutFeedback>
@@ -64,31 +84,28 @@ export default function NotificationsContainer({ notifications }: Props) {
   return (
     <View style={styles.container}>
       <FlatList
-        data={notifications}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity 
-            style={styles.card}
-            onPress={() => openNotificationModal(item)}
-          >
-            <View style={styles.leftSection}>
-              <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.content}  numberOfLines={2}>
-                {item.content}
-              </Text>
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.rightSection}>
-              <Text style={styles.date}>{item.date}</Text>
-              <Text style={styles.time}>{item.time}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
+        data={localNotifications}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => {
+          return (
+            <TouchableOpacity 
+              style={styles.card}
+              onPress={() => openNotificationModal(item)}
+            >
+              <View style={styles.leftSection}>
+                <Text style={styles.title}>{item.title}</Text>
+                <Text style={styles.content}>{item.content}</Text>
+              </View>
+              <View style={styles.divider} />
+              <View style={styles.rightSection}>
+                <Text style={styles.date}>{item.date}</Text>
+                <Text style={styles.time}>{item.time}</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        }}
         contentContainerStyle={styles.listContainer}
       />
-
       {renderNotificationModal()}
     </View>
   );
