@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, FlatList, TextInput, Modal, TouchableOpacity, TouchableWithoutFeedback, Platform } from 'react-native';
+import { Text, View, StyleSheet, FlatList, TextInput, Modal, TouchableOpacity, Pressable, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Header from '@/components/AdminSectionHeaders';
@@ -147,9 +147,9 @@ export default function TrainersScreen() {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+        <Pressable onPress={() => setModalVisible(false)}>
           <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
+            <Pressable>
               <View style={styles.modalContent}>
                 <View style={styles.modalIconContainer}>
                   <FontAwesome6 name="dumbbell" size={36} color={Colors.black} />
@@ -177,9 +177,9 @@ export default function TrainersScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-            </TouchableWithoutFeedback>
+            </Pressable>
           </View>
-        </TouchableWithoutFeedback>
+        </Pressable>
       </Modal>
     </View>
   );

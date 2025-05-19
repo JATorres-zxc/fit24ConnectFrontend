@@ -1,4 +1,4 @@
-import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList, TouchableWithoutFeedback, Platform } from 'react-native';
+import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList, Pressable, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
 import Toast from "react-native-toast-message";
 import { AntDesign, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -206,9 +206,9 @@ export default function MembersScreen() {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+        <Pressable onPress={() => setModalVisible(false)}>
           <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
+            <Pressable>
               <View style={styles.modalContent}>
                 <View style={styles.modalIconContainer}>
                   <FontAwesome6 name="dumbbell" size={36} color={Colors.black} />
@@ -236,9 +236,9 @@ export default function MembersScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-            </TouchableWithoutFeedback>
+            </Pressable>
           </View>
-        </TouchableWithoutFeedback>
+        </Pressable>
       </Modal>
       <Toast />
     </View>

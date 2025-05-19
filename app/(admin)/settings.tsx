@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import Header from '@/components/AdminSectionHeaders';
@@ -143,9 +143,9 @@ export default function SettingsScreen() {
         visible={logoutModalVisible}
         onRequestClose={() => setLogoutModalVisible(false)}
       >
-        <TouchableWithoutFeedback onPress={() => setLogoutModalVisible(false)}>
+        <Pressable onPress={() => setLogoutModalVisible(false)}>
           <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
+            <Pressable>
               <View style={styles.modalContent}>
                 <View style={styles.modalIconContainer}>
                   <FontAwesome6 name="right-from-bracket" size={36} color={Colors.black} />
@@ -169,9 +169,9 @@ export default function SettingsScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-            </TouchableWithoutFeedback>
+            </Pressable>
           </View>
-        </TouchableWithoutFeedback>
+        </Pressable>
       </Modal>
     </View>
 

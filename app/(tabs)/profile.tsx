@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Text, View, StyleSheet, Image, ScrollView, Platform, ActivityIndicator, Touchable, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
+import { Text, View, StyleSheet, Image, ScrollView, Platform, ActivityIndicator, Touchable, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useLocalSearchParams } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -277,9 +277,9 @@ export default function ProfileScreen() {
         visible={logoutModalVisible}
         onRequestClose={() => setLogoutModalVisible(false)}
       >
-        <TouchableWithoutFeedback onPress={() => setLogoutModalVisible(false)}>
+        <Pressable onPress={() => setLogoutModalVisible(false)}>
           <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
+            <Pressable>
               <View style={styles.modalContent}>
                 <View style={styles.modalIconContainer}>
                   <FontAwesome6 name="right-from-bracket" size={36} color={Colors.black} />
@@ -303,9 +303,9 @@ export default function ProfileScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-            </TouchableWithoutFeedback>
+            </Pressable>
           </View>
-        </TouchableWithoutFeedback>
+        </Pressable>
       </Modal>
       <Toast />
     </View>

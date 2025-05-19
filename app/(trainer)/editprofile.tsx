@@ -3,7 +3,7 @@
   import { 
     Text, View, StyleSheet, Image, 
     TextInput, TouchableOpacity, Platform, 
-    ScrollView, KeyboardAvoidingView, TouchableWithoutFeedback, 
+    ScrollView, KeyboardAvoidingView, Pressable, 
     Keyboard,
     ActivityIndicator,
     Pressable
@@ -291,7 +291,7 @@
     };
 
     return (
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <Pressable onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView 
           style={styles.container}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -382,7 +382,7 @@
             
           <Toast />
         </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+      </Pressable>
       
     );
   }
