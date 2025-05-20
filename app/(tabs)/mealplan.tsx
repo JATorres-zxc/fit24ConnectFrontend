@@ -510,6 +510,9 @@ const MealPlanScreen = () => {
                     <Header />
                     <View style={styles.centerContainer}>
                       <Text style={styles.subtitle2}>Your meal plan is under review and will be available once your trainer completes it.</Text>
+                      <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
+                        <Text style={styles.buttonText}>Request Meal Plan</Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 )
