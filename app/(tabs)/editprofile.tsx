@@ -298,26 +298,16 @@ export default function EditProfileScreen() {
     );
   };
 
-  // Function to dismiss keyboard when tapping outside inputs
-  const dismissKeyboard = () => {
-    Keyboard.dismiss();
-  };
-
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
       <Header userType='member' onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
-
-      <ScrollView 
-        style={styles.scrollViewCont}
-        contentContainerStyle={{paddingBottom: 20}}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Background TouchableWithoutFeedback to dismiss keyboard when tapping empty areas */}
-        <TouchableWithoutFeedback style={styles.backgroundPressable} onPress={dismissKeyboard}>
+    
+        <ScrollView style={styles.scrollViewCont}>
           <View style={styles.profileContainer}>
             <View style={styles.imageContainer}>
               <Image 
@@ -325,7 +315,7 @@ export default function EditProfileScreen() {
                 style={styles.profileImage} 
               />
             </View>
-
+    
             <View style={styles.usernameContainer}>
               <Text style={styles.username}>{formValues.fullName.split(' ')[0] || ''}</Text>
               <Text style={styles.usernameLabel}>Your Username</Text>
@@ -420,11 +410,11 @@ export default function EditProfileScreen() {
               <Text style={styles.buttonText}>Edit Password</Text>
             </TouchableOpacity>
           </View>
-        </TouchableWithoutFeedback>
       </ScrollView>
         
       <Toast />
     </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
