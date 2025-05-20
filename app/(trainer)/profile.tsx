@@ -125,8 +125,16 @@ export default function ProfileScreen() {
   const handleConfirmLogout = async () => {
     try {
       const refreshToken = await AsyncStorage.getItem('refreshToken');
+      const accessToken = await AsyncStorage.getItem('authToken');
+        
       if (!refreshToken) {
         console.error('No refresh token found.');
+        setLogoutModalVisible(false);
+        return;
+      }
+
+      if (!accessToken) {
+        console.error('No access token found.');
         setLogoutModalVisible(false);
         return;
       }
@@ -135,6 +143,7 @@ export default function ProfileScreen() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({ refresh: refreshToken}),
       });
