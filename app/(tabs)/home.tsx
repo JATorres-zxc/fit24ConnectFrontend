@@ -77,6 +77,8 @@ export default function Home() {
             (field) => !profile[field] || profile[field] === ""
           );
 
+          console.log("Missing fields:", missingFields);
+
           if (missingFields.length > 0) {
           Toast.show({
             type: "error",

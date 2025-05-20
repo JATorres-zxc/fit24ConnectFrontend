@@ -169,11 +169,6 @@
       }
     
       try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.5:8000';
-    
         const token = await AsyncStorage.getItem('authToken');
         
         // Prepare the data for API request
@@ -283,12 +278,7 @@
           </View>
         );
       };
-
-    // Function to dismiss keyboard when tapping outside inputs
-    const dismissKeyboard = () => {
-      Keyboard.dismiss();
-    };
-
+      
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView 
