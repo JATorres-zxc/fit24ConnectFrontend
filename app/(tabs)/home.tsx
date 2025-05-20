@@ -69,8 +69,6 @@ export default function Home() {
             "height",
             "weight",
             "age",
-            "type_of_membership",
-            "membership_status",
           ];
 
           const missingFields = requiredFields.filter(

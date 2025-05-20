@@ -67,16 +67,13 @@ export default function Home() {
             "full_name",
             "contact_number",
             "complete_address",
-            "height",
-            "weight",
-            "age",
-            "type_of_membership",
-            "membership_status",
           ];
 
           const missingFields = requiredFields.filter(
             (field) => !profile[field] || profile[field] === ""
           );
+
+          console.log("Missing fields:", missingFields);
 
           if (missingFields.length > 0) {
           Toast.show({
