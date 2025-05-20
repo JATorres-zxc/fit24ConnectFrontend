@@ -103,7 +103,6 @@ const MealPlanScreen = () => {
         // Filter meal plans to only include those with status "completed"
         // const completedMealPlans = mealPlansData.filter((plan: MealPlan) => plan.status === 'completed');
         const completedMealPlans = mealPlansData;
-        setMealPlan(completedMealPlans);
   
         if (completedMealPlans.length === 0) {
           throw new Error('No completed meal plan found for the user');
@@ -510,9 +509,6 @@ const MealPlanScreen = () => {
                     <Header />
                     <View style={styles.centerContainer}>
                       <Text style={styles.subtitle2}>Your meal plan is under review and will be available once your trainer completes it.</Text>
-                      <TouchableOpacity style={styles.button} onPress={() => setViewState("request")}>
-                        <Text style={styles.buttonText}>Request Meal Plan</Text>
-                      </TouchableOpacity>
                     </View>
                   </View>
                 )
