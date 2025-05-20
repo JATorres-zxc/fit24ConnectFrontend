@@ -7,7 +7,7 @@ import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { router, useFocusEffect } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
 import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the member object
@@ -27,7 +27,7 @@ export default function MembersScreen() {
   // Fetch the member list from the API
     const fetchMembers = async () => {
       try {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/account/members/`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -67,7 +67,7 @@ export default function MembersScreen() {
   const handleAssignTrainer = async () => {
     if (selectedMember) {
       try {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getItem('authToken');
   
         const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedMember.id}/assign/`, {
           method: 'POST',

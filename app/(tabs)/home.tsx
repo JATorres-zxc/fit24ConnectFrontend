@@ -4,7 +4,7 @@ import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
 
 import Toast from "react-native-toast-message";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { saveItem, getItem } from '@/utils/storageUtils';
 
 import Header from "@/components/HomeHeader";
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
@@ -23,14 +23,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [firstName, setFirstName] = useState("");
 
-  // Load name from params or AsyncStorage
+  // Load name from params
   useEffect(() => {
     const handleName = async () => {
       if (params.full_name && typeof params.full_name === "string") {
-        await AsyncStorage.setItem("full_name", params.full_name);
+        await saveItem("full_name", params.full_name);
         setFirstName(params.full_name.split(" ")[0]);
       } else {
-        const storedName = await AsyncStorage.getItem("full_name");
+        const storedName = await getItem("full_name");
         if (storedName) {
           setFirstName(storedName.split(" ")[0]);
         }
@@ -56,7 +56,7 @@ export default function Home() {
   useEffect(() => {
     const checkProfileCompletion = async () => {
       try {
-        const profileData = await AsyncStorage.getItem("profile");
+        const profileData = await getItem("profile");
         if (profileData) {
           const profile = JSON.parse(profileData);
 
@@ -108,7 +108,7 @@ export default function Home() {
   // Fetch announcements function
   const fetchAnnouncements = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
+      const token = await getItem("authToken");
       const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
         method: "GET",
         headers: {

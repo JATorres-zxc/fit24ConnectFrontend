@@ -10,7 +10,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Camera, CameraView } from 'expo-camera';
 import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
 
 import Header from '@/components/ScanHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -61,7 +61,7 @@ export default function ScanScreen() {
 
     try {
       // Get auth token
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       if (!token) {
         throw new Error('Authentication token not found. Please log in again.');
       }

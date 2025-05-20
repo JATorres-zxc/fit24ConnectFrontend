@@ -5,7 +5,7 @@ import { Colors } from '@/constants/Colors';
 import AccessLogsContainer from '@/components/AccessLogsContainer';
 
 import { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
 import Toast from 'react-native-toast-message';
 import { Fonts } from '@/constants/Fonts';
 import { API_BASE_URL } from '@/constants/ApiConfig';
@@ -21,7 +21,7 @@ export default function HistoryScreen() {
     // Fetch access logs when component mounts
     const fetchAccessLogs = async () => {
       try {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/facility/my-access-logs/`, {
           method: "GET",
           headers: {

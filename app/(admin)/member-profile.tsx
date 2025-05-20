@@ -8,7 +8,7 @@ import Header from '@/components/NavigateBackHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
 import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import MemberProfile interface
@@ -121,7 +121,7 @@ export default function MemberProfileScreen() {
       return;
     }
   
-    const token = await AsyncStorage.getItem('authToken');
+    const token = await getItem('authToken');
   
     try {
       // Update Membership Type

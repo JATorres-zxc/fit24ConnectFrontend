@@ -9,7 +9,7 @@ import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
 import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function ReportsFormScreen() {
@@ -73,7 +73,7 @@ export default function ReportsFormScreen() {
     try {
       setIsSubmitting(true);
 
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       if (!token) throw new Error('No authentication token found');
 
       // Map frontend report types to backend values

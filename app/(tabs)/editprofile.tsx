@@ -9,7 +9,7 @@ import {
   TouchableWithoutFeedback
 } from 'react-native';
 import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveItem, getItem } from '@/utils/storageUtils';
 import Toast from 'react-native-toast-message';
 
 import Header from '@/components/EditProfileHeader';
@@ -52,7 +52,7 @@ export default function EditProfileScreen() {
 
   const fetchProfile = async () => {
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -83,13 +83,13 @@ export default function EditProfileScreen() {
   
       setOriginalProfile(profileData);
       setFormValues(profileData);
-      await AsyncStorage.setItem('profile', JSON.stringify(profileData));
+      await saveItem('profile', JSON.stringify(profileData));
       
     } catch (error) {
       console.error('Error fetching profile:', error);
       // Fallback to cached data
       try {
-        const cachedProfile = await AsyncStorage.getItem('profile');
+        const cachedProfile = await getItem('profile');
         if (cachedProfile) {
           const parsed = JSON.parse(cachedProfile);
           setOriginalProfile(parsed);
@@ -188,7 +188,7 @@ export default function EditProfileScreen() {
     }
   
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       
       // Prepare the data for API request
       const profileData = {
@@ -224,7 +224,7 @@ export default function EditProfileScreen() {
         image: formValues.image?.uri || formValues.image,
       };
       
-      await AsyncStorage.setItem('profile', JSON.stringify(profileToSave));
+      await saveItem('profile', JSON.stringify(profileToSave));
       setOriginalProfile({ ...formValues });
       setHasUnsavedChanges(false);
   

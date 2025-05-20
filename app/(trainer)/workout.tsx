@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import { 
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, 
   ImageSourcePropType
@@ -13,7 +14,7 @@ import CreateWOHeader from '@/components/CreateWOHeader';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getItem } from '@/utils/storageUtils';
 import MemberWorkout from "@/components/MemberWorkout";
 import WorkoutRequest from "@/components/WorkoutRequest";
 import TrainerWOHeader from "@/components/TrainerWOHeader";
@@ -27,14 +28,6 @@ let userID: string | null = null;
 let requestee_id: string | null = null;
 
 const WorkoutScreen = () => {
-  const [refreshTrigger, setRefreshTrigger] = useState(false);
-  const [refreshTrigger2, setRefreshTrigger2] = useState(false); // New state for fetchWorkout
-
-  // Trigger refresh on component mount
-  useEffect(() => {
-    setRefreshTrigger((prev) => !prev);
-  }, []);
-  
   const [viewState, setViewState] = useState("plan"); // "plan", "request", "feedback", "delete"
   const [fitnessGoal, setFitnessGoal] = useState(""); // State to store fitness goal
   const [intensityLevel, setIntensityLevel] = useState(""); // State to store intensity level
@@ -81,251 +74,261 @@ const WorkoutScreen = () => {
     });
 
   // Fetch Workouts for Trainer
-  useEffect(() => {
-    const fetchWorkoutRequests = async () => {
-      try {
-        const token = await AsyncStorage.getItem("authToken");
-        if (!token) throw new Error("Token not found");
-  
-        // Fetch all workout requests
-        const requestsResponse = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        if (!requestsResponse.ok) {
-          throw new Error(`Requests API error! Status: ${requestsResponse.status}`);
-        }
-  
-        const requestsData = await requestsResponse.json();
-  
-        // Filter workout plans with 'pending' or status
-        const pendingRequests = requestsData.filter((request: any) => request.status === "pending");
-        
-        // Filter trainer-owned requests only
-        const trainerRequests = pendingRequests.filter(
-          (request: any) =>
-            (String(request.trainer_id) === String(userID) || request.requestee === null)
-        );
+  const fetchWorkoutRequests = async () => {
+    try {
+      const token = await getItem("authToken");
+      if (!token) throw new Error("Token not found");
 
-        // Extract requestee IDs from pending workout plans
-        const requesteeIDs = trainerRequests.map((request: any) => request.requestee);
-  
-        // Fetch all members
-        const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        if (!allMembersResponse.ok) {
-          throw new Error(`Failed to fetch all members! Status: ${allMembersResponse.status}`);
-        }
-  
-        const allMembers = await allMembersResponse.json();
-  
-        // Combine member and request data
-        const memberDataList = requesteeIDs.map((requesteeID: string) => {
-          const profileData = allMembers.find((member: any) => String(member.id) === String(requesteeID));
-          if (!profileData) return null;
-  
-          const request = trainerRequests.find((req: any) => req.requestee === profileData.id);
-  
-          return {
-            requesteeID: request?.requestee.toString() || "Unknown",
-            requesteeName: profileData?.full_name || "User Name Not Set",
-            height: profileData?.height || "N/A",
-            weight: profileData?.weight || "N/A",
-            age: profileData?.age || "N/A",
-            fitnessGoal: request?.fitness_goal || "Not Specified",
-            intensityLevel: request?.intensity_level || "Not Specified",
-            status: request?.status || "Unknown Status", // Add status here for later filtering
-          };
-        }).filter((data: any) => data !== null);
-  
-        // Avoid duplicates by checking if requesteeID already exists
-        setMemberData((prev) => {
-          const existingIDs = prev.map((member) => member.requesteeID);
-          const filteredNewData = memberDataList.filter(
-            (newMember: any) => !existingIDs.includes(newMember.requesteeID)
-          );
-          return [...prev, ...filteredNewData];
-        });
+      // Fetch all workout requests
+      const requestsResponse = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      // Trigger refreshTrigger2 after fetchWorkoutRequests completes
-      setRefreshTrigger2((prev) => !prev);
-  
-      } catch (error) {
-        console.error("Error fetching workout requests and profiles:", error);
+      if (!requestsResponse.ok) {
+        throw new Error(`Requests API error! Status: ${requestsResponse.status}`);
       }
-    };
-  
-    fetchWorkoutRequests();
-  }, [refreshTrigger]);
 
+      const requestsData = await requestsResponse.json();
+
+      // Filter workout plans with 'pending' or status
+      const pendingRequests = requestsData.filter((request: any) => request.status === "pending");
+      
+      // Filter trainer-owned requests only
+      const trainerRequests = pendingRequests.filter(
+        (request: any) =>
+          (String(request.trainer_id) === String(userID) || request.requestee === null)
+      );
+
+      // Extract requestee IDs from pending workout plans
+      const requesteeIDs = trainerRequests.map((request: any) => request.requestee);
+
+      // Fetch all members
+      const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!allMembersResponse.ok) {
+        throw new Error(`Failed to fetch all members! Status: ${allMembersResponse.status}`);
+      }
+
+      const allMembers = await allMembersResponse.json();
+
+      // Combine member and request data
+      const memberDataList = requesteeIDs.map((requesteeID: string) => {
+        const profileData = allMembers.find((member: any) => String(member.id) === String(requesteeID));
+        if (!profileData) return null;
+
+        const request = trainerRequests.find((req: any) => req.requestee === profileData.id);
+
+        return {
+          requesteeID: request?.requestee.toString() || "Unknown",
+          requesteeName: profileData?.full_name || "User Name Not Set",
+          height: profileData?.height || "N/A",
+          weight: profileData?.weight || "N/A",
+          age: profileData?.age || "N/A",
+          fitnessGoal: request?.fitness_goal || "Not Specified",
+          intensityLevel: request?.intensity_level || "Not Specified",
+          status: request?.status || "Unknown Status", // Add status here for later filtering
+        };
+      }).filter((data: any) => data !== null);
+
+      // Avoid duplicates by checking if requesteeID already exists
+      setMemberData((prev) => {
+        const existingIDs = prev.map((member) => member.requesteeID);
+        const filteredNewData = memberDataList.filter(
+          (newMember: any) => !existingIDs.includes(newMember.requesteeID)
+        );
+        return [...prev, ...filteredNewData];
+      });
+
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'No Workout Requests Found!',
+        text2: `${error}`,
+      });
+    }
+  };
 
   // Fetching Member Data
 
-  useEffect(() => {
-    const fetchMembersAndWorkouts = async () => {
-      try {
-        const token = await AsyncStorage.getItem("authToken");
-        if (!token) throw new Error("Token not found");
-  
-        // Fetch all workout requests
-        const workoutResponse = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        if (!workoutResponse.ok) {
-          throw new Error(`Failed to fetch workouts! Status: ${workoutResponse.status}`);
-        }
-  
-        const workoutData = await workoutResponse.json();
-  
-        // Filter workouts with 'pending' status
-        const filteredWorkouts = workoutData.filter(
-          (workout: any) => workout.status === "pending"
-        );
-  
-        // Extract requestee IDs
-        const requesteeIDs = filteredWorkouts.map((workout: any) => workout.requestee).filter(Boolean);
-  
-        // Fetch all members
-        const membersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        if (!membersResponse.ok) {
-          throw new Error(`Failed to fetch members! Status: ${membersResponse.status}`);
-        }
-  
-        const membersData = await membersResponse.json();
-  
-        // Match members with workout requests
-        const matchedMembers = membersData
-          .filter((member: any) => requesteeIDs.includes(member.id))
-          .map((member: any) => {
-            const workout = filteredWorkouts.find((workout: any) => workout.requestee === member.id);
-            return {
-              requesteeID: member.id.toString(),
-              requesteeName: member.full_name || "User Name Not Set",
-              height: member.height || "N/A",
-              weight: member.weight || "N/A",
-              age: member.age || "N/A",
-              fitnessGoal: workout?.fitness_goal || "Not Specified",
-              intensityLevel: workout?.intensity_level || "Not Specified",
-              status: workout?.status || "Unknown Status",
-            };
-          });
-  
-        // Append matched members to memberData without duplicates
-        setMemberData((prev) => {
-          const existingIDs = prev.map((member) => member.requesteeID);
-          const newData = matchedMembers.filter((newMember: any) => !existingIDs.includes(newMember.requesteeID));
-          return [...prev, ...newData];
-        });
-  
-      } catch (error) {
-        console.error("Error fetching members and matching workouts:", error);
+  const fetchMembersAndWorkouts = async () => {
+    try {
+      const token = await getItem("authToken");
+      if (!token) throw new Error("Token not found");
+
+      // Fetch all workout requests
+      const workoutResponse = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!workoutResponse.ok) {
+        throw new Error(`Failed to fetch workouts! Status: ${workoutResponse.status}`);
       }
-    };
-  
-    fetchMembersAndWorkouts();
-  }, [refreshTrigger]);  
+
+      const workoutData = await workoutResponse.json();
+
+      // Filter workouts with 'pending' status
+      const filteredWorkouts = workoutData.filter(
+        (workout: any) => workout.status === "pending"
+      );
+
+      // Extract requestee IDs
+      const requesteeIDs = filteredWorkouts.map((workout: any) => workout.requestee).filter(Boolean);
+
+      // Fetch all members
+      const membersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!membersResponse.ok) {
+        throw new Error(`Failed to fetch members! Status: ${membersResponse.status}`);
+      }
+
+      const membersData = await membersResponse.json();
+
+      // Match members with workout requests
+      const matchedMembers = membersData
+        .filter((member: any) => requesteeIDs.includes(member.id))
+        .map((member: any) => {
+          const workout = filteredWorkouts.find((workout: any) => workout.requestee === member.id);
+          return {
+            requesteeID: member.id.toString(),
+            requesteeName: member.full_name || "User Name Not Set",
+            height: member.height || "N/A",
+            weight: member.weight || "N/A",
+            age: member.age || "N/A",
+            fitnessGoal: workout?.fitness_goal || "Not Specified",
+            intensityLevel: workout?.intensity_level || "Not Specified",
+            status: workout?.status || "Unknown Status",
+          };
+        });
+
+      // Append matched members to memberData without duplicates
+      setMemberData((prev) => {
+        const existingIDs = prev.map((member) => member.requesteeID);
+        const newData = matchedMembers.filter((newMember: any) => !existingIDs.includes(newMember.requesteeID));
+        return [...prev, ...newData];
+      });
+
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'No Member Data Found!',
+        text2: `${error}`,
+      });
+    }
+  };
   
   // Fetching Workout from API
   
-  useEffect(() => {
-    const fetchWorkout = async () => {
-      try {
-        token = await AsyncStorage.getItem("authToken");
-        userID = await AsyncStorage.getItem("userID"); // Ensure userID is a string
-  
-        const response = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-  
-        const programsData = await response.json();
-  
-        // Get all completed programs where the user is the trainer OR it's a free program
-        const userPrograms = programsData.filter(
-          (program: any) =>
-            // program.status === "completed" &&
-            (String(program.trainer_id) === String(userID) || program.requestee === null)
-        );
-  
-        if (!userPrograms.length) {
-          console.warn("No programs found for the user");
-          return;
-        }
+  const fetchWorkout = async () => {
+    try {
+      token = await getItem("authToken");
+      userID = await getItem("userID"); // Ensure userID is a string
 
-        // Convert each workout program into the required format
-        const formattedWorkouts = userPrograms.map((userProgram: any) => ({
-          id: userProgram.id.toString(),
-          title: userProgram.program_name,
-          fitnessGoal: userProgram.fitness_goal,
-          intensityLevel: userProgram.intensity_level,
-          trainer: userProgram.trainer_id ? userProgram.trainer_id.toString() : "N/A",
-          exercises: userProgram.workout_exercises.map((exercise: any) => ({
-            id: exercise.id.toString(),
-            image: "", // Add image URL if available in the backend
-            name: exercise.name,
-            description: exercise.description,
-            muscle_group: exercise.muscle_group,
-          })),
-          duration: userProgram.duration, // in days
-          status: userProgram.status,
-          // requestee from backend is treated as the userID or "everyone" it is visible to.
-          visibleTo: (String(userProgram.requestee) === 'null') 
-            ? 'everyone' 
-            : memberData.find((member) => String(member.requesteeID) === String(userProgram.requestee))?.requesteeName || 'User Name Not Set',
-          feedbacks: [], // Adjust if feedback data is available in the backend
-          requestee: userProgram.requestee ? userProgram.requestee.toString() : null, // Added requestee property
-        }));
-      
-        // Update the state with all matching workouts
-        setWorkouts((prevWorkouts) => {
-          const existingIds = new Set(formattedWorkouts.map((w: any) => w.id));
-          const filteredPrev = prevWorkouts.filter((w) => !existingIds.has(w.id));
-          return [...filteredPrev, ...formattedWorkouts];
-        });        
-  
-      } catch (error) {
-        console.error("Error fetching workout:", error);
-  
-        if (error instanceof Error) {
-          if (error.message.includes("NetworkError")) {
-            console.error("Network error: Please check if the server is running and accessible.");
-          } else if (error.message.includes("CORS")) {
-            console.error("CORS error: Please ensure your server allows requests from your frontend.");
-          }
+      const response = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const programsData = await response.json();
+
+      // Get all completed programs where the user is the trainer OR it's a free program
+      const userPrograms = programsData.filter(
+        (program: any) =>
+          // program.status === "completed" &&
+          (String(program.trainer_id) === String(userID) || program.requestee === null)
+      );
+
+      if (!userPrograms.length) {
+        console.warn("No programs found for the user");
+        return;
+      }
+
+      // Convert each workout program into the required format
+      const formattedWorkouts = userPrograms.map((userProgram: any) => ({
+        id: userProgram.id.toString(),
+        title: userProgram.program_name,
+        fitnessGoal: userProgram.fitness_goal,
+        intensityLevel: userProgram.intensity_level,
+        trainer: userProgram.trainer_id ? userProgram.trainer_id.toString() : "N/A",
+        exercises: userProgram.workout_exercises.map((exercise: any) => ({
+          id: exercise.id.toString(),
+          image: "", // Add image URL if available in the backend
+          name: exercise.name,
+          description: exercise.description,
+          muscle_group: exercise.muscle_group,
+        })),
+        duration: userProgram.duration, // in days
+        status: userProgram.status,
+        // requestee from backend is treated as the userID or "everyone" it is visible to.
+        visibleTo: (String(userProgram.requestee) === 'null') 
+          ? 'everyone' 
+          : memberData.find((member) => String(member.requesteeID) === String(userProgram.requestee))?.requesteeName || 'User Name Not Set',
+        feedbacks: [], // Adjust if feedback data is available in the backend
+        requestee: userProgram.requestee ? userProgram.requestee.toString() : null, // Added requestee property
+      }));
+    
+      // Update the state with all matching workouts
+      setWorkouts((prevWorkouts) => {
+        const existingIds = new Set(formattedWorkouts.map((w: any) => w.id));
+        const filteredPrev = prevWorkouts.filter((w) => !existingIds.has(w.id));
+        return [...filteredPrev, ...formattedWorkouts];
+      });        
+
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'No Workouts Found!',
+        text2: `${error}`,
+      });
+
+      if (error instanceof Error) {
+        if (error.message.includes("NetworkError")) {
+          console.error("Network error: Please check if the server is running and accessible.");
+        } else if (error.message.includes("CORS")) {
+          console.error("CORS error: Please ensure your server allows requests from your frontend.");
         }
       }
-    };
-  
-    fetchWorkout();
-  }, [refreshTrigger2]);  
+    }
+  };
+
+  // actual call to API
+  useFocusEffect(
+    useCallback(() => {
+      fetchWorkoutRequests();
+      fetchMembersAndWorkouts();
+      fetchWorkout();
+      const fetchUserIDandToken = async () => {
+        userID = await getItem('userID');
+        token = await getItem('authToken');
+      };
+      fetchUserIDandToken();
+    }, [])
+  );
 
   const [workouts, setWorkouts] = useState<Workout[]>([]); // State to store all workouts]);
 
@@ -359,8 +362,8 @@ const WorkoutScreen = () => {
     
   
     try {
-      const token = await AsyncStorage.getItem('authToken');
-      const trainerID = await AsyncStorage.getItem('userID');
+      const token = await getItem('authToken');
+      const trainerID = await getItem('userID');
       const requesteeID = selectedMemberData?.requesteeID || null; 
 
       // Check if the workout exists in the state
@@ -452,8 +455,6 @@ const WorkoutScreen = () => {
         position: 'bottom',
       });
 
-      // Trigger useEffect by toggling refreshTrigger
-      setRefreshTrigger((prev) => !prev);
       setViewState('');
 
     } catch (error) {
@@ -469,7 +470,7 @@ const WorkoutScreen = () => {
 
   const handleDelete = async (workout: Workout) => {
       try {
-        token = await AsyncStorage.getItem('authToken');
+        token = await getItem('authToken');
   
         const response = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/${workout.id}/`, {
           method: 'DELETE',

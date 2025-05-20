@@ -16,7 +16,8 @@ import { NavigationProp } from '@react-navigation/native';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { Dimensions } from 'react-native'
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveItem } from '@/utils/storageUtils';
+
 import { API_BASE_URL } from '@/constants/ApiConfig';
 
 const screenHeight = Dimensions.get('window').height;
@@ -72,9 +73,9 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
             if (response.ok && result.success && result.tokens.access) {
                 // Store the token and user ID securely for future use
-                await AsyncStorage.setItem('authToken', result.tokens.access);
-                await AsyncStorage.setItem('refreshToken', result.tokens.refresh);
-                await AsyncStorage.setItem('userID', result.user.id.toString());
+                await saveItem('authToken', result.tokens.access);
+                await saveItem('refreshToken', result.tokens.refresh);
+                await saveItem('userID', result.user.id.toString());
 
                 // Navigate based on user role
                 if (result.user.role === 'trainer') {

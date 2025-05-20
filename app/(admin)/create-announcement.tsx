@@ -2,7 +2,7 @@ import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Platfo
 import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getItem } from '@/utils/storageUtils';
 
 import Header from "@/components/NavigateBackHeader";
 import { Colors } from "@/constants/Colors";
@@ -65,7 +65,7 @@ export default function CreateAnnouncement() {
       };
       
       // Get auth token from AsyncStorage
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       if (!token) {
         throw new Error('Authentication token not found');
       }
