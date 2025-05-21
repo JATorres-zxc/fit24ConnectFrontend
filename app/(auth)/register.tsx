@@ -132,7 +132,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
             <View style={styles.logoContainer}>
-                <Image source={require("./assets/images/darkicon.png")} style={styles.logo} />
+                <Image source={require("@/assets/images/icon.png")} style={styles.logo} />
             </View>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.formContainer}>
@@ -156,24 +156,6 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                         value={confirmPassword}
                         onChangeText={setConfirmationPassword}
                     />
-
-                    <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
-                        <TouchableOpacity
-                            onPress={() => setIsTrainer(!is_trainer)}
-                            style={{
-                                width: 20,
-                                height: 20,
-                                borderRadius: 4,
-                                borderWidth: 1,
-                                borderColor: Colors.border,
-                                backgroundColor: is_trainer ? Colors.gold : "transparent",
-                                marginRight: 10,
-                            }}
-                        />
-                        <Text style={{ fontFamily: Fonts.regular, color: Colors.linkText }}>
-                            Register as Trainer
-                        </Text>
-                    </View>
 
                     <TouchableOpacity style={styles.button} onPress={handleRegister}>
                         <Text style={styles.buttonText}>
@@ -212,13 +194,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     logoContainer: {
-        marginTop: 150,
+        marginTop: 100,
         justifyContent: "center",
         alignItems: "center",
     },
     logo: {
-        width: 200,
-        height: 200,
+        width: 250,
+        height: 250,
         resizeMode: "contain",
     },
     formContainer: {
@@ -260,7 +242,7 @@ const styles = StyleSheet.create({
     },
     bottomText: {
         textAlign: "center",
-        marginTop: 10,
+        marginTop: 20,
         color: Colors.linkText,
         fontFamily: Fonts.italic,
         fontSize: 12,

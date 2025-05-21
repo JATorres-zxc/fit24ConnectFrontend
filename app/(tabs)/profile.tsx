@@ -35,18 +35,20 @@ export default function ProfileScreen() {
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const params = useLocalSearchParams();
 
+  const formatMembershipType = (type: string) => {
+    if (!type) return '';
+    const match = type.match(/^tier(\d+)$/i);
+    return match ? `Tier ${match[1]}` : type;
+  };
+
   const fetchProfile = async () => {
     try {
       setLoading(true);
       setError('');
 
       const token = await getItem('authToken');
-      console.log('Token:', token);
-
-      const refreshToken = await getItem('refreshToken');
-      console.log('refreshToken:', refreshToken);
       
-      const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -65,7 +67,7 @@ export default function ProfileScreen() {
           ? { uri: `${API_BASE_URL}${data.image}` } // Assuming image is a URL path
           : require("@/assets/images/darkicon.png"),
         username: data.username || '',
-        membershipType: data.type_of_membership || '',
+        membershipType: formatMembershipType(data.type_of_membership) || '',
         membershipStatus: data.membership_status || '',
         fullName: data.full_name || '',
         email: data.email || '',
@@ -103,10 +105,13 @@ export default function ProfileScreen() {
     }
   };
 
-  // Fetch profile on component mount
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  // Fetch profile data every time the screen is focused
+  // This ensures that the profile data is always up-to-date
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+    }, [])
+  );
 
   const handleLogout = () => {
       setLogoutModalVisible(true); // open the modal
@@ -311,9 +316,9 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   profileImage: {
-    width: 250,
-    height: 250,
-    borderRadius: 175,
+    width: 200,
+    height: 200,
+    borderRadius: "50%",
     resizeMode: "cover",
   },
   editProfile: {
@@ -322,7 +327,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     position: 'absolute',
-    bottom: 5,
+    bottom: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: Colors.icongray,

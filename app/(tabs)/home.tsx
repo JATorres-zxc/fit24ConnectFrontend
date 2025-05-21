@@ -71,6 +71,8 @@ export default function Home() {
             "age",
           ];
 
+          console.log("Found fields:", requiredFields);
+
           const missingFields = requiredFields.filter(
             (field) => !profile[field] || profile[field] === ""
           );

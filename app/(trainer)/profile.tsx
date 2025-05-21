@@ -51,12 +51,8 @@ export default function ProfileScreen() {
 
 
       const token = await getItem('authToken');
-      console.log('Access Token:', token);
-        
-      const refreshToken = await getItem('refreshToken');
-      console.log('refreshToken:', refreshToken);
 
-      const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -201,10 +197,6 @@ export default function ProfileScreen() {
 
         <View style={styles.textContainer}>
           <Text style={styles.username}>{profile.fullName.split(' ')[0] || ''}</Text>
-          <Text style={styles.membership}>
-            {profile.membershipType}: {' '}
-            <Text style={{ fontFamily: Fonts.mediumItalic }}>{profile.membershipStatus}</Text>
-          </Text>
         </View>
       </View>
 
@@ -308,9 +300,9 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   profileImage: {
-    width: 250,
-    height: 250,
-    borderRadius: 175,
+    width: 200,
+    height: 200,
+    borderRadius: '50%',
     resizeMode: "cover",
   },
   editProfile: {
@@ -319,13 +311,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     position: 'absolute',
-    bottom: 5,
+    bottom: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: Colors.icongray,
   },
   textContainer: {
     alignItems: 'center',
+    marginTop: 10,
   },
   username: {
     fontFamily: Fonts.regular,

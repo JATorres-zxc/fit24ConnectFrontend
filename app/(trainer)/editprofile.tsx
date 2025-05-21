@@ -391,9 +391,9 @@
       marginBottom: 40,
     },
     profileImage: {
-      width: 250,
-      height: 250,
-      borderRadius: 175,
+      width: 200,
+      height: 200,
+      borderRadius: '50%',
       resizeMode: "cover",
     },
     textContainer: {

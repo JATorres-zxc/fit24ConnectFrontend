@@ -117,7 +117,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
             <View style={styles.logoContainer}>
-                <Image source={require("./assets/images/darkicon.png")} style={styles.logo} />
+                <Image source={require("@/assets/images/icon.png")} style={styles.logo} />
             </View>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.formContainer}>
@@ -179,13 +179,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     logoContainer: {
-        marginTop: 150,
+        marginTop: 100,
         justifyContent: "center",
         alignItems: "center",
     },
     logo: {
-        width: 200,
-        height: 200,
+        width: 250,
+        height: 250,
         resizeMode: "contain",
     },
     formContainer: {
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     },
     bottomText: {
         textAlign: "center",
-        marginTop: 10,
+        marginTop: 20,
         color: Colors.linkText,
         fontFamily: Fonts.italic,
         fontSize: 12,
