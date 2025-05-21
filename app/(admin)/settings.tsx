@@ -5,7 +5,7 @@ import Header from '@/components/AdminSectionHeaders';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem, deleteItem } from '@/utils/storageUtils';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { API_BASE_URL } from '@/constants/ApiConfig';
 
@@ -18,7 +18,7 @@ export default function SettingsScreen() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const authToken = await AsyncStorage.getItem('authToken');
+        const authToken = await getItem('authToken');
         if (!authToken) {
           console.error('Access token not found');
           return;
@@ -54,8 +54,8 @@ export default function SettingsScreen() {
 
   const handleConfirmLogout = async () => {
     try {
-      const refreshToken = await AsyncStorage.getItem('refreshToken');
-      const accessToken = await AsyncStorage.getItem('authToken');
+      const refreshToken = await getItem('refreshToken');
+      const accessToken = await getItem('authToken');
 
       if (!refreshToken) {
         console.error('No refresh token found.');
@@ -86,9 +86,9 @@ export default function SettingsScreen() {
       }
 
       // Clear all authentication tokens from AsyncStorage
-      await AsyncStorage.removeItem('accessToken');
-      await AsyncStorage.removeItem('refreshToken');
-      await AsyncStorage.removeItem('userID');
+      await deleteItem('accessToken');
+      await deleteItem('refreshToken');
+      await deleteItem('userID');
       
       setLogoutModalVisible(false);
       router.push('/login');

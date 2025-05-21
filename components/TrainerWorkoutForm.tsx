@@ -108,7 +108,7 @@ const TrainerWorkoutForm: React.FC<TrainerWorkoutFormProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 0,
   },
   headerTitle: {
     fontSize: 22,

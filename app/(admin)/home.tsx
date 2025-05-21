@@ -9,7 +9,7 @@ import AdminAnnouncements from "@/components/AdminSideAnnouncementsContainer";
 
 import { Colors } from "@/constants/Colors";
 import { useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { saveItem, getItem } from '@/utils/storageUtils';
 import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the announcement object
@@ -37,7 +37,7 @@ export default function AdminHome() {
   const fetchAnnouncements = async () => {
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -80,7 +80,7 @@ export default function AdminHome() {
   // Handle deletion
   const handleDelete = async (id: string) => {
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/announcement/${id}/`, {
         method: 'DELETE',
         headers: {
@@ -99,7 +99,7 @@ export default function AdminHome() {
       
       // Update AsyncStorage
       const updatedAnnouncements = announcements.filter(announcement => announcement.id !== id);
-      await AsyncStorage.setItem('announcements', JSON.stringify(updatedAnnouncements));
+      await saveItem('announcements', JSON.stringify(updatedAnnouncements));
     } catch (error) {
       console.error("Error deleting announcement:", error);
     }

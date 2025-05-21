@@ -6,7 +6,7 @@ import { Colors } from '@/constants/Colors';
 import NotificationsContainer from '@/components/NotificationsContainer';
 import { fetchNotifications } from '@/api/notifications';
 import { Notification } from '@/types/interface';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
 
 export default function NotificationScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -17,7 +17,7 @@ export default function NotificationScreen() {
 
   useEffect(() => {
     const getToken = async () => {
-      const storedToken = await AsyncStorage.getItem("authToken");
+      const storedToken = await getItem("authToken");
       setToken(storedToken);
     };
     getToken();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Text, View, StyleSheet, FlatList, TextInput, Modal, TouchableOpacity, TouchableWithoutFeedback, Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
 
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
@@ -22,7 +22,7 @@ export default function TrainersScreen() {
   // Fetch the trainer list from the API
     const fetchTrainers = async () => {
       try {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/account/trainers/`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -68,7 +68,7 @@ export default function TrainersScreen() {
   const handleRemoveTrainer = async () => {
     if (selectedTrainer) {
       try {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getItem('authToken');
   
         const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedTrainer.user.id}/remove/`, {
           method: 'POST',

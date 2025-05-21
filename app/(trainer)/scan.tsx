@@ -14,7 +14,7 @@ import Header from '@/components/ScanHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
 import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function ScanScreen() {
@@ -57,7 +57,7 @@ export default function ScanScreen() {
 
     try {
       // Get auth token
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       if (!token) {
         throw new Error('Authentication token not found. Please log in again.');
       }

@@ -8,7 +8,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { API_BASE_URL } from '@/constants/ApiConfig';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
 
 export default function EditPasswordScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -108,7 +108,7 @@ export default function EditPasswordScreen() {
   
     try {
       // Get auth token
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       
       if (!token) {
         throw new Error('Authentication token not found');

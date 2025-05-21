@@ -3,7 +3,7 @@ import { Text, View, StyleSheet, Image, ScrollView, Platform, ActivityIndicator,
 import { router, useFocusEffect } from 'expo-router';
 import { useLocalSearchParams } from "expo-router";
 import Toast from "react-native-toast-message";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveItem, getItem, deleteItem } from '@/utils/storageUtils';
 
 import Header from '@/components/ProfileHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -40,9 +40,11 @@ export default function ProfileScreen() {
       setLoading(true);
       setError('');
 
-      const token = await AsyncStorage.getItem('authToken');
-      const refreshToken = await AsyncStorage.getItem('refreshToken');
-      console.log('Access Token:', token, 'refreshToken:', refreshToken);
+      const token = await getItem('authToken');
+      console.log('Token:', token);
+
+      const refreshToken = await getItem('refreshToken');
+      console.log('refreshToken:', refreshToken);
       
       const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
         headers: {
@@ -75,14 +77,14 @@ export default function ProfileScreen() {
       });
 
       // Cache the profile data locally
-      await AsyncStorage.setItem('profile', JSON.stringify(data));
+      await saveItem('profile', JSON.stringify(data));
     } catch (error) {
       console.error('Error fetching profile:', error);
       setError('Failed to load profile data');
       
       // Try to load cached profile if API fails
       try {
-        const cachedProfile = await AsyncStorage.getItem('profile');
+        const cachedProfile = await getItem('profile');
         if (cachedProfile) {
           const parsed = JSON.parse(cachedProfile);
           setProfile({
@@ -112,8 +114,8 @@ export default function ProfileScreen() {
   
     const handleConfirmLogout = async () => {
       try {
-        const refreshToken = await AsyncStorage.getItem('refreshToken');
-        const accessToken = await AsyncStorage.getItem('authToken');
+        const refreshToken = await getItem('refreshToken');
+        const accessToken = await getItem('authToken');
 
         if (!refreshToken) {
           console.error('No refresh token found.');
@@ -143,10 +145,10 @@ export default function ProfileScreen() {
           console.error('Logout API call failed:', errorData);
         }
   
-        // Clear all authentication tokens from AsyncStorage
-        await AsyncStorage.removeItem('accessToken');
-        await AsyncStorage.removeItem('refreshToken');
-        await AsyncStorage.removeItem('userID');
+        // Clear all authentication tokens
+        await deleteItem('accessToken');
+        await deleteItem('refreshToken');
+        await deleteItem('userID');
         
         setLogoutModalVisible(false);
         router.push('/login');

@@ -6,7 +6,7 @@ import Toast from "react-native-toast-message";
 import Header from "@/components/NavigateBackHeader";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getItem } from '@/utils/storageUtils';
 import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function CreateAnnouncement() {
@@ -48,7 +48,7 @@ export default function CreateAnnouncement() {
     try {
       setIsLoading(true);
     
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/announcement/${id}/`, {
         method: 'PUT',
         headers: {
