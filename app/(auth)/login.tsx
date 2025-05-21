@@ -117,7 +117,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
             <View style={styles.logoContainer}>
-                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
+                <Image source={require("./assets/images/darkicon.png")} style={styles.logo} />
             </View>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.formContainer}>

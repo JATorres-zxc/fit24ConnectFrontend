@@ -163,8 +163,8 @@ const WorkoutScreen = () => {
     //   intensityLevel: "High",
     //   trainer: "Trainer A",
     //   exercises: [
-    //     { id: "EX1", name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: require("@/assets/images/icon.png") },
-    //     { id: "EX2", name: "Squats", description: "Perform squats to work on lower body strength.", image: require("@/assets/images/icon.png") },
+    //     { id: "EX1", name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: require("@/assets/images/darkicon.png") },
+    //     { id: "EX2", name: "Squats", description: "Perform squats to work on lower body strength.", image: require("@/assets/images/darkicon.png") },
     //   ],
     //   visibleTo: "everyone",
     //   feedbacks: [
@@ -180,8 +180,8 @@ const WorkoutScreen = () => {
     //   intensityLevel: "Medium",
     //   trainer: "Trainer B",
     //   exercises: [
-    //     { id: "EX3", name: "Jumping Jacks", description: "Perform jumping jacks to get your heart rate up.", image: require("@/assets/images/icon.png") },
-    //     { id: "EX4", name: "Burpees", description: "Perform burpees to improve endurance.", image: require("@/assets/images/icon.png") },
+    //     { id: "EX3", name: "Jumping Jacks", description: "Perform jumping jacks to get your heart rate up.", image: require("@/assets/images/darkicon.png") },
+    //     { id: "EX4", name: "Burpees", description: "Perform burpees to improve endurance.", image: require("@/assets/images/darkicon.png") },
     //   ],
     //   visibleTo: "1",
     //   feedbacks: [

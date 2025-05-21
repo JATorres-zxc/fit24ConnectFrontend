@@ -18,7 +18,7 @@ const ExerciseContainer: React.FC<ExerciseContainerProps> = ({ exercises }) => {
                 <View key={exercise.id}>
                   <View key={index} style={[styles.exerciseItem, index % 2 === 0 ? styles.exerciseItemLeft : styles.exerciseItemRight]}>
                   <Image
-                    source={exercise.image ? { uri: exercise.image } : require('@/assets/images/icon.png')}
+                    source={exercise.image ? { uri: exercise.image } : require('@/assets/images/darkicon.png')}
                     style={styles.image}
                 />
                       <View style={styles.textContainer}>

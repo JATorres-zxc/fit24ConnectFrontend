@@ -25,7 +25,7 @@ const WorkoutsContainer: React.FC<WorkoutsContainerProps> = ({ workouts, onWorko
             <View key={workout.id}>
               <TouchableOpacity style={styles.workoutItem} onPress={() => onWorkoutPress(workout)}>
               <Image
-                  source={require("@/assets/images/icon.png")}
+                  source={require("@/assets/images/darkicon.png")}
                   style={styles.workoutImage}
               />
                 <View style={styles.textContainer}>

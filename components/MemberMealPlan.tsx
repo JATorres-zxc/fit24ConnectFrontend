@@ -17,7 +17,7 @@ const MemberMealPlan: React.FC<MemberMealPlanProps> = ({ mealPlan, requesteeName
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Image source={require('@/assets/images/icon.png')} style={styles.image} />
+                <Image source={require('@/assets/images/darkicon.png')} style={styles.image} />
                 <View style={styles.textContainer}>
                     <Text style={styles.title}>{requesteeName}'s Meal Plan</Text>
                     <Text style={styles.subtitle}>Working on:</Text>

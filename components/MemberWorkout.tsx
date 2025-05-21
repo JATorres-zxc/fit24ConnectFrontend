@@ -19,7 +19,7 @@ const MemberWorkout: React.FC<MemberWorkoutProps> = ({ workout, requesteeName, o
         <View style={styles.container}>
             <View style={styles.header}>
             <Image
-                source={require("@/assets/images/icon.png")}
+                source={require("@/assets/images/darkicon.png")}
                 style={styles.image}
             />
                 <View style={styles.textContainer}>

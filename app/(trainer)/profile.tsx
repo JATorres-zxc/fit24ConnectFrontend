@@ -17,7 +17,7 @@ import { TrainerProfileDetails } from '@/types/interface';
 
 export default function ProfileScreen() {
   const [profile, setProfile] = useState<TrainerProfileDetails>({
-    image: require("@/assets/images/icon.png"),
+    image: require("@/assets/images/darkicon.png"),
     username: '',
     membershipType: '',
     membershipStatus: '',
@@ -72,7 +72,7 @@ export default function ProfileScreen() {
       setProfile({
         image: data.image 
           ? { uri: `${API_BASE_URL}${data.image}` } // Assuming image is a URL path
-          : require("@/assets/images/icon.png"),
+          : require("@/assets/images/darkicon.png"),
         username: data.username || '',
         membershipType: data.membership_type || '',
         membershipStatus: data.membership_status || '',
@@ -98,7 +98,7 @@ export default function ProfileScreen() {
             ...parsed,
             image: parsed.image 
               ? { uri: parsed.image }
-              : require("@/assets/images/icon.png"),
+              : require("@/assets/images/darkicon.png"),
           });
           setError('Using cached data (offline mode)');
         }

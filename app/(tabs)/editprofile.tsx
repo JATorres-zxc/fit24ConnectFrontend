@@ -24,7 +24,7 @@ type Profile = ProfileBase & EditableMemberProfile;
 
 export default function EditProfileScreen() {
   const [originalProfile, setOriginalProfile] = useState<Profile>({
-    image: require("@/assets/images/icon.png"),
+    image: require("@/assets/images/darkicon.png"),
     username: '',
     membershipType: '',
     membershipStatus: '',
@@ -68,7 +68,7 @@ export default function EditProfileScreen() {
       const profileData = {
         image: data.image 
           ? { uri: `${API_BASE_URL}${data.image}` }
-          : require("@/assets/images/icon.png"),
+          : require("@/assets/images/darkicon.png"),
         username: data.username || '',
         membershipType: data.membership_type || '',
         membershipStatus: data.membership_status || '',

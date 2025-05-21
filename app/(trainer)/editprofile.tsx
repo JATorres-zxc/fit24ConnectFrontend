@@ -23,7 +23,7 @@
 
   export default function EditProfileScreen() {
     const [originalProfile, setOriginalProfile] = useState<Profile>({
-      image: require("@/assets/images/icon.png"),
+      image: require("@/assets/images/darkicon.png"),
       username: '',
       membershipType: '',
       membershipStatus: '',
@@ -63,7 +63,7 @@
         const profileData = {
           image: data.image 
             ? { uri: `${API_BASE_URL}${data.image}` } // Adjust based on your image URL structure
-            : require("@/assets/images/icon.png"),
+            : require("@/assets/images/darkicon.png"),
           username: data.username || '',
           membershipType: data.membership_type || '',
           membershipStatus: data.membership_status || '',

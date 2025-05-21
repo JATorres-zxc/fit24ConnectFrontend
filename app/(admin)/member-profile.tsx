@@ -35,7 +35,7 @@ export default function MemberProfileScreen() {
   };
 
   const [profile, setProfile] = useState<MemberProfile>({
-    image: require("@/assets/images/icon.png"),
+    image: require("@/assets/images/darkicon.png"),
     username: '',
     fullName: '',
     membershipType: '',
@@ -75,7 +75,7 @@ export default function MemberProfileScreen() {
     
     // Reset all state to ensure no data from previous member persists
     setProfile({
-      image: require("@/assets/images/icon.png"),
+      image: require("@/assets/images/darkicon.png"),
       username: fullName ? String(fullName).split(' ')[0] : '',
       fullName: fullName ? String(fullName) : '',
       membershipType: membershipType ? String(membershipType) : '',
