@@ -84,7 +84,6 @@ export default function Home() {
             type: "error",
             text1: "Profile Incomplete",
             text2: "Please complete all profile details before proceeding.",
-            position: "bottom",
             visibilityTime: 5000, // Show the toast for 5 seconds
           });
 

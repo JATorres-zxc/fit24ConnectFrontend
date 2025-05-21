@@ -8,6 +8,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 import Header from '@/components/WorkoutHeader';
 import WorkoutRequestHeader from '@/components/WorkoutRequestHeader';
+import WorkoutFeedbackList from '@/components/WorkoutFeedbackList';
 import WorkoutForm from '@/components/TrainerWorkoutForm';
 import EditWOHeader from '@/components/EditWOHeader';
 import CreateWOHeader from '@/components/CreateWOHeader';
@@ -240,9 +241,10 @@ const WorkoutScreen = () => {
   
   const fetchWorkout = async () => {
     try {
-      token = await getItem("authToken");
-      userID = await getItem("userID"); // Ensure userID is a string
+      const token = await getItem("authToken");
+      const userID = await getItem("userID");
 
+      // Fetch all workout programs
       const response = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
         headers: {
           Accept: "application/json",
@@ -250,56 +252,111 @@ const WorkoutScreen = () => {
         },
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const programsData = await response.json();
 
-      // Get all completed programs where the user is the trainer OR it's a free program
+      // Filter only completed programs where the user is the trainer or it's public (no requestee)
       const userPrograms = programsData.filter(
         (program: any) =>
-          // program.status === "completed" &&
+          program.status === "completed" &&
           (String(program.trainer_id) === String(userID) || program.requestee === null)
       );
 
       if (!userPrograms.length) {
-        console.warn("No programs found for the user");
+        console.warn("No completed programs found for the user");
         return;
       }
 
-      // Convert each workout program into the required format
-      const formattedWorkouts = userPrograms.map((userProgram: any) => ({
-        id: userProgram.id.toString(),
-        title: userProgram.program_name,
-        fitnessGoal: userProgram.fitness_goal,
-        intensityLevel: userProgram.intensity_level,
-        trainer: userProgram.trainer_id ? userProgram.trainer_id.toString() : "N/A",
-        exercises: userProgram.workout_exercises.map((exercise: any) => ({
-          id: exercise.id.toString(),
-          image: "", // Add image URL if available in the backend
-          name: exercise.name,
-          description: exercise.description,
-          muscle_group: exercise.muscle_group,
-        })),
-        duration: userProgram.duration, // in days
-        status: userProgram.status,
-        // requestee from backend is treated as the userID or "everyone" it is visible to.
-        visibleTo: (String(userProgram.requestee) === 'null') 
-          ? 'everyone' 
-          : memberData.find((member) => String(member.requesteeID) === String(userProgram.requestee))?.requesteeName || 'User Name Not Set',
-        feedbacks: [], // Adjust if feedback data is available in the backend
-        requestee: userProgram.requestee ? userProgram.requestee.toString() : null, // Added requestee property
-      }));
-    
-      // Update the state with all matching workouts
-      setWorkouts((prevWorkouts) => {
-        const existingIds = new Set(formattedWorkouts.map((w: any) => w.id));
-        const filteredPrev = prevWorkouts.filter((w) => !existingIds.has(w.id));
-        return [...filteredPrev, ...formattedWorkouts];
-      });        
+      // Fetch all members to match requestee info
+      const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    } catch (error) {
+      if (!allMembersResponse.ok)
+        throw new Error(`Failed to fetch members. Status: ${allMembersResponse.status}`);
+
+      const allMembers = await allMembersResponse.json();
+
+      // Collect all member data for relevant programs
+      const completedMemberData = userPrograms
+        .map((program: any) => {
+          if (program.requestee === null) return null;
+          const member = allMembers.find((m: any) => m.id === program.requestee);
+          if (!member) return null;
+
+          return {
+            requesteeID: program.requestee.toString(),
+            requesteeName: member.full_name || "User Name Not Set",
+            height: member.height,
+            weight: member.weight,
+            age: member.age,
+            fitnessGoal: program.fitness_goal,
+            intensityLevel: program.intensity_level,
+            status: program.status,
+          };
+        })
+        .filter(Boolean);
+
+      // Update memberData list (avoid duplicates)
+      setMemberData((prev) => {
+        const existingIDs = prev.map((member) => member.requesteeID);
+        const newMembers = completedMemberData.filter(
+          (m: any) => !existingIDs.includes(m.requesteeID)
+        );
+        return [...prev, ...newMembers];
+      });
+
+      // Map each workout program to formatted structure
+      const formattedWorkouts = userPrograms.map((program: any) => {
+        const visibleTo =
+          program.requestee === null
+            ? "everyone"
+            : (() => {
+                const match = allMembers.find(
+                  (member: any) => String(member.id) === String(program.requestee)
+                );
+                return match?.full_name || `User ID ${program.requestee}`;
+              })();
+
+        return {
+          id: program.id.toString(),
+          title: program.program_name,
+          fitnessGoal: program.fitness_goal,
+          intensityLevel: program.intensity_level,
+          trainer: program.trainer_id?.toString() || "N/A",
+          duration: program.duration,
+          status: program.status,
+          requestee: program.requestee?.toString() || null,
+          visibleTo,
+          feedbacks: program.feedbacks,
+          exercises: program.workout_exercises?.map((exercise: any) => ({
+            id: exercise.id.toString(),
+            image: "",
+            sets: exercise.sets,
+            reps: exercise.reps,
+            restTime: exercise.rest_time,
+            durationPerSet: exercise.duration_per_set,
+            notes: exercise.notes,
+            exercise_details: exercise.exercise_details,
+            name: exercise.exercise_details?.name,
+            description: exercise.exercise_details?.description,
+            muscle_group: exercise.exercise_details?.muscle_group,
+          })) || [],
+        };
+      });
+
+      // Update workouts list
+      setWorkouts((prevWorkouts) => {
+        const existingIds = new Set(prevWorkouts.map((w: any) => w.id));
+        const newWorkouts = formattedWorkouts.filter((w: any) => !existingIds.has(w.id));
+        return [...prevWorkouts, ...newWorkouts];
+      });
+      
+  } catch (error) {
       Toast.show({
         type: 'error',
         text1: 'No Workouts Found!',
@@ -340,7 +397,6 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Empty Workout',
         text2: 'You must have at least one exercise before publishing the workout.',
-        position: 'bottom',
       });
       return;
     }
@@ -355,7 +411,6 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Missing Fields',
         text2: `Please fill out all fields for ${invalidExercises.length} exercise(s).`,
-        position: 'bottom',
       });
       return;
     }
@@ -368,7 +423,7 @@ const WorkoutScreen = () => {
 
       // Check if the workout exists in the state
       const existingWorkout = workouts.find(workout => String(workout.id) === String(plan.id));
-
+      
       if (existingWorkout) {
         // Workout exists, so we'll update it, for personal member
         const updateResponse = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/${plan.id}/`, {
@@ -452,7 +507,6 @@ const WorkoutScreen = () => {
         type: 'info',
         text1: 'Workout Plan Published',
         text2: 'Your workout plan has been published successfully.',
-        position: 'bottom',
       });
 
       setViewState('');
@@ -463,7 +517,6 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: "Publish Failed",
         text2: "An unexpected error occurred. Please try again later.",
-        position: "bottom",
       });
     }
   };        
@@ -485,7 +538,6 @@ const WorkoutScreen = () => {
             type: 'success',
             text1: 'Workout Deleted',
             text2: 'The workout has been deleted successfully.',
-            position: 'bottom'
           });
   
           setWorkouts((prevWorkouts) => prevWorkouts.filter(w => w.id !== workout.id)); // Remove the workout from the list
@@ -502,7 +554,6 @@ const WorkoutScreen = () => {
             type: 'error',
             text1: 'Delete Failed',
             text2: 'There was an error deleting your workout.',
-            position: 'bottom'
           });
         }
       } catch (error) {
@@ -510,7 +561,6 @@ const WorkoutScreen = () => {
           type: 'error',
           text1: 'Delete Failed',
           text2: 'There was an error deleting your workout.',
-          position: 'bottom'
         });
       }
     };
@@ -679,6 +729,8 @@ const WorkoutScreen = () => {
                     visibleTo={workout?.visibleTo || "everyone"} // Pass visibleTo prop
                     actionLabel="Add Exercise"
                   />
+                  
+                  <WorkoutFeedbackList feedbacks={workout?.feedbacks || []} />
 
                   {/* External Button for Publishing Workout */}
                   <TouchableOpacity
@@ -720,7 +772,7 @@ const WorkoutScreen = () => {
           ) : ( 
             <View>
               <TrainerWOHeader />
-              <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("requests")}>
+              <TouchableOpacity style={[styles.submitButton, {marginBottom: 15}]} onPress={() => setViewState("requests")}>
                 <Text style={styles.buttonText}>Personal Workout Requests</Text>
               </TouchableOpacity>
                 {workouts
@@ -740,7 +792,6 @@ const WorkoutScreen = () => {
               </TouchableOpacity>
             </View>
           )}
-          
         </View>
       </ScrollView>
       <Toast />

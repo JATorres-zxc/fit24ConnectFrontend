@@ -176,7 +176,7 @@ export interface Trainer2{
 
 export interface Feedback {
   id: string;
-  feedback: string;
+  comment: string;
   rating: number;
   createdAt: Date;
 }
@@ -197,6 +197,7 @@ export interface MealPlan2 {
   requestee_id: string;
   requestee: string;
   status: string;
+  feedbacks: Feedback[];
 }
 
 export interface Meal2 {

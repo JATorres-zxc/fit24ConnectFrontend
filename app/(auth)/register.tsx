@@ -45,7 +45,6 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Email is required',
-                position: 'bottom'
             });
             return;
         }
@@ -55,7 +54,6 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Invalid email format',
-                position: 'bottom'
             });
             return;
         }
@@ -64,7 +62,6 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Password is required',
-                position: 'bottom'
             });
             return;
         }
@@ -73,7 +70,6 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Password must be at least 6 characters',
-                position: 'bottom'
             });
             return;
         }
@@ -82,7 +78,6 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Passwords do not match',
-                position: 'bottom'
             });
             return;
         }
@@ -111,7 +106,6 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     type: 'success',
                     text1: 'Registration Successful',
                     text2: 'You have successfully registered.',
-                    position: 'bottom'
                 });
                 setTimeout(() => {
                     router.push('/(auth)/login');
@@ -121,7 +115,6 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     type: 'error',
                     text1: 'Registration Failed',
                     text2: 'There was an error with your registration.',
-                    position: 'bottom'
                 });
             }
         } catch (error) {
@@ -129,7 +122,6 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Registration Failed',
                 text2: 'An error occurred. Please try again.',
-                position: 'bottom'
             });
         }
     };

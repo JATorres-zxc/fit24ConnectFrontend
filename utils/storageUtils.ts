@@ -8,7 +8,7 @@ const isWeb = Platform.OS === 'web';
 const saveItem = async (key: string, value: string): Promise<void> => {
   try {
     if (isWeb) {
-        await saveItem(key, value);
+        await AsyncStorage.setItem(key, value);
     } else {
         SecureStore.setItemAsync(key, value, {
             keychainAccessible: SecureStore.ALWAYS,
@@ -23,7 +23,7 @@ const saveItem = async (key: string, value: string): Promise<void> => {
 const getItem = async (key: string): Promise<string | null> => {
   try {
     if (isWeb) {
-      return await getItem(key);
+      return await AsyncStorage.getItem(key);
     } else {
       return await SecureStore.getItemAsync(key, {
             keychainAccessible: SecureStore.ALWAYS,

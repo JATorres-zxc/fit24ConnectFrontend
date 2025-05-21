@@ -69,7 +69,6 @@ export default function MemberProfileScreen() {
         type: "error",
         text1: "Incomplete Profile",
         text2: "Some members have not set up their profiles. Please remind them.",
-        position: "bottom",
         visibilityTime: 4000,
       });
     }

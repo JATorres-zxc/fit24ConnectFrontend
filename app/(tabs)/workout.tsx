@@ -209,7 +209,6 @@ const WorkoutScreen = () => {
           type: 'success',
           text1: 'Workout Deleted',
           text2: 'Your workout has been deleted successfully.',
-          position: 'bottom'
         });
 
         setWorkouts((prevWorkouts) => prevWorkouts.filter(w => w.id !== workout.id)); // Remove the workout from the list
@@ -226,7 +225,6 @@ const WorkoutScreen = () => {
           type: 'error',
           text1: 'Delete Failed',
           text2: 'There was an error deleting your workout.',
-          position: 'bottom'
         });
       }
     } catch (error) {
@@ -234,7 +232,6 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Delete Failed',
         text2: 'There was an error deleting your workout.',
-        position: 'bottom'
       });
     }
   };
@@ -257,7 +254,6 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Missing Fields',
         text2: 'Please fill out all fields before submitting feedback.',
-        position: 'bottom'
       });
       return;
     }
@@ -284,7 +280,6 @@ const WorkoutScreen = () => {
           type: 'info',
           text1: 'Feedback Sent',
           text2: 'Your feedback has been sent successfully.',
-          position: 'bottom'
         });
         setViewState("plan");
         setFeedback("");
@@ -294,7 +289,6 @@ const WorkoutScreen = () => {
           type: 'error',
           text1: 'Feedback Failed',
           text2: 'There was an error submitting your feedback.',
-          position: 'bottom'
         });
       }
     } catch (error) {
@@ -302,7 +296,6 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Feedback Failed',
         text2: 'There was an error submitting your feedback.',
-        position: 'bottom'
       });
     }
   };
@@ -313,7 +306,6 @@ const WorkoutScreen = () => {
             type: 'error',
             text1: 'Missing Fields',
             text2: 'Please fill out all fields before submitting.',
-            position: 'bottom',
         });
         return;
     }
@@ -345,7 +337,6 @@ const WorkoutScreen = () => {
             type: 'success',
             text1: 'Request Submitted',
             text2: 'Your workout request has been submitted successfully.',
-            position: 'bottom',
         });
 
         setTimeout(() => {
@@ -356,7 +347,6 @@ const WorkoutScreen = () => {
             type: 'error',
             text1: 'Request Failed',
             text2: 'There was an error with your workout request. Please check if you already have a pending request.',
-            position: 'bottom',
         });
       }
   };  

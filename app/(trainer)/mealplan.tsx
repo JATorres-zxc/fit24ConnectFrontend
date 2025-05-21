@@ -7,6 +7,7 @@ import Toast from 'react-native-toast-message';
 
 import Header from '@/components/MealPlanHeader';
 import MealPlanRequestHeader from '@/components/MealPlanRequestHeader';
+import MealPlanFeedbackList from '@/components/MealPlanFeedbackList';
 import MealPlanForm from '@/components/TrainerMealPlanForm';
 import EditMPHeader from '@/components/EditMPHeader';
 import CreateMPHeader from '@/components/CreateMPHeader';
@@ -80,6 +81,7 @@ const MealPlanScreen = () => {
     requestee_id: selectedMemberData?.requesteeID || '', // Default to the first member's ID
     requestee: selectedMemberData?.requesteeID || '', // Default to the first member's ID
     status: "in_progress", // Default status
+    feedbacks: [],
   });
 
   // Fetch only mealplan requests and retrieve corresponding member profiles
@@ -257,7 +259,6 @@ const MealPlanScreen = () => {
             type: 'error',
             text1: 'Empty Meal Plan',
             text2: 'You must add at least one meal before publishing the meal plan.',
-            position: 'bottom',
         });
         return;
     }
@@ -276,7 +277,6 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'Missing Fields',
         text2: `Please fill out all fields for ${invalidMeals.length} meal(s).`,
-        position: 'bottom',
       });
       return;
     }
@@ -291,7 +291,6 @@ const MealPlanScreen = () => {
           type: 'error',
           text1: 'Missing Member ID',
           text2: 'Please select a member before publishing the meal plan.',
-          position: 'bottom',
         });
         return;
       }
@@ -381,17 +380,16 @@ const MealPlanScreen = () => {
         type: 'info',
         text1: 'Meal Plan Published',
         text2: 'Your meal plan has been published successfully.',
-        position: 'bottom',
       });
 
       setViewState('');
+
     } catch (error) {
       console.error("Error handling meal plan:", error);
       Toast.show({
         type: 'error',
         text1: "Publish Failed",
         text2: "An unexpected error occurred. Please try again later.",
-        position: "bottom",
       });
     }
   };
@@ -565,6 +563,8 @@ const MealPlanScreen = () => {
                     actionLabel="Add Meal"
                   />
 
+                  <MealPlanFeedbackList feedbacks={mealPlan?.feedbacks || []} />
+
                   {/* External Button for Publishing Meal Plan */}
                   <TouchableOpacity
                     style={styles.submitButton}
@@ -588,7 +588,7 @@ const MealPlanScreen = () => {
           ) : ( 
             <View>
               <TrainerMPHeader />
-              <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("requests")}>
+              <TouchableOpacity style={[styles.submitButton, {marginBottom: 15}]} onPress={() => setViewState("requests")}>
               <Text style={styles.buttonText}>Meal Plan Requests</Text>
               </TouchableOpacity>
               {mealPlans.map((plan) => {

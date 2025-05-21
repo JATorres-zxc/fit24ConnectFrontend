@@ -51,10 +51,9 @@ const MemberWorkout: React.FC<MemberWorkoutProps> = ({ workout, requesteeName, o
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         backgroundColor: Colors.bg,
-        padding: 16,
-        marginTop: 15,
+        padding: 10,
+        marginTop: 5,
     },
     editIcon: {
         alignSelf: "flex-end",
