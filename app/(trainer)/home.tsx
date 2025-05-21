@@ -20,6 +20,7 @@ export default function Home() {
   const params = useLocalSearchParams();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [firstName, setFirstName] = useState('');
 
   // Show toast after login
   useEffect(() => {
@@ -33,6 +34,63 @@ export default function Home() {
       });
     }
   }, [params.showToast, params.full_name]);
+
+  const getUserFirstName = async () => {
+    try {
+      // Fetch latest profile data from API
+      const token = await getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch profile data');
+      }
+
+      const data = await response.json();
+
+      await saveItem("profile", JSON.stringify(data));
+
+      if (data.full_name) {
+        // Extract the first name from the full name
+        const firstName = data.full_name.split(" ")[0];
+        setFirstName(firstName);
+      }
+    } catch (error) {
+      console.error("Error fetching profile data:", error);
+
+       // Fallback to local storage if API call fails
+      try {
+        // Try to get userData from storage
+        const userData = await getItem("userData");
+        if (userData) {
+          const user = JSON.parse(userData);
+          if (user.full_name) {
+            // Extract first name (text before first space)
+            const firstNameOnly = user.full_name.split(' ')[0];
+            setFirstName(firstNameOnly);
+            return;
+          }
+        }
+        
+        // If we couldn't get from userData, try profile
+        const profileData = await getItem("profile");
+        if (profileData) {
+          const profile = JSON.parse(profileData);
+          if (profile.full_name) {
+            const firstNameOnly = profile.full_name.split(' ')[0];
+            setFirstName(firstNameOnly);
+          }
+        }
+      } catch (fallbackError) {
+        console.error("Error in fallback method for getting user's name:", fallbackError);
+      }
+    }
+  };
 
   // Profile verification
   const checkProfileCompletion = async () => {
@@ -124,12 +182,13 @@ export default function Home() {
     useCallback(() => {
       fetchAnnouncements();
       checkProfileCompletion();
+      getUserFirstName();
     }, [])
   );
 
   return (
     <View style={styles.container}>
-      <Header userType="trainer" name={`,${' '}Trainer`} />
+      <Header userType="trainer" name={`Trainer ${firstName}`} />
 
       <View style={styles.announcementsContainer}>
         {loading ? (
