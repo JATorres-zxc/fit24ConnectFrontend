@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import { saveItem, getItem } from '@/utils/storageUtils';
 
-import Header from "@/components/TrainerHomeHeader";
+import Header from "@/components/HomeHeader";
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
 
 import { Colors } from '@/constants/Colors';
@@ -67,16 +67,13 @@ export default function Home() {
             "full_name",
             "contact_number",
             "complete_address",
-            "height",
-            "weight",
-            "age",
-            "type_of_membership",
-            "membership_status",
           ];
 
           const missingFields = requiredFields.filter(
             (field) => !profile[field] || profile[field] === ""
           );
+
+          console.log("Missing fields:", missingFields);
 
           if (missingFields.length > 0) {
           Toast.show({
@@ -89,7 +86,7 @@ export default function Home() {
           // Delay the redirection by 5 seconds
           setTimeout(() => {
             router.push({
-              pathname: '/profile',
+              pathname: '/(trainer)/profile',
               params: { showToast: 'true' },
             });
           }, 5000); // 5-second delay
@@ -151,7 +148,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <Header name={`Trainer ${firstName}`} />
+      <Header userType="trainer" name={`Trainer ${firstName}`} />
 
       <View style={styles.announcementsContainer}>
         {loading ? (

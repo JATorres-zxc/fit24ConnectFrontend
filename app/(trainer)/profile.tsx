@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Text, View, StyleSheet, Image, ScrollView, Platform, ActivityIndicator, Touchable, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
+import { Text, View, StyleSheet, Image, ScrollView, ActivityIndicator, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useLocalSearchParams } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -49,7 +49,13 @@ export default function ProfileScreen() {
       setLoading(true);
       setError('');
 
+
       const token = await getItem('authToken');
+      console.log('Access Token:', token);
+        
+      const refreshToken = await getItem('refreshToken');
+      console.log('refreshToken:', refreshToken);
+
       const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -62,7 +68,6 @@ export default function ProfileScreen() {
       }
 
       const data = await response.json();
-      console.log('Profile API Response:', data);
 
       setProfile({
         image: data.image 
@@ -104,11 +109,6 @@ export default function ProfileScreen() {
       setLoading(false);
     }
   };
-
-  // Fetch profile on component mount
-  useEffect(() => {
-    fetchProfile();
-  }, []);
 
   // Refresh profile when screen comes into focus
   useFocusEffect(

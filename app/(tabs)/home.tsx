@@ -69,8 +69,6 @@ export default function Home() {
             "height",
             "weight",
             "age",
-            "type_of_membership",
-            "membership_status",
           ];
 
           const missingFields = requiredFields.filter(
@@ -152,7 +150,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <Header name={firstName} />
+      <Header userType='member' name={firstName} />
 
       <View style={styles.announcementsContainer}>
         {loading ? (

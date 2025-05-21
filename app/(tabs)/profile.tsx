@@ -42,6 +42,9 @@ export default function ProfileScreen() {
 
       const token = await getItem('authToken');
       console.log('Token:', token);
+
+      const refreshToken = await getItem('refreshToken');
+      console.log('refreshToken:', refreshToken);
       
       const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
         headers: {

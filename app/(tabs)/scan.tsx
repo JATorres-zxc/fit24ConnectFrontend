@@ -160,7 +160,7 @@ export default function ScanScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Header />
+        <Header userType='member' />
       </View>
 
       <View style={styles.contentContainer}>
