@@ -3,13 +3,14 @@ import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { saveItem, getItem } from '@/utils/storageUtils';
 
-import Header from "@/components/TrainerHomeHeader";
+import Header from "@/components/HomeHeader";
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
 
 import { Colors } from '@/constants/Colors';
 import { Fonts } from "@/constants/Fonts";
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the announcement object
 import { Announcement } from "@/types/interface";
@@ -19,26 +20,7 @@ export default function Home() {
   const params = useLocalSearchParams();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [firstName, setFirstName] = useState("");
-
-  // Load name from params or AsyncStorage
-  useEffect(() => {
-    const handleName = async () => {
-      if (params.full_name && typeof params.full_name === "string") {
-        // Store and set immediately
-        await AsyncStorage.setItem("full_name", params.full_name);
-        setFirstName(params.full_name.split(" ")[0]);
-      } else {
-        // Fallback to AsyncStorage
-        const storedName = await AsyncStorage.getItem("full_name");
-        if (storedName) {
-          setFirstName(storedName.split(" ")[0]);
-        }
-      }
-    };
-
-    handleName();
-  }, [params.full_name]);
+  const [firstName, setFirstName] = useState('');
 
   // Show toast after login
   useEffect(() => {
@@ -47,16 +29,73 @@ export default function Home() {
         type: "success",
         text1: "Login Success!",
         text2: `Logged in as ${params.full_name}`,
+        topOffset: 80,
         visibilityTime: 1500
       });
     }
   }, [params.showToast, params.full_name]);
 
-  // Profile verification
-  useEffect(() => {
-    const checkProfileCompletion = async () => {
+  const getUserFirstName = async () => {
+    try {
+      // Fetch latest profile data from API
+      const token = await getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch profile data');
+      }
+
+      const data = await response.json();
+
+      await saveItem("profile", JSON.stringify(data));
+
+      if (data.full_name) {
+        // Extract the first name from the full name
+        const firstName = data.full_name.split(" ")[0];
+        setFirstName(firstName);
+      }
+    } catch (error) {
+      console.error("Error fetching profile data:", error);
+
+       // Fallback to local storage if API call fails
       try {
-        const profileData = await AsyncStorage.getItem("profile");
+        // Try to get userData from storage
+        const userData = await getItem("userData");
+        if (userData) {
+          const user = JSON.parse(userData);
+          if (user.full_name) {
+            // Extract first name (text before first space)
+            const firstNameOnly = user.full_name.split(' ')[0];
+            setFirstName(firstNameOnly);
+            return;
+          }
+        }
+        
+        // If we couldn't get from userData, try profile
+        const profileData = await getItem("profile");
+        if (profileData) {
+          const profile = JSON.parse(profileData);
+          if (profile.full_name) {
+            const firstNameOnly = profile.full_name.split(' ')[0];
+            setFirstName(firstNameOnly);
+          }
+        }
+      } catch (fallbackError) {
+        console.error("Error in fallback method for getting user's name:", fallbackError);
+      }
+    }
+  };
+
+  // Profile verification
+  const checkProfileCompletion = async () => {
+      try {
+        const profileData = await getItem("profile");
         if (profileData) {
           const profile = JSON.parse(profileData);
 
@@ -66,33 +105,31 @@ export default function Home() {
             "full_name",
             "contact_number",
             "complete_address",
-            "height",
-            "weight",
-            "age",
-            "type_of_membership",
-            "membership_status",
+            "experience",
           ];
 
           const missingFields = requiredFields.filter(
             (field) => !profile[field] || profile[field] === ""
           );
 
+          console.log("Missing fields:", missingFields);
+
           if (missingFields.length > 0) {
           Toast.show({
             type: "error",
             text1: "Profile Incomplete",
             text2: "Please complete all profile details before proceeding.",
-            position: "bottom",
-            visibilityTime: 5000, // Show the toast for 5 seconds
+            topOffset: 80,
+            visibilityTime: 2000, // Show the toast for 2 seconds
           });
 
-          // Delay the redirection by 5 seconds
+          // Delay the redirection by 2 seconds
           setTimeout(() => {
             router.push({
-              pathname: '/profile',
+              pathname: '/(trainer)/profile',
               params: { showToast: 'true' },
             });
-          }, 5000); // 5-second delay
+          }, 2000); // 2-second delay
         }
       }
     } catch (error) {
@@ -100,18 +137,10 @@ export default function Home() {
     }
   };
 
-    checkProfileCompletion();
-  }, []);
-
   // Fetch announcements function
   const fetchAnnouncements = async () => {
     try {
-      const API_BASE_URL =
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.5:8000';
-
-      const token = await AsyncStorage.getItem("authToken");
+      const token = await getItem("authToken");
       const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
         method: "GET",
         headers: {
@@ -141,22 +170,25 @@ export default function Home() {
         type: "error",
         text1: "Failed to load announcements",
         text2: "Please try again later",
+        topOffset: 80,
       });
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch announcements when screen comes into focus
+  // Fetch announcements and check profile completion when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchAnnouncements();
+      checkProfileCompletion();
+      getUserFirstName();
     }, [])
   );
 
   return (
     <View style={styles.container}>
-      <Header name={`Trainer ${firstName}`} />
+      <Header userType="trainer" name={`Trainer ${firstName}`} />
 
       <View style={styles.announcementsContainer}>
         {loading ? (

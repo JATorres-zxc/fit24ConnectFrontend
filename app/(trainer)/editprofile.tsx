@@ -5,16 +5,16 @@
     TextInput, TouchableOpacity, Platform, 
     ScrollView, KeyboardAvoidingView, TouchableWithoutFeedback, 
     Keyboard,
-    ActivityIndicator,
-    Pressable
+    ActivityIndicator
   } from 'react-native';
   import { router } from 'expo-router';
-  import AsyncStorage from '@react-native-async-storage/async-storage';
+  import { saveItem, getItem } from '@/utils/storageUtils';
   import Toast from 'react-native-toast-message';
 
   import Header from '@/components/EditProfileHeader';
   import { Fonts } from '@/constants/Fonts';
   import { Colors } from '@/constants/Colors';
+  import { API_BASE_URL } from '@/constants/ApiConfig';
 
   // Import interface for the profile object
   import { ProfileBase, EditableTrainerProfile } from '@/types/interface';
@@ -23,7 +23,7 @@
 
   export default function EditProfileScreen() {
     const [originalProfile, setOriginalProfile] = useState<Profile>({
-      image: require("@/assets/images/icon.png"),
+      image: require("@/assets/images/darkicon.png"),
       username: '',
       membershipType: '',
       membershipStatus: '',
@@ -47,12 +47,7 @@
 
     const fetchProfile = async () => {
       try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.254.199:8000';
-    
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -68,7 +63,7 @@
         const profileData = {
           image: data.image 
             ? { uri: `${API_BASE_URL}${data.image}` } // Adjust based on your image URL structure
-            : require("@/assets/images/icon.png"),
+            : require("@/assets/images/darkicon.png"),
           username: data.username || '',
           membershipType: data.membership_type || '',
           membershipStatus: data.membership_status || '',
@@ -81,13 +76,13 @@
     
         setOriginalProfile(profileData);
         setFormValues(profileData);
-        await AsyncStorage.setItem('profile', JSON.stringify(profileData));
+        await saveItem('profile', JSON.stringify(profileData));
         
       } catch (error) {
         console.error('Error fetching profile:', error);
         // Fallback to cached data
         try {
-          const cachedProfile = await AsyncStorage.getItem('profile');
+          const cachedProfile = await getItem('profile');
           if (cachedProfile) {
             const parsed = JSON.parse(cachedProfile);
             setOriginalProfile(parsed);
@@ -143,7 +138,7 @@
         text2: message,
         position: 'top',
         visibilityTime: 4000,
-        topOffset: 100,
+        topOffset: 80,
       });
     };
 
@@ -174,12 +169,7 @@
       }
     
       try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.5:8000';
-    
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getItem('authToken');
         
         // Prepare the data for API request
         const profileData = {
@@ -214,7 +204,7 @@
           image: formValues.image?.uri || formValues.image,
         };
         
-        await AsyncStorage.setItem('profile', JSON.stringify(profileToSave));
+        await saveItem('profile', JSON.stringify(profileToSave));
         setOriginalProfile({ ...formValues });
         setHasUnsavedChanges(false);
     
@@ -223,7 +213,7 @@
           text1: 'Profile Updated',
           text2: 'Your changes have been saved successfully.',
           position: 'top',
-          topOffset: 100,
+          topOffset: 80,
         });
     
         setTimeout(() => {
@@ -242,7 +232,7 @@
           type: 'error',
           text1: 'Update Failed',
           text2: errorMessage,
-          topOffset: 100,
+          topOffset: 80,
         });
       }
     };
@@ -269,7 +259,7 @@
         return (
           <View style={styles.inputContainerOuter}>
             <Text style={styles.inputLabel}>{label}</Text>
-            <Pressable 
+            <TouchableWithoutFeedback 
               style={styles.inputWrapper}
               onPress={() => ref.current && ref.current.focus()}
             >
@@ -284,16 +274,11 @@
                 returnKeyType={returnKeyType}
                 onSubmitEditing={onSubmitEditing}
               />
-            </Pressable>
+            </TouchableWithoutFeedback>
           </View>
         );
       };
-
-    // Function to dismiss keyboard when tapping outside inputs
-    const dismissKeyboard = () => {
-      Keyboard.dismiss();
-    };
-
+      
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView 
@@ -406,9 +391,9 @@
       marginBottom: 40,
     },
     profileImage: {
-      width: 250,
-      height: 250,
-      borderRadius: 175,
+      width: 200,
+      height: 200,
+      borderRadius: '50%',
       resizeMode: "cover",
     },
     textContainer: {
@@ -468,12 +453,14 @@
     },
     buttonContainer: {
       alignItems: 'center',
+      marginBottom: 30,
     },
     button: {
       backgroundColor: Colors.gold,
       padding: 12,
       borderRadius: 10,
       alignItems: "center",
+      width: '50%',
     },
     buttonText: {
       fontFamily: Fonts.regular,

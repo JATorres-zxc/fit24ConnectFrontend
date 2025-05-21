@@ -5,11 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AntDesign from '@expo/vector-icons/AntDesign'
 import { Fonts } from '@/constants/Fonts';
 
-type HeaderProps = {
-  userType: 'member' | 'trainer';
-};
+import { HeaderPropsUserType } from '@/types/interface';
 
-export default function Header({ userType }: HeaderProps) {
+export default function Header({ userType }: HeaderPropsUserType) {
   const handleBackPress = () => {
     if (userType === 'trainer') {
       router.push('/(trainer)/editprofile');

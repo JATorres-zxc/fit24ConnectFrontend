@@ -1,22 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Text, View, StyleSheet, Image, ScrollView, Platform, ActivityIndicator, Touchable, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
+import { Text, View, StyleSheet, Image, ScrollView, ActivityIndicator, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useLocalSearchParams } from "expo-router";
 import Toast from "react-native-toast-message";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveItem, getItem, deleteItem } from '@/utils/storageUtils';
 
 import Header from '@/components/ProfileHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { FontAwesome6 } from '@expo/vector-icons';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the profile object
 import { TrainerProfileDetails } from '@/types/interface';
 
 export default function ProfileScreen() {
   const [profile, setProfile] = useState<TrainerProfileDetails>({
-    image: require("@/assets/images/icon.png"),
+    image: require("@/assets/images/darkicon.png"),
     username: '',
     membershipType: '',
     membershipStatus: '',
@@ -38,7 +39,7 @@ export default function ProfileScreen() {
           type: "error",
           text1: "Profile Incomplete",
           text2: "Please complete all profile details before proceeding.",
-          position: 'bottom'
+          topOffset: 80,
         });
       }, 4000); // Adding a short delay to ensure Toast renders properly
     }
@@ -48,14 +49,11 @@ export default function ProfileScreen() {
     try {
       setLoading(true);
       setError('');
-      
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.11:8000';
 
-      const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
+
+      const token = await getItem('authToken');
+
+      const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -67,12 +65,11 @@ export default function ProfileScreen() {
       }
 
       const data = await response.json();
-      console.log('Profile API Response:', data);
 
       setProfile({
         image: data.image 
           ? { uri: `${API_BASE_URL}${data.image}` } // Assuming image is a URL path
-          : require("@/assets/images/icon.png"),
+          : require("@/assets/images/darkicon.png"),
         username: data.username || '',
         membershipType: data.membership_type || '',
         membershipStatus: data.membership_status || '',
@@ -84,21 +81,21 @@ export default function ProfileScreen() {
       });
 
       // Cache the profile data locally
-      await AsyncStorage.setItem('profile', JSON.stringify(data));
+      await saveItem('profile', JSON.stringify(data));
     } catch (error) {
       console.error('Error fetching profile:', error);
       setError('Failed to load profile data');
       
       // Try to load cached profile if API fails
       try {
-        const cachedProfile = await AsyncStorage.getItem('profile');
+        const cachedProfile = await getItem('profile');
         if (cachedProfile) {
           const parsed = JSON.parse(cachedProfile);
           setProfile({
             ...parsed,
             image: parsed.image 
               ? { uri: parsed.image }
-              : require("@/assets/images/icon.png"),
+              : require("@/assets/images/darkicon.png"),
           });
           setError('Using cached data (offline mode)');
         }
@@ -109,11 +106,6 @@ export default function ProfileScreen() {
       setLoading(false);
     }
   };
-
-  // Fetch profile on component mount
-  useEffect(() => {
-    fetchProfile();
-  }, []);
 
   // Refresh profile when screen comes into focus
   useFocusEffect(
@@ -128,14 +120,17 @@ export default function ProfileScreen() {
 
   const handleConfirmLogout = async () => {
     try {
-      const API_BASE_URL =
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.11:8000';
-      
-      const refreshToken = await AsyncStorage.getItem('refreshToken');
+      const refreshToken = await getItem('refreshToken');
+      const accessToken = await getItem('authToken');
+        
       if (!refreshToken) {
         console.error('No refresh token found.');
+        setLogoutModalVisible(false);
+        return;
+      }
+
+      if (!accessToken) {
+        console.error('No access token found.');
         setLogoutModalVisible(false);
         return;
       }
@@ -144,6 +139,7 @@ export default function ProfileScreen() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({ refresh: refreshToken}),
       });
@@ -155,10 +151,10 @@ export default function ProfileScreen() {
         console.error('Logout API call failed:', errorData);
       }
 
-      // Clear all authentication tokens from AsyncStorage
-      await AsyncStorage.removeItem('accessToken');
-      await AsyncStorage.removeItem('refreshToken');
-      await AsyncStorage.removeItem('userID');
+      // Clear all authentication tokens
+      await deleteItem('accessToken');
+      await deleteItem('refreshToken');
+      await deleteItem('userID');
       
       setLogoutModalVisible(false);
       router.push('/login');
@@ -202,10 +198,6 @@ export default function ProfileScreen() {
 
         <View style={styles.textContainer}>
           <Text style={styles.username}>{profile.fullName.split(' ')[0] || ''}</Text>
-          <Text style={styles.membership}>
-            {profile.membershipType}: {' '}
-            <Text style={{ fontFamily: Fonts.mediumItalic }}>{profile.membershipStatus}</Text>
-          </Text>
         </View>
       </View>
 
@@ -309,9 +301,9 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   profileImage: {
-    width: 250,
-    height: 250,
-    borderRadius: 175,
+    width: 200,
+    height: 200,
+    borderRadius: '50%',
     resizeMode: "cover",
   },
   editProfile: {
@@ -320,13 +312,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     position: 'absolute',
-    bottom: 5,
+    bottom: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: Colors.icongray,
   },
   textContainer: {
     alignItems: 'center',
+    marginTop: 10,
   },
   username: {
     fontFamily: Fonts.regular,

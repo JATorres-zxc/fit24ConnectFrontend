@@ -33,6 +33,7 @@ const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: Colors.bg,
     marginBottom: 30,
+    marginTop: 30,
   },
   header: {
     flexDirection: 'row',

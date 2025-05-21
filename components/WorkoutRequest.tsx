@@ -20,8 +20,8 @@ const WorkoutRequest: React.FC<WorkoutRequestProps> = ({ memberName, fitnessGoal
             <View style={styles.container}>
                 <View style={styles.requestContainer}>
                     <View style={styles.headerContainer}>
-                        <Text style={styles.title}>Requested by: {memberName}</Text>
-                        <TouchableOpacity style={{ marginLeft: 5 }} onPress={onEditPress}>
+                        <Text style={styles.title}>Requested by:{"\n"}{memberName}</Text>
+                        <TouchableOpacity style={{ marginLeft: 10, marginRight: 10 }} onPress={onEditPress}>
                             <FontAwesome name="edit" size={24} color={Colors.black} />
                         </TouchableOpacity>
                     </View>
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     },
     requestContainer: {
         width: "100%",
-        padding: 16,
+        padding: 10,
         backgroundColor: Colors.bg,
     },
     headerContainer: {

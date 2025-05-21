@@ -16,7 +16,9 @@ import { NavigationProp } from '@react-navigation/native';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { Dimensions } from 'react-native'
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveItem } from '@/utils/storageUtils';
+
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -41,7 +43,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Email is required',
-                position: 'bottom'
+                topOffset: 80,
             });
             return;
         }
@@ -50,18 +52,12 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Password is required',
-                position: 'bottom'
+                topOffset: 80,
             });
             return;
         }
 
         try {
-            // Perform the API login call
-            const API_BASE_URL =
-                Platform.OS === 'web'
-                    ? 'http://127.0.0.1:8000' // Web uses localhost
-                    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
-
             const response = await fetch(`${API_BASE_URL}/api/account/login/`, {
                 method: 'POST',
                 headers: {
@@ -77,9 +73,9 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
             if (response.ok && result.success && result.tokens.access) {
                 // Store the token and user ID securely for future use
-                await AsyncStorage.setItem('authToken', result.tokens.access);
-                await AsyncStorage.setItem('refreshToken', result.tokens.refresh);
-                await AsyncStorage.setItem('userID', result.user.id.toString());
+                await saveItem('authToken', result.tokens.access);
+                await saveItem('refreshToken', result.tokens.refresh);
+                await saveItem('userID', result.user.id.toString());
 
                 // Navigate based on user role
                 if (result.user.role === 'trainer') {
@@ -103,8 +99,8 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     type: 'error',
                     text1: 'Login Failed',
                     text2: result.message || 'Invalid username or password.',
+                    topOffset: 80,
                     visibilityTime: 1500,
-                    position: 'bottom'
                 });
                 setError(result.message || 'Invalid username or password.');
             }
@@ -113,7 +109,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 type: 'error',
                 text1: 'Login Failed',
                 text2: 'An error occurred. Please try again.',
-                position: 'bottom'
+                topOffset: 80,
             });
             setError('An error occurred. Please try again.');
         }
@@ -125,7 +121,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
             <View style={styles.logoContainer}>
-                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
+                <Image source={require("@/assets/images/icon.png")} style={styles.logo} />
             </View>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.formContainer}>
@@ -187,13 +183,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     logoContainer: {
-        marginTop: 150,
+        marginTop: 100,
         justifyContent: "center",
         alignItems: "center",
     },
     logo: {
-        width: 200,
-        height: 200,
+        width: 250,
+        height: 250,
         resizeMode: "contain",
     },
     formContainer: {
@@ -241,7 +237,7 @@ const styles = StyleSheet.create({
     },
     bottomText: {
         textAlign: "center",
-        marginTop: 10,
+        marginTop: 20,
         color: Colors.linkText,
         fontFamily: Fonts.italic,
         fontSize: 12,

@@ -4,28 +4,24 @@ import Header from '@/components/HistoryHeader';
 import { Colors } from '@/constants/Colors';
 import AccessLogsContainer from '@/components/AccessLogsContainer';
 
-import { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect, useState } from 'react';
+import { getItem } from '@/utils/storageUtils';
 import Toast from 'react-native-toast-message';
 import { Fonts } from '@/constants/Fonts';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the access log object
 import { AccessLog } from '@/types/interface';
+import { useFocusEffect } from 'expo-router';
 
 export default function HistoryScreen() {
   const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Fetch access logs when component mounts
+    // Fetch access logs from the API
     const fetchAccessLogs = async () => {
       try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000' // Web uses localhost
-            : 'http://192.168.1.5:8000'; // Mobile uses local network IP (adjust as needed)
-
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/facility/my-access-logs/`, {
           method: "GET",
           headers: {
@@ -53,14 +49,18 @@ export default function HistoryScreen() {
           type: "error",
           text1: "Failed to load access logs",
           text2: "Please try again later",
+          topOffset: 80,
         });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAccessLogs();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchAccessLogs();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>

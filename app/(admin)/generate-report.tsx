@@ -9,7 +9,8 @@ import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function ReportsFormScreen() {
   const [reportType, setReportType] = useState<string | number | undefined>('');
@@ -32,7 +33,7 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Incomplete Fields',
         text2: 'Please select a report type',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -42,7 +43,7 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Incomplete Fields',
         text2: 'Please select both dates.',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -52,7 +53,7 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Invalid Date Range',
         text2: 'End date cannot be earlier than start date.',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -64,18 +65,15 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Invalid End Date',
         text2: 'End date cannot be later than today.',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
   
     try {
       setIsSubmitting(true);
-      const API_BASE_URL = Platform.OS === 'web' 
-        ? 'http://127.0.0.1:8000' 
-        : 'http://192.168.1.11:8000';
 
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       if (!token) throw new Error('No authentication token found');
 
       // Map frontend report types to backend values
@@ -110,7 +108,7 @@ export default function ReportsFormScreen() {
         type: 'success',
         text1: 'Report Generated',
         text2: 'Your report has been created successfully',
-        topOffset: 100,
+        topOffset: 80,
         visibilityTime: 2000,
         autoHide: true,
         onHide: () => router.push('/(admin)/reports')
@@ -122,7 +120,7 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Generation Failed',
         text2: error instanceof Error ? error.message : 'Failed to create report',
-        topOffset: 100,
+        topOffset: 80,
       });
     } finally {
       setIsSubmitting(false);

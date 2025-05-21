@@ -6,15 +6,16 @@ import {
   ScrollView, KeyboardAvoidingView,
   Keyboard,
   ActivityIndicator,
-  Pressable
+  TouchableWithoutFeedback
 } from 'react-native';
 import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveItem, getItem } from '@/utils/storageUtils';
 import Toast from 'react-native-toast-message';
 
 import Header from '@/components/EditProfileHeader';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the profile object
 import { ProfileBase, EditableMemberProfile } from '@/types/interface';
@@ -23,7 +24,7 @@ type Profile = ProfileBase & EditableMemberProfile;
 
 export default function EditProfileScreen() {
   const [originalProfile, setOriginalProfile] = useState<Profile>({
-    image: require("@/assets/images/icon.png"),
+    image: require("@/assets/images/darkicon.png"),
     username: '',
     membershipType: '',
     membershipStatus: '',
@@ -51,12 +52,7 @@ export default function EditProfileScreen() {
 
   const fetchProfile = async () => {
     try {
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.5:8000';
-  
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -72,7 +68,7 @@ export default function EditProfileScreen() {
       const profileData = {
         image: data.image 
           ? { uri: `${API_BASE_URL}${data.image}` }
-          : require("@/assets/images/icon.png"),
+          : require("@/assets/images/darkicon.png"),
         username: data.username || '',
         membershipType: data.membership_type || '',
         membershipStatus: data.membership_status || '',
@@ -87,13 +83,13 @@ export default function EditProfileScreen() {
   
       setOriginalProfile(profileData);
       setFormValues(profileData);
-      await AsyncStorage.setItem('profile', JSON.stringify(profileData));
+      await saveItem('profile', JSON.stringify(profileData));
       
     } catch (error) {
       console.error('Error fetching profile:', error);
       // Fallback to cached data
       try {
-        const cachedProfile = await AsyncStorage.getItem('profile');
+        const cachedProfile = await getItem('profile');
         if (cachedProfile) {
           const parsed = JSON.parse(cachedProfile);
           setOriginalProfile(parsed);
@@ -153,7 +149,7 @@ export default function EditProfileScreen() {
       text2: message,
       position: 'top',
       visibilityTime: 4000,
-      topOffset: 100,
+      topOffset: 80,
     });
   };
 
@@ -192,12 +188,7 @@ export default function EditProfileScreen() {
     }
   
     try {
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.5:8000';
-  
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       
       // Prepare the data for API request
       const profileData = {
@@ -233,7 +224,7 @@ export default function EditProfileScreen() {
         image: formValues.image?.uri || formValues.image,
       };
       
-      await AsyncStorage.setItem('profile', JSON.stringify(profileToSave));
+      await saveItem('profile', JSON.stringify(profileToSave));
       setOriginalProfile({ ...formValues });
       setHasUnsavedChanges(false);
   
@@ -242,7 +233,7 @@ export default function EditProfileScreen() {
         text1: 'Profile Updated',
         text2: 'Your changes have been saved successfully.',
         position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
   
       setTimeout(() => {
@@ -260,7 +251,7 @@ export default function EditProfileScreen() {
         type: 'error',
         text1: 'Update Failed',
         text2: errorMessage,
-        topOffset: 100,
+        topOffset: 80,
       });
     }
   };
@@ -287,7 +278,7 @@ export default function EditProfileScreen() {
     return (
       <View style={styles.inputContainerOuter}>
         <Text style={styles.inputLabel}>{label}</Text>
-        <Pressable 
+        <TouchableWithoutFeedback 
           style={styles.inputWrapper}
           onPress={() => ref.current && ref.current.focus()}
         >
@@ -302,31 +293,21 @@ export default function EditProfileScreen() {
             returnKeyType={returnKeyType}
             onSubmitEditing={onSubmitEditing}
           />
-        </Pressable>
+        </TouchableWithoutFeedback>
       </View>
     );
   };
 
-  // Function to dismiss keyboard when tapping outside inputs
-  const dismissKeyboard = () => {
-    Keyboard.dismiss();
-  };
-
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
       <Header userType='member' onSave={handleSave} hasUnsavedChanges={hasUnsavedChanges} />
-
-      <ScrollView 
-        style={styles.scrollViewCont}
-        contentContainerStyle={{paddingBottom: 20}}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Background pressable to dismiss keyboard when tapping empty areas */}
-        <Pressable style={styles.backgroundPressable} onPress={dismissKeyboard}>
+    
+        <ScrollView style={styles.scrollViewCont}>
           <View style={styles.profileContainer}>
             <View style={styles.imageContainer}>
               <Image 
@@ -334,7 +315,7 @@ export default function EditProfileScreen() {
                 style={styles.profileImage} 
               />
             </View>
-
+    
             <View style={styles.usernameContainer}>
               <Text style={styles.username}>{formValues.fullName.split(' ')[0] || ''}</Text>
               <Text style={styles.usernameLabel}>Your Username</Text>
@@ -380,7 +361,7 @@ export default function EditProfileScreen() {
               formValues.height, 
               'height', 
               heightInputRef,
-              'default', 
+              'number-pad', 
               'none', 
               'next', 
               () => weightInputRef.current && weightInputRef.current.focus()
@@ -391,7 +372,7 @@ export default function EditProfileScreen() {
               formValues.weight, 
               'weight', 
               weightInputRef,
-              'default', 
+              'number-pad', 
               'none', 
               'next', 
               () => addressInputRef.current && addressInputRef.current.focus()
@@ -429,11 +410,11 @@ export default function EditProfileScreen() {
               <Text style={styles.buttonText}>Edit Password</Text>
             </TouchableOpacity>
           </View>
-        </Pressable>
       </ScrollView>
         
       <Toast />
     </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -455,9 +436,9 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   profileImage: {
-    width: 250,
-    height: 250,
-    borderRadius: 175,
+    width: 200,
+    height: 200,
+    borderRadius: '50%',
     resizeMode: "cover",
   },
   textContainer: {
@@ -477,7 +458,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     alignItems: 'center',
-    marginTop: 10,
+    marginBottom: 30,
   },
   button: {
     backgroundColor: Colors.gold,

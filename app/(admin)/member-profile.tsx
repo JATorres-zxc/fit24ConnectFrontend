@@ -8,7 +8,8 @@ import Header from '@/components/NavigateBackHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import MemberProfile interface
 import { MemberProfile } from '@/types/interface';
@@ -34,7 +35,7 @@ export default function MemberProfileScreen() {
   };
 
   const [profile, setProfile] = useState<MemberProfile>({
-    image: require("@/assets/images/icon.png"),
+    image: require("@/assets/images/darkicon.png"),
     username: '',
     fullName: '',
     membershipType: '',
@@ -58,7 +59,6 @@ export default function MemberProfileScreen() {
     // Fields that must not be empty
     const requiredFields = [
       fullName,
-      membershipType,
     ];
 
     const missingFields = requiredFields.filter(field => !field || field === "");
@@ -68,14 +68,14 @@ export default function MemberProfileScreen() {
         type: "error",
         text1: "Incomplete Profile",
         text2: "Some members have not set up their profiles. Please remind them.",
-        position: "bottom",
+        topOffset: 80,
         visibilityTime: 4000,
       });
     }
     
     // Reset all state to ensure no data from previous member persists
     setProfile({
-      image: require("@/assets/images/icon.png"),
+      image: require("@/assets/images/darkicon.png"),
       username: fullName ? String(fullName).split(' ')[0] : '',
       fullName: fullName ? String(fullName) : '',
       membershipType: membershipType ? String(membershipType) : '',
@@ -107,6 +107,7 @@ export default function MemberProfileScreen() {
         type: "error",
         text1: "Invalid Date Format",
         text2: "Start date must be in YYYY-MM-DD format",
+        topOffset: 80,
       });
       return;
     }
@@ -116,16 +117,12 @@ export default function MemberProfileScreen() {
         type: "error",
         text1: "Invalid Date Format",
         text2: "End date must be in YYYY-MM-DD format",
+        topOffset: 80,
       });
       return;
     }
-
-    const API_BASE_URL = 
-      Platform.OS === 'web'
-        ? 'http://127.0.0.1:8000'
-        : 'http://192.168.1.11:8000';
   
-    const token = await AsyncStorage.getItem('authToken');
+    const token = await getItem('authToken');
   
     try {
       // Update Membership Type
@@ -173,6 +170,7 @@ export default function MemberProfileScreen() {
         type: "success",
         text1: "Update Successful",
         text2: `Successfully updated ${profile.fullName}'s subscription details`,
+        topOffset: 80,
         visibilityTime: 1500
       });
       setTimeout(() => {
@@ -187,20 +185,20 @@ export default function MemberProfileScreen() {
     <View style={styles.container}>
       <Header screen='Update Subscription' prevScreen='/(admin)/members' />
 
-      <View style={styles.profileContainer}>
-        <View style={styles.imageContainer}>
-          <Image 
-            source={typeof profile.image === 'string' ? { uri: profile.image } : profile.image} 
-            style={styles.profileImage} 
-          />
-        </View>
-
-        <View style={styles.textContainer}>
-          <Text style={styles.username}>{fullName ? (fullName as string).split(' ')[0] : 'User has not set up profile.'}</Text>
-        </View>
-      </View>
-
       <ScrollView style={styles.scrollViewCont}>
+        <View style={styles.profileContainer}>
+          <View style={styles.imageContainer}>
+            <Image 
+              source={typeof profile.image === 'string' ? { uri: profile.image } : profile.image} 
+              style={styles.profileImage} 
+            />
+          </View>
+
+          <View style={styles.textContainer}>
+            <Text style={styles.username}>{fullName ? (fullName as string).split(' ')[0] : 'User has not set up profile.'}</Text>
+          </View>
+        </View>
+      
         <View style={styles.detailsContainer}>
           {/* Full Name Details*/}
           <View style={styles.field}>
@@ -287,9 +285,9 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   profileImage: {
-    width: 250,
-    height: 250,
-    borderRadius: 175,
+    width: 200,
+    height: 200,
+    borderRadius: '50%',
     resizeMode: "cover",
   },
   editProfile: {
@@ -355,6 +353,7 @@ const styles = StyleSheet.create({
 },
   buttonContainer: {
     marginTop: 30,
+    marginBottom: 50,
   },
   button: {
     backgroundColor: Colors.gold,

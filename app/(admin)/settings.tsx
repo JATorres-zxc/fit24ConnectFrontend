@@ -1,12 +1,13 @@
-import { View, StyleSheet, Text, TouchableOpacity, Alert, Platform, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import Header from '@/components/AdminSectionHeaders';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem, deleteItem } from '@/utils/storageUtils';
 import { FontAwesome6 } from '@expo/vector-icons';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -17,12 +18,7 @@ export default function SettingsScreen() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const API_BASE_URL =
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.11:8000';
-  
-        const authToken = await AsyncStorage.getItem('authToken');
+        const authToken = await getItem('authToken');
         if (!authToken) {
           console.error('Access token not found');
           return;
@@ -58,14 +54,17 @@ export default function SettingsScreen() {
 
   const handleConfirmLogout = async () => {
     try {
-      const API_BASE_URL =
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.11:8000';
-      
-      const refreshToken = await AsyncStorage.getItem('refreshToken');
+      const refreshToken = await getItem('refreshToken');
+      const accessToken = await getItem('authToken');
+
       if (!refreshToken) {
         console.error('No refresh token found.');
+        setLogoutModalVisible(false);
+        return;
+      }
+
+      if (!accessToken) {
+        console.error('No access token found.');
         setLogoutModalVisible(false);
         return;
       }
@@ -74,6 +73,7 @@ export default function SettingsScreen() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({ refresh: refreshToken}),
       });
@@ -86,9 +86,9 @@ export default function SettingsScreen() {
       }
 
       // Clear all authentication tokens from AsyncStorage
-      await AsyncStorage.removeItem('accessToken');
-      await AsyncStorage.removeItem('refreshToken');
-      await AsyncStorage.removeItem('userID');
+      await deleteItem('accessToken');
+      await deleteItem('refreshToken');
+      await deleteItem('userID');
       
       setLogoutModalVisible(false);
       router.push('/login');

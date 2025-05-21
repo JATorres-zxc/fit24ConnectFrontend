@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import { 
   View, Text, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, 
   TextInput,
@@ -16,16 +17,12 @@ import SendFeedbackHeader from '@/components/SendFeedbackHeaderWO';
 import PersonalWorkoutsHeader from '@/components/MemberPersonalWOHeader';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from '@/constants/ApiConfig';
+import { getItem } from '@/utils/storageUtils';
 
 // Import interfaces for workouts
 import { Exercise, User, Feedback, Workout } from "@/types/interface";
 import { Trainer2 as Trainer } from "@/types/interface";
-
-const API_BASE_URL =
-  Platform.OS === 'web'
-    ? 'http://127.0.0.1:8000' // Web uses localhost
-    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
 
 let token: string | null = null;
 let userID: string | null = null;
@@ -43,113 +40,122 @@ const WorkoutScreen = () => {
   const [workout, setWorkout] = useState<Workout | null>(null);
 
   // Fetching trainers from API
+  const fetchTrainers = async () => {
+    try {
+      const token = await getItem('authToken');
+      const trainerResponse = await fetch(`${API_BASE_URL}/api/account/trainers/`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-  useEffect(() => {
-    const fetchTrainers = async () => {
-      try {
-        const token = await AsyncStorage.getItem('authToken');
-        const trainerResponse = await fetch(`${API_BASE_URL}/api/account/trainers/`, {
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-  
-        if (!trainerResponse.ok) {
-          throw new Error(`Trainer fetch error! Status: ${trainerResponse.status}`);
-        }
-  
-        const trainerList = await trainerResponse.json();
-  
-        const resolvedTrainers = trainerList.map((trainer: Trainer) => ({
-          id: trainer.id,
-          user: {
-            id: trainer.user?.id || null,
-            email: trainer.user?.email || "No email",
-            full_name: trainer.user?.full_name || "Unknown Trainer",
-          },
-          experience: trainer.experience?.trim() || "Not Specified",
-          contact: trainer.contact?.trim() || "Not Available",
-        }));
-  
-        setTrainers(resolvedTrainers);
-      } catch (error) {
-        console.error('Error fetching trainers:', error);
+      if (!trainerResponse.ok) {
+        throw new Error(`Trainer fetch error! Status: ${trainerResponse.status}`);
       }
-    };
-  
-    fetchTrainers();
-  }, []);
+
+      const trainerList = await trainerResponse.json();
+
+      const resolvedTrainers = trainerList.map((trainer: Trainer) => ({
+        id: trainer.id,
+        user: {
+          id: trainer.user?.id || null,
+          email: trainer.user?.email || "No email",
+          full_name: trainer.user?.full_name || "Unknown Trainer",
+        },
+        experience: trainer.experience?.trim() || "Not Specified",
+        contact: trainer.contact?.trim() || "Not Available",
+      }));
+
+      setTrainers(resolvedTrainers);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'No Trainers Found!',
+        text2: `${error}`,
+        topOffset: 80,
+      });
+    }
+  };
 
   // Fetching Workout from API
-  
-  useEffect(() => {
-    const fetchWorkout = async () => {
-      try {
-        token = await AsyncStorage.getItem('authToken');
-        userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-        
-        const response = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-  
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-  
-        const programsData = await response.json();
-        
-        // Based on backend, the requestee contains the userID or "everyone" that it is visible to.
-        // Filter workout programs based on requestee matching userID or "everyone" and status is completed
-        const filteredPrograms = programsData.filter((program: any) => 
-          program.status === "completed" &&
-          (String(program.requestee) === String(userID) || program.requestee === null) // means that it is visible to everyone
-        );
-  
-        if (filteredPrograms.length === 0) {
-          throw new Error('No workouts available for the user');
-        }
+  const fetchWorkout = async () => {
+    try {
+      const token = await getItem('authToken');
+      const userID = await getItem('userID'); // Retrieve the logged-in user's ID
 
-        // Map all filtered programs to Workout objects
-        const formattedWorkouts: Workout[] = filteredPrograms.map((userProgram: any) => ({
-          id: userProgram.id.toString(),
-          title: userProgram.program_name,
-          fitnessGoal: userProgram.fitness_goal,
-          intensityLevel: userProgram.intensity_level,
-          trainer: userProgram.trainer || "N/A",
-          exercises: userProgram.workout_exercises.map((exercise: any) => ({
-            id: exercise.id.toString(),
-            image: "", // Add image URL if available in the backend
-            name: exercise.name,
-            description: exercise.description,
-            muscle_group: exercise.muscle_group,
-          })),
-          visibleTo: userProgram.requestee || "everyone",
-          status: userProgram.status,
-          feedbacks: [], // Adjust if feedback is available
-        }));
-  
-        setWorkouts((prevWorkouts) => [...prevWorkouts, ...formattedWorkouts]);
+      const response = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-        console.log("Workouts: ", workouts);
-      } catch (error) {
-        console.error('Error fetching workout:', error);
-  
-        if (error instanceof Error) {
-          if (error.message.includes('NetworkError')) {
-            console.error('Network error: Please check if the server is running and accessible.');
-          } else if (error.message.includes('CORS')) {
-            console.error('CORS error: Please ensure your server allows requests from your frontend.');
-          }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const programsData = await response.json();
+
+      const filteredPrograms = programsData.filter((program: any) =>
+        program.status === "completed" &&
+        (String(program.requestee) === String(userID) || program.requestee === null)
+      );
+      
+      if (filteredPrograms.length === 0) {
+        throw new Error('No workouts available for the user');
+      }
+
+      const formattedWorkouts: Workout[] = filteredPrograms.map((userProgram: any) => ({
+        id: userProgram.id.toString(),
+        title: userProgram.program_name,
+        fitnessGoal: userProgram.fitness_goal,
+        intensityLevel: userProgram.intensity_level,
+        trainer: userProgram.trainer || "N/A",
+        exercises: userProgram.workout_exercises.map((exercise: any) => ({
+          id: exercise.id.toString(),
+          image: "", // Adjust if backend supports image
+          name: exercise.name,
+          description: exercise.description,
+          muscle_group: exercise.muscle_group,
+        })),
+        visibleTo: userProgram.requestee || "everyone",
+        status: userProgram.status,
+        feedbacks: [],
+      }));
+
+      setWorkouts(formattedWorkouts);
+
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'No Workouts Found!',
+        text2: `${error}`,
+        topOffset: 80,
+      });
+
+      if (error instanceof Error) {
+        if (error.message.includes('NetworkError')) {
+          console.error('Network error: Please check if the server is running and accessible.');
+        } else if (error.message.includes('CORS')) {
+          console.error('CORS error: Please ensure your server allows requests from your frontend.');
         }
       }
-    };
-  
-    fetchWorkout();
-  }, []);    
+    }
+  };
+
+  // actual call to API
+  useFocusEffect(
+    useCallback(() => {
+      fetchTrainers();
+      fetchWorkout();
+      const fetchUserIDandToken = async () => {
+        userID = await getItem('userID');
+        token = await getItem('authToken');
+      };
+      fetchUserIDandToken();
+    }, [])
+  ); 
 
   const [workouts, setWorkouts] = useState<Workout[]>([
     // {
@@ -159,8 +165,8 @@ const WorkoutScreen = () => {
     //   intensityLevel: "High",
     //   trainer: "Trainer A",
     //   exercises: [
-    //     { id: "EX1", name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: require("@/assets/images/icon.png") },
-    //     { id: "EX2", name: "Squats", description: "Perform squats to work on lower body strength.", image: require("@/assets/images/icon.png") },
+    //     { id: "EX1", name: "Push-ups", description: "Perform push-ups to work on upper body strength.", image: require("@/assets/images/darkicon.png") },
+    //     { id: "EX2", name: "Squats", description: "Perform squats to work on lower body strength.", image: require("@/assets/images/darkicon.png") },
     //   ],
     //   visibleTo: "everyone",
     //   feedbacks: [
@@ -176,8 +182,8 @@ const WorkoutScreen = () => {
     //   intensityLevel: "Medium",
     //   trainer: "Trainer B",
     //   exercises: [
-    //     { id: "EX3", name: "Jumping Jacks", description: "Perform jumping jacks to get your heart rate up.", image: require("@/assets/images/icon.png") },
-    //     { id: "EX4", name: "Burpees", description: "Perform burpees to improve endurance.", image: require("@/assets/images/icon.png") },
+    //     { id: "EX3", name: "Jumping Jacks", description: "Perform jumping jacks to get your heart rate up.", image: require("@/assets/images/darkicon.png") },
+    //     { id: "EX4", name: "Burpees", description: "Perform burpees to improve endurance.", image: require("@/assets/images/darkicon.png") },
     //   ],
     //   visibleTo: "1",
     //   feedbacks: [
@@ -190,7 +196,7 @@ const WorkoutScreen = () => {
 
   const handleDelete = async (workout: Workout) => {
     try {
-      token = await AsyncStorage.getItem('authToken');
+      token = await getItem('authToken');
 
       const response = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/${workout.id}/`, {
         method: 'DELETE',
@@ -205,7 +211,7 @@ const WorkoutScreen = () => {
           type: 'success',
           text1: 'Workout Deleted',
           text2: 'Your workout has been deleted successfully.',
-          position: 'bottom'
+          topOffset: 80,
         });
 
         setWorkouts((prevWorkouts) => prevWorkouts.filter(w => w.id !== workout.id)); // Remove the workout from the list
@@ -222,7 +228,7 @@ const WorkoutScreen = () => {
           type: 'error',
           text1: 'Delete Failed',
           text2: 'There was an error deleting your workout.',
-          position: 'bottom'
+          topOffset: 80,
         });
       }
     } catch (error) {
@@ -230,7 +236,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Delete Failed',
         text2: 'There was an error deleting your workout.',
-        position: 'bottom'
+        topOffset: 80,
       });
     }
   };
@@ -238,7 +244,6 @@ const WorkoutScreen = () => {
   const handleWorkoutPress = (selectedWorkout: Workout) => {
     setWorkout(selectedWorkout);
     workout_id = selectedWorkout.id; // Store the selected workout ID for feedback submission
-    console.log("Workout ID: ", workout_id);
     setViewState("exercises");
   };
 
@@ -254,13 +259,13 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Missing Fields',
         text2: 'Please fill out all fields before submitting feedback.',
-        position: 'bottom'
+        topOffset: 80,
       });
       return;
     }
 
     // This is in line with an agreed central feedback and request database.
-    const token = await AsyncStorage.getItem('authToken');
+    const token = await getItem('authToken');
 
     const response = await fetch(`${API_BASE_URL}/api/workouts/feedbacks/`, {
       method: 'POST',
@@ -281,7 +286,7 @@ const WorkoutScreen = () => {
           type: 'info',
           text1: 'Feedback Sent',
           text2: 'Your feedback has been sent successfully.',
-          position: 'bottom'
+          topOffset: 80,
         });
         setViewState("plan");
         setFeedback("");
@@ -291,7 +296,7 @@ const WorkoutScreen = () => {
           type: 'error',
           text1: 'Feedback Failed',
           text2: 'There was an error submitting your feedback.',
-          position: 'bottom'
+          topOffset: 80,
         });
       }
     } catch (error) {
@@ -299,7 +304,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Feedback Failed',
         text2: 'There was an error submitting your feedback.',
-        position: 'bottom'
+        topOffset: 80,
       });
     }
   };
@@ -310,13 +315,13 @@ const WorkoutScreen = () => {
             type: 'error',
             text1: 'Missing Fields',
             text2: 'Please fill out all fields before submitting.',
-            position: 'bottom',
+            topOffset: 80,
         });
         return;
     }
 
     try {
-      const token = await AsyncStorage.getItem('authToken');  
+      const token = await getItem('authToken');  
 
         // Use the endpoint to request a new workout
         const requestResponse = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
@@ -342,7 +347,7 @@ const WorkoutScreen = () => {
             type: 'success',
             text1: 'Request Submitted',
             text2: 'Your workout request has been submitted successfully.',
-            position: 'bottom',
+            topOffset: 80,
         });
 
         setTimeout(() => {
@@ -353,7 +358,7 @@ const WorkoutScreen = () => {
             type: 'error',
             text1: 'Request Failed',
             text2: 'There was an error with your workout request. Please check if you already have a pending request.',
-            position: 'bottom',
+            topOffset: 80,
         });
       }
   };  
@@ -491,10 +496,10 @@ const WorkoutScreen = () => {
             <>
               <View style={styles.planContainer}>
                 <PersonalWorkoutsHeader setViewState={setViewState} />
-                {workouts.filter(w => w.visibleTo?.toString() === userID?.toString()).length > 0 ? (
+                {workouts.filter(w => String(w.visibleTo) === String(userID)).length > 0 ? (
                   <View>
                     <WorkoutsContainer
-                      workouts={workouts.filter(w => w.visibleTo?.toString() === userID?.toString())}
+                      workouts={workouts.filter(w => String(w.visibleTo) === String(userID))}
                       onWorkoutPress={handleWorkoutPress}
                       onTrashPress={handleTrashPress}
                     />

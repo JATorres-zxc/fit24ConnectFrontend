@@ -1,13 +1,14 @@
 import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList, TouchableWithoutFeedback, Platform } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Toast from "react-native-toast-message";
 import { AntDesign, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
-import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router, useFocusEffect } from 'expo-router';
+import { getItem } from '@/utils/storageUtils';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the member object
 import { Member } from '@/types/interface';
@@ -24,15 +25,9 @@ export default function MembersScreen() {
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
 
   // Fetch the member list from the API
-  useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.11:8000';
-
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/account/members/`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -55,8 +50,11 @@ export default function MembersScreen() {
       }
     };
 
-    fetchMembers();
-  }, []);
+  useFocusEffect (
+    useCallback(() => {
+      fetchMembers();
+    }, [])
+  )
 
   useEffect(() => {
     const filtered = allMembers.filter(member => {
@@ -69,14 +67,9 @@ export default function MembersScreen() {
   const handleAssignTrainer = async () => {
     if (selectedMember) {
       try {
-        const API_BASE_URL =
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.11:8000';
+        const token = await getItem('authToken');
   
-        const token = await AsyncStorage.getItem('authToken');
-  
-        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedMember.id}/assign/`, {
+        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedMember.id}/make/`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -105,8 +98,7 @@ export default function MembersScreen() {
             type: 'success',
             text1: 'Trainer Assigned',
             text2: `${selectedMember.full_name || selectedMember.id} has been assigned as a trainer.`,
-            position: 'top',
-            topOffset: 100,
+            topOffset: 80,
           });
 
           
@@ -121,8 +113,7 @@ export default function MembersScreen() {
             type: 'error',
             text1: 'Assignment Failed',
             text2: errorData.message || 'Failed to assign trainer. Please try again.',
-            position: 'top',
-            topOffset: 100,
+            topOffset: 80,
           });
         }
       } catch (error) {
@@ -134,8 +125,7 @@ export default function MembersScreen() {
           type: 'error',
           text1: 'Error',
           text2: 'An error occurred while assigning the trainer. Please try again.',
-          position: 'top',
-          topOffset: 100,
+          topOffset: 80,
         });
       }
     }

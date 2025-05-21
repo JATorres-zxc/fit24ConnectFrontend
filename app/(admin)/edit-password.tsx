@@ -7,7 +7,8 @@ import Header from '@/components/NavigateBackHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function EditPasswordScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,7 +52,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Input Required Fields',
         text2: 'Please fill in all fields',
-        topOffset: 100,
+        topOffset: 80,
       });
       setIsSubmitting(false);
       return;
@@ -62,7 +63,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'Current password is required',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -72,7 +73,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'New password must be at least 8 characters',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -82,7 +83,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'New passwords do not match',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -92,21 +93,15 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'New password must be different from current password',
-        topOffset: 100,
+        topOffset: 80,
       });
       setIsSubmitting(false);
       return;
     }
   
     try {
-      // Get API base URL based on platform
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.5:8000';
-  
       // Get auth token
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       
       if (!token) {
         throw new Error('Authentication token not found');
@@ -147,7 +142,7 @@ export default function EditPasswordScreen() {
         type: 'success',
         text1: 'Password Updated',
         text2: 'Your password has been saved successfully',
-        topOffset: 100,
+        topOffset: 80,
       });
       
       // Short delay before navigation to allow toast to be seen
@@ -166,7 +161,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: errorMessage,
-        topOffset: 100,
+        topOffset: 80,
       });
     }
   };

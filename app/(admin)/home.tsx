@@ -1,7 +1,6 @@
-import { View, StyleSheet, Platform, } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useEffect, useCallback, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 
 import Button from '@/components/CreateAnnouncementButton';
@@ -10,7 +9,8 @@ import AdminAnnouncements from "@/components/AdminSideAnnouncementsContainer";
 
 import { Colors } from "@/constants/Colors";
 import { useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { saveItem, getItem } from '@/utils/storageUtils';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the announcement object
 import { Announcement } from "@/types/interface";
@@ -37,12 +37,7 @@ export default function AdminHome() {
   const fetchAnnouncements = async () => {
     setLoading(true);
     try {
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://172.16.15.51:8000';
-      
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -85,12 +80,7 @@ export default function AdminHome() {
   // Handle deletion
   const handleDelete = async (id: string) => {
     try {
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://172.16.15.51:8000';
-      
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/announcement/${id}/`, {
         method: 'DELETE',
         headers: {
@@ -109,7 +99,7 @@ export default function AdminHome() {
       
       // Update AsyncStorage
       const updatedAnnouncements = announcements.filter(announcement => announcement.id !== id);
-      await AsyncStorage.setItem('announcements', JSON.stringify(updatedAnnouncements));
+      await saveItem('announcements', JSON.stringify(updatedAnnouncements));
     } catch (error) {
       console.error("Error deleting announcement:", error);
     }

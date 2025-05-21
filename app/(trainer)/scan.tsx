@@ -3,7 +3,6 @@ import {
   View, 
   StyleSheet,
   Modal,
-  Platform,
   ActivityIndicator,
  } from 'react-native';
 import React, { useState, useEffect, useCallback } from "react";
@@ -11,11 +10,12 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Camera, CameraView } from 'expo-camera';
 import { router } from 'expo-router';
 
-import Header from '@/components/TrainerScanHeader';
+import Header from '@/components/ScanHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function ScanScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -56,13 +56,8 @@ export default function ScanScreen() {
     setErrorMessage(null);
 
     try {
-      const API_BASE_URL =
-          Platform.OS === 'web'
-              ? 'http://127.0.0.1:8000' // Web uses localhost
-              : 'http://172.16.15.51:8000'; // Mobile uses local network IP
-
       // Get auth token
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       if (!token) {
         throw new Error('Authentication token not found. Please log in again.');
       }
@@ -156,7 +151,7 @@ export default function ScanScreen() {
 
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Header />
+        <Header userType='trainer' />
       </View>
 
       <View style={styles.contentContainer}>

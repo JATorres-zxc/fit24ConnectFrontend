@@ -13,6 +13,7 @@ export interface Announcement {
 export type Trainer = {
   id: string;
   user: {
+    id: string;
     full_name: string;
   };
 };
@@ -175,7 +176,7 @@ export interface Trainer2{
 
 export interface Feedback {
   id: string;
-  feedback: string;
+  comment: string;
   rating: number;
   createdAt: Date;
 }
@@ -196,6 +197,7 @@ export interface MealPlan2 {
   requestee_id: string;
   requestee: string;
   status: string;
+  feedbacks: Feedback[];
 }
 
 export interface Meal2 {
@@ -262,4 +264,33 @@ export interface SelectedMemberData2 {
   fitnessGoal: string;
   intensityLevel: string;
   status: string;
+}
+
+// Header Interface
+export type HeaderPropsUserType = {
+  userType: 'member' | 'trainer';
+}
+
+export type HeaderPropsName = {
+  name: string;
+}
+
+export type HeaderPropsUserTypewName = {
+  userType: 'member' | 'trainer';
+  name: string;
+}
+
+export type HeaderPropsNavigation = {
+  screen: string;
+  prevScreen: `/${string}`;
+};
+
+// Notification Interface
+export interface Notification {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+  time: string;
+  is_read?: boolean;
 }

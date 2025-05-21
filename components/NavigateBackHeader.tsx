@@ -5,12 +5,9 @@ import { router } from "expo-router";
 import { AntDesign } from '@expo/vector-icons';
 import { Fonts } from '../constants/Fonts';
 
-interface HeaderProps {
-  screen: string;
-  prevScreen: `/${string}`;
-}
+import { HeaderPropsNavigation } from '@/types/interface';
 
-export default function Header({ screen, prevScreen }: HeaderProps) {
+export default function Header({ screen, prevScreen }: HeaderPropsNavigation) {
 
   return (
     <SafeAreaView>

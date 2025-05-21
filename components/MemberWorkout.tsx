@@ -19,7 +19,7 @@ const MemberWorkout: React.FC<MemberWorkoutProps> = ({ workout, requesteeName, o
         <View style={styles.container}>
             <View style={styles.header}>
             <Image
-                source={require("@/assets/images/icon.png")}
+                source={require("@/assets/images/darkicon.png")}
                 style={styles.image}
             />
                 <View style={styles.textContainer}>
@@ -51,10 +51,9 @@ const MemberWorkout: React.FC<MemberWorkoutProps> = ({ workout, requesteeName, o
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         backgroundColor: Colors.bg,
-        padding: 16,
-        marginTop: 15,
+        padding: 10,
+        marginTop: 5,
     },
     editIcon: {
         alignSelf: "flex-end",

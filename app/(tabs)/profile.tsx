@@ -3,20 +3,22 @@ import { Text, View, StyleSheet, Image, ScrollView, Platform, ActivityIndicator,
 import { router, useFocusEffect } from 'expo-router';
 import { useLocalSearchParams } from "expo-router";
 import Toast from "react-native-toast-message";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveItem, getItem, deleteItem } from '@/utils/storageUtils';
 
 import Header from '@/components/ProfileHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { FontAwesome6 } from '@expo/vector-icons';
+
+import { API_BASE_URL } from '@/constants/ApiConfig';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
-import { FontAwesome6 } from '@expo/vector-icons';
 
 // Import interface for the profile object
 import { MemberProfileDetails } from '@/types/interface';
 
 export default function ProfileScreen() {
   const [profile, setProfile] = useState<MemberProfileDetails>({
-    image: require("@/assets/images/icon.png"),
+    image: require("@/assets/images/darkicon.png"),
     username: '',
     membershipType: '',
     membershipStatus: '',
@@ -33,31 +35,20 @@ export default function ProfileScreen() {
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const params = useLocalSearchParams();
 
-  // useEffect(() => {
-  //   if (params.showToast === "true") {
-  //     setTimeout(() => {
-  //       Toast.show({
-  //         type: "error",
-  //         text1: "Profile Incomplete",
-  //         text2: "Please complete all profile details before proceeding.",
-  //         position: 'bottom'
-  //       });
-  //     }, 2500); // Adding a short delay to ensure Toast renders properly
-  //   }
-  // }, [params.showToast]);
+  const formatMembershipType = (type: string) => {
+    if (!type) return '';
+    const match = type.match(/^tier(\d+)$/i);
+    return match ? `Tier ${match[1]}` : type;
+  };
 
   const fetchProfile = async () => {
     try {
       setLoading(true);
       setError('');
-      
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.11:8000';
 
-      const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
+      const token = await getItem('authToken');
+      
+      const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -74,9 +65,9 @@ export default function ProfileScreen() {
       setProfile({
         image: data.image 
           ? { uri: `${API_BASE_URL}${data.image}` } // Assuming image is a URL path
-          : require("@/assets/images/icon.png"),
+          : require("@/assets/images/darkicon.png"),
         username: data.username || '',
-        membershipType: data.type_of_membership || '',
+        membershipType: formatMembershipType(data.type_of_membership) || '',
         membershipStatus: data.membership_status || '',
         fullName: data.full_name || '',
         email: data.email || '',
@@ -88,21 +79,21 @@ export default function ProfileScreen() {
       });
 
       // Cache the profile data locally
-      await AsyncStorage.setItem('profile', JSON.stringify(data));
+      await saveItem('profile', JSON.stringify(data));
     } catch (error) {
       console.error('Error fetching profile:', error);
       setError('Failed to load profile data');
       
       // Try to load cached profile if API fails
       try {
-        const cachedProfile = await AsyncStorage.getItem('profile');
+        const cachedProfile = await getItem('profile');
         if (cachedProfile) {
           const parsed = JSON.parse(cachedProfile);
           setProfile({
             ...parsed,
             image: parsed.image 
               ? { uri: parsed.image }
-              : require("@/assets/images/icon.png"),
+              : require("@/assets/images/darkicon.png"),
           });
           setError('Using cached data (offline mode)');
         }
@@ -114,26 +105,12 @@ export default function ProfileScreen() {
     }
   };
 
-  // Fetch profile on component mount
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  // Refresh profile when screen comes into focus
+  // Fetch profile data every time the screen is focused
+  // This ensures that the profile data is always up-to-date
   useFocusEffect(
     useCallback(() => {
-      if (params.showToast === "true") {
-        setTimeout(() => {
-          Toast.show({
-            type: "error",
-            text1: "Profile Incomplete",
-            text2: "Please complete all profile details before proceeding.",
-            position: 'bottom'
-          });
-        }, 500); // Adding a short delay to ensure Toast renders properly
-      }
       fetchProfile();
-    }, [params.showToast])
+    }, [])
   );
 
   const handleLogout = () => {
@@ -142,14 +119,17 @@ export default function ProfileScreen() {
   
     const handleConfirmLogout = async () => {
       try {
-        const API_BASE_URL =
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.11:8000';
-        
-        const refreshToken = await AsyncStorage.getItem('refreshToken');
+        const refreshToken = await getItem('refreshToken');
+        const accessToken = await getItem('authToken');
+
         if (!refreshToken) {
           console.error('No refresh token found.');
+          setLogoutModalVisible(false);
+          return;
+        }
+
+        if (!accessToken) {
+          console.error('No access token found.');
           setLogoutModalVisible(false);
           return;
         }
@@ -158,6 +138,7 @@ export default function ProfileScreen() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
           },
           body: JSON.stringify({ refresh: refreshToken}),
         });
@@ -169,10 +150,10 @@ export default function ProfileScreen() {
           console.error('Logout API call failed:', errorData);
         }
   
-        // Clear all authentication tokens from AsyncStorage
-        await AsyncStorage.removeItem('accessToken');
-        await AsyncStorage.removeItem('refreshToken');
-        await AsyncStorage.removeItem('userID');
+        // Clear all authentication tokens
+        await deleteItem('accessToken');
+        await deleteItem('refreshToken');
+        await deleteItem('userID');
         
         setLogoutModalVisible(false);
         router.push('/login');
@@ -335,9 +316,9 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   profileImage: {
-    width: 250,
-    height: 250,
-    borderRadius: 175,
+    width: 200,
+    height: 200,
+    borderRadius: "50%",
     resizeMode: "cover",
   },
   editProfile: {
@@ -346,7 +327,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     position: 'absolute',
-    bottom: 5,
+    bottom: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: Colors.icongray,

@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Alert, Platform } from "react-native";
+import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity } from "react-native";
 import { useState, useEffect } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -6,7 +6,8 @@ import Toast from "react-native-toast-message";
 import Header from "@/components/NavigateBackHeader";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getItem } from '@/utils/storageUtils';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function CreateAnnouncement() {
   const { id, title, content } = useLocalSearchParams();
@@ -27,8 +28,7 @@ export default function CreateAnnouncement() {
         type: 'error',
         text1: 'Error',
         text2: 'Please enter a title for the announcement',
-        position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -38,21 +38,15 @@ export default function CreateAnnouncement() {
         type: 'error',
         text1: 'Error',
         text2: 'Please enter message content of the announcement',
-        position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
 
     try {
       setIsLoading(true);
-
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000' // Web uses localhost
-          : 'http://172.16.15.51:8000'; // Mobile uses local network IP (adjust as needed)
     
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/announcement/${id}/`, {
         method: 'PUT',
         headers: {
@@ -74,8 +68,7 @@ export default function CreateAnnouncement() {
         type: 'success',
         text1: 'Success',
         text2: 'Announcement updated successfully',
-        position: 'top',
-        topOffset: 100,
+        topOffset: 80,
         visibilityTime: 2000,
         autoHide: true,
         onHide: () => router.back()
@@ -85,8 +78,7 @@ export default function CreateAnnouncement() {
         type: 'error',
         text1: 'Error',
         text2: 'Failed to update announcement. Please try again.',
-        position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
       console.error("Update error:", error);
     } finally {

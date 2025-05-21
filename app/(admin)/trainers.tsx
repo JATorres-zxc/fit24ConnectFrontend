@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Text, View, StyleSheet, FlatList, TextInput, Modal, TouchableOpacity, TouchableWithoutFeedback, Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem } from '@/utils/storageUtils';
 
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { Feather, AntDesign, FontAwesome6 } from '@expo/vector-icons';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the trainer object
 import { Trainer } from '@/types/interface';
+import { useFocusEffect } from 'expo-router';
 
 export default function TrainersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,15 +20,9 @@ export default function TrainersScreen() {
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null> (null);
 
   // Fetch the trainer list from the API
-  useEffect(() => {
     const fetchTrainers = async () => {
       try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.9:8000';
-
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/account/trainers/`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -49,8 +45,11 @@ export default function TrainersScreen() {
       }
     };
 
-    fetchTrainers();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchTrainers();
+    }, [])
+  );
 
   // Filter trainers when search query changes or when trainers change
   useEffect(() => {
@@ -69,14 +68,9 @@ export default function TrainersScreen() {
   const handleRemoveTrainer = async () => {
     if (selectedTrainer) {
       try {
-        const API_BASE_URL =
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.9:8000';
+        const token = await getItem('authToken');
   
-        const token = await AsyncStorage.getItem('authToken');
-  
-        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedTrainer.id}/remove/`, {
+        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedTrainer.user.id}/remove/`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
