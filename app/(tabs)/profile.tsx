@@ -41,7 +41,8 @@ export default function ProfileScreen() {
       setError('');
 
       const token = await AsyncStorage.getItem('authToken');
-      console.log('Token:', token);
+      const refreshToken = await AsyncStorage.getItem('refreshToken');
+      console.log('Access Token:', token, 'refreshToken:', refreshToken);
       
       const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
         headers: {

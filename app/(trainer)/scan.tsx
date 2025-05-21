@@ -3,7 +3,6 @@ import {
   View, 
   StyleSheet,
   Modal,
-  Platform,
   ActivityIndicator,
  } from 'react-native';
 import React, { useState, useEffect, useCallback } from "react";
@@ -11,7 +10,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Camera, CameraView } from 'expo-camera';
 import { router } from 'expo-router';
 
-import Header from '@/components/TrainerScanHeader';
+import Header from '@/components/ScanHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
@@ -152,7 +151,7 @@ export default function ScanScreen() {
 
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Header />
+        <Header userType='trainer' />
       </View>
 
       <View style={styles.contentContainer}>

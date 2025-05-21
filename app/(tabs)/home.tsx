@@ -151,7 +151,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <Header name={firstName} />
+      <Header userType='member' name={firstName} />
 
       <View style={styles.announcementsContainer}>
         {loading ? (

@@ -274,6 +274,11 @@ export type HeaderPropsName = {
   name: string;
 }
 
+export type HeaderPropsUserTypewName = {
+  userType: 'member' | 'trainer';
+  name: string;
+}
+
 export type HeaderPropsNavigation = {
   screen: string;
   prevScreen: `/${string}`;
