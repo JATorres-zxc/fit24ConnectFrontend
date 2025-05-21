@@ -68,6 +68,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'No Trainers Found!',
         text2: `${error}`,
+        topOffset: 80,
       });
     }
   };
@@ -133,6 +134,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'No Meal Plans Found!',
         text2: `${error}`,
+        topOffset: 80,
       });
 
       if (error instanceof Error) {
@@ -164,6 +166,7 @@ const MealPlanScreen = () => {
             type: 'error',
             text1: 'Missing Fields',
             text2: 'Please fill out all fields before submitting.',
+            topOffset: 80,
         });
         return;
     }
@@ -223,6 +226,7 @@ const MealPlanScreen = () => {
             type: 'success',
             text1: 'Request Submitted',
             text2: 'Your meal plan request has been submitted successfully.',
+            topOffset: 80,
         });
 
         setTimeout(() => {
@@ -234,6 +238,7 @@ const MealPlanScreen = () => {
             type: 'error',
             text1: 'Request Failed',
             text2: 'There was an error with your meal plan request. Please check if you already have a pending request.',
+            topOffset: 80,
         });
       }
   };
@@ -244,6 +249,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'Missing Fields',
         text2: 'Please fill out all fields before submitting feedback.',
+        topOffset: 80,
       });
       return;
     }
@@ -270,6 +276,7 @@ const MealPlanScreen = () => {
           type: 'info',
           text1: 'Feedback Sent',
           text2: 'Your feedback has been sent successfully.',
+          topOffset: 80,
         });
         setViewState("plan");
         setFeedback("");
@@ -279,6 +286,7 @@ const MealPlanScreen = () => {
           type: 'error',
           text1: 'Feedback Failed',
           text2: 'There was an error submitting your feedback.',
+          topOffset: 80,
         });
       }
     } catch (error) {
@@ -286,6 +294,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'Feedback Failed',
         text2: 'There was an error submitting your feedback.',
+        topOffset: 80,
       });
     }
   };
@@ -312,6 +321,7 @@ const MealPlanScreen = () => {
           type: 'success',
           text1: 'Meal Plan Deleted',
           text2: 'Your meal plan has been deleted successfully.',
+          topOffset: 80,
         });
 
         // TEMPORARY: DELETE SNIPPET WHEN API IS AVAILABLE.
@@ -323,6 +333,7 @@ const MealPlanScreen = () => {
           type: 'error',
           text1: 'Delete Failed',
           text2: 'There was an error deleting your meal plan.',
+          topOffset: 80,
         });
       }
     } catch (error) {
@@ -330,6 +341,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'Delete Failed',
         text2: 'There was an error deleting your meal plan.',
+        topOffset: 80,
       });
     }
   };

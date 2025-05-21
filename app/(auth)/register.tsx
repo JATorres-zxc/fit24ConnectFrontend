@@ -45,6 +45,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Email is required',
+                topOffset: 80,
             });
             return;
         }
@@ -54,6 +55,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Invalid email format',
+                topOffset: 80,
             });
             return;
         }
@@ -62,14 +64,16 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Password is required',
+                topOffset: 80,
             });
             return;
         }
-        if (sanitizedPassword.length < 6) {
+        if (sanitizedPassword.length < 8) {
             Toast.show({
                 type: 'error',
                 text1: 'Validation Error',
-                text2: 'Password must be at least 6 characters',
+                text2: 'Password must be at least 8 characters',
+                topOffset: 80,
             });
             return;
         }
@@ -78,6 +82,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Passwords do not match',
+                topOffset: 80,
             });
             return;
         }
@@ -106,6 +111,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     type: 'success',
                     text1: 'Registration Successful',
                     text2: 'You have successfully registered.',
+                    topOffset: 80,
                 });
                 setTimeout(() => {
                     router.push('/(auth)/login');
@@ -115,6 +121,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     type: 'error',
                     text1: 'Registration Failed',
                     text2: 'There was an error with your registration.',
+                    topOffset: 80,
                 });
             }
         } catch (error) {
@@ -122,6 +129,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Registration Failed',
                 text2: 'An error occurred. Please try again.',
+                topOffset: 80,
             });
         }
     };

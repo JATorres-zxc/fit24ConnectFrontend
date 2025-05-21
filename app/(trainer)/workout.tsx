@@ -155,6 +155,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'No Workout Requests Found!',
         text2: `${error}`,
+        topOffset: 80,
       });
     }
   };
@@ -233,6 +234,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'No Member Data Found!',
         text2: `${error}`,
+        topOffset: 80,
       });
     }
   };
@@ -361,6 +363,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'No Workouts Found!',
         text2: `${error}`,
+        topOffset: 80,
       });
 
       if (error instanceof Error) {
@@ -397,6 +400,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Empty Workout',
         text2: 'You must have at least one exercise before publishing the workout.',
+        topOffset: 80,
       });
       return;
     }
@@ -411,6 +415,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Missing Fields',
         text2: `Please fill out all fields for ${invalidExercises.length} exercise(s).`,
+        topOffset: 80,
       });
       return;
     }
@@ -507,6 +512,7 @@ const WorkoutScreen = () => {
         type: 'info',
         text1: 'Workout Plan Published',
         text2: 'Your workout plan has been published successfully.',
+        topOffset: 80,
       });
 
       setViewState('');
@@ -517,6 +523,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: "Publish Failed",
         text2: "An unexpected error occurred. Please try again later.",
+        topOffset: 80,
       });
     }
   };        
@@ -538,6 +545,7 @@ const WorkoutScreen = () => {
             type: 'success',
             text1: 'Workout Deleted',
             text2: 'The workout has been deleted successfully.',
+            topOffset: 80,
           });
   
           setWorkouts((prevWorkouts) => prevWorkouts.filter(w => w.id !== workout.id)); // Remove the workout from the list
@@ -554,6 +562,7 @@ const WorkoutScreen = () => {
             type: 'error',
             text1: 'Delete Failed',
             text2: 'There was an error deleting your workout.',
+            topOffset: 80,
           });
         }
       } catch (error) {
@@ -561,6 +570,7 @@ const WorkoutScreen = () => {
           type: 'error',
           text1: 'Delete Failed',
           text2: 'There was an error deleting your workout.',
+          topOffset: 80,
         });
       }
     };

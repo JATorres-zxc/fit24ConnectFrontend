@@ -149,7 +149,7 @@ export default function EditProfileScreen() {
       text2: message,
       position: 'top',
       visibilityTime: 4000,
-      topOffset: 100,
+      topOffset: 80,
     });
   };
 
@@ -233,7 +233,7 @@ export default function EditProfileScreen() {
         text1: 'Profile Updated',
         text2: 'Your changes have been saved successfully.',
         position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
   
       setTimeout(() => {
@@ -251,7 +251,7 @@ export default function EditProfileScreen() {
         type: 'error',
         text1: 'Update Failed',
         text2: errorMessage,
-        topOffset: 100,
+        topOffset: 80,
       });
     }
   };
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     alignItems: 'center',
-    marginTop: 10,
+    marginBottom: 30,
   },
   button: {
     backgroundColor: Colors.gold,

@@ -43,6 +43,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Email is required',
+                topOffset: 80,
             });
             return;
         }
@@ -51,6 +52,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Password is required',
+                topOffset: 80,
             });
             return;
         }
@@ -97,6 +99,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     type: 'error',
                     text1: 'Login Failed',
                     text2: result.message || 'Invalid username or password.',
+                    topOffset: 80,
                     visibilityTime: 1500,
                 });
                 setError(result.message || 'Invalid username or password.');
@@ -106,6 +109,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 type: 'error',
                 text1: 'Login Failed',
                 text2: 'An error occurred. Please try again.',
+                topOffset: 80,
             });
             setError('An error occurred. Please try again.');
         }

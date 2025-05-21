@@ -69,7 +69,7 @@ export default function MembersScreen() {
       try {
         const token = await getItem('authToken');
   
-        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedMember.id}/assign/`, {
+        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedMember.id}/make/`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -98,8 +98,7 @@ export default function MembersScreen() {
             type: 'success',
             text1: 'Trainer Assigned',
             text2: `${selectedMember.full_name || selectedMember.id} has been assigned as a trainer.`,
-            position: 'top',
-            topOffset: 100,
+            topOffset: 80,
           });
 
           
@@ -114,8 +113,7 @@ export default function MembersScreen() {
             type: 'error',
             text1: 'Assignment Failed',
             text2: errorData.message || 'Failed to assign trainer. Please try again.',
-            position: 'top',
-            topOffset: 100,
+            topOffset: 80,
           });
         }
       } catch (error) {
@@ -127,8 +125,7 @@ export default function MembersScreen() {
           type: 'error',
           text1: 'Error',
           text2: 'An error occurred while assigning the trainer. Please try again.',
-          position: 'top',
-          topOffset: 100,
+          topOffset: 80,
         });
       }
     }

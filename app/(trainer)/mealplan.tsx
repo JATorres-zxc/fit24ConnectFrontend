@@ -162,6 +162,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'No Meal Plan Requests Found!',
         text2: `${error}`,
+        topOffset: 80,
       });
     }
   };
@@ -236,6 +237,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'No Meal Plans Found!',
         text2: `${error}`,
+        topOffset: 80,
       });
     }
   };
@@ -259,6 +261,7 @@ const MealPlanScreen = () => {
             type: 'error',
             text1: 'Empty Meal Plan',
             text2: 'You must add at least one meal before publishing the meal plan.',
+            topOffset: 80,
         });
         return;
     }
@@ -277,6 +280,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'Missing Fields',
         text2: `Please fill out all fields for ${invalidMeals.length} meal(s).`,
+        topOffset: 80,
       });
       return;
     }
@@ -291,6 +295,7 @@ const MealPlanScreen = () => {
           type: 'error',
           text1: 'Missing Member ID',
           text2: 'Please select a member before publishing the meal plan.',
+          topOffset: 80,
         });
         return;
       }
@@ -380,6 +385,7 @@ const MealPlanScreen = () => {
         type: 'info',
         text1: 'Meal Plan Published',
         text2: 'Your meal plan has been published successfully.',
+        topOffset: 80,
       });
 
       setViewState('');
@@ -390,6 +396,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: "Publish Failed",
         text2: "An unexpected error occurred. Please try again later.",
+        topOffset: 80,
       });
     }
   };

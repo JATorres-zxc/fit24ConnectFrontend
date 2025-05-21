@@ -28,8 +28,7 @@ export default function CreateAnnouncement() {
         type: 'error',
         text1: 'Error',
         text2: 'Please enter a title for the announcement',
-        position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -39,8 +38,7 @@ export default function CreateAnnouncement() {
         type: 'error',
         text1: 'Error',
         text2: 'Please enter message content of the announcement',
-        position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -70,8 +68,7 @@ export default function CreateAnnouncement() {
         type: 'success',
         text1: 'Success',
         text2: 'Announcement updated successfully',
-        position: 'top',
-        topOffset: 100,
+        topOffset: 80,
         visibilityTime: 2000,
         autoHide: true,
         onHide: () => router.back()
@@ -81,8 +78,7 @@ export default function CreateAnnouncement() {
         type: 'error',
         text1: 'Error',
         text2: 'Failed to update announcement. Please try again.',
-        position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
       console.error("Update error:", error);
     } finally {

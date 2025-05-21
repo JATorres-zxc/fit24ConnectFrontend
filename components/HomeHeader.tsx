@@ -29,7 +29,7 @@ export default function Header({ userType, name }: HeaderPropsUserTypewName) {
     <SafeAreaView>
       <View style={styles.header}>
         <Text style={styles.headerText}>
-          Back to the Grind,{' '}
+          Back to the Grind
           <Text style={{ fontFamily: Fonts.semiboldItalic }}>{name}!</Text>
         </Text>
 

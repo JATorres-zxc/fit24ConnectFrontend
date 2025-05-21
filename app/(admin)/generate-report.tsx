@@ -33,7 +33,7 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Incomplete Fields',
         text2: 'Please select a report type',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -43,7 +43,7 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Incomplete Fields',
         text2: 'Please select both dates.',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -53,7 +53,7 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Invalid Date Range',
         text2: 'End date cannot be earlier than start date.',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -65,7 +65,7 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Invalid End Date',
         text2: 'End date cannot be later than today.',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -108,7 +108,7 @@ export default function ReportsFormScreen() {
         type: 'success',
         text1: 'Report Generated',
         text2: 'Your report has been created successfully',
-        topOffset: 100,
+        topOffset: 80,
         visibilityTime: 2000,
         autoHide: true,
         onHide: () => router.push('/(admin)/reports')
@@ -120,7 +120,7 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Generation Failed',
         text2: error instanceof Error ? error.message : 'Failed to create report',
-        topOffset: 100,
+        topOffset: 80,
       });
     } finally {
       setIsSubmitting(false);

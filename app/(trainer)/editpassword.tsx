@@ -55,7 +55,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Input Required Fields',
         text2: 'Please fill in all fields',
-        topOffset: 100,
+        topOffset: 80,
       });
       setIsSubmitting(false);
       return;
@@ -66,7 +66,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'Current password is required',
-        topOffset: 100,
+        topOffset: 80,
       });
       setIsSubmitting(false);
       return;
@@ -77,7 +77,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'New password must be at least 8 characters',
-        topOffset: 100,
+        topOffset: 80,
       });
       setIsSubmitting(false);
       return;
@@ -88,7 +88,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'New passwords do not match',
-        topOffset: 100,
+        topOffset: 80,
       });
       setIsSubmitting(false);
       return;
@@ -99,7 +99,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'New password must be different from current password',
-        topOffset: 100,
+        topOffset: 80,
       });
       setIsSubmitting(false);
       return;
@@ -149,7 +149,7 @@ export default function EditPasswordScreen() {
         type: 'success',
         text1: 'Password Updated',
         text2: 'Your password has been saved successfully',
-        topOffset: 100,
+        topOffset: 80,
       });
       
       // Short delay before navigation to allow toast to be seen
@@ -168,7 +168,7 @@ export default function EditPasswordScreen() {
         type: 'error',
         text1: 'Error',
         text2: errorMessage,
-        topOffset: 100,
+        topOffset: 80,
       });
     }
   };

@@ -138,7 +138,7 @@
         text2: message,
         position: 'top',
         visibilityTime: 4000,
-        topOffset: 100,
+        topOffset: 80,
       });
     };
 
@@ -213,7 +213,7 @@
           text1: 'Profile Updated',
           text2: 'Your changes have been saved successfully.',
           position: 'top',
-          topOffset: 100,
+          topOffset: 80,
         });
     
         setTimeout(() => {
@@ -232,7 +232,7 @@
           type: 'error',
           text1: 'Update Failed',
           text2: errorMessage,
-          topOffset: 100,
+          topOffset: 80,
         });
       }
     };
@@ -453,12 +453,14 @@
     },
     buttonContainer: {
       alignItems: 'center',
+      marginBottom: 30,
     },
     button: {
       backgroundColor: Colors.gold,
       padding: 12,
       borderRadius: 10,
       alignItems: "center",
+      width: '50%',
     },
     buttonText: {
       fontFamily: Fonts.regular,

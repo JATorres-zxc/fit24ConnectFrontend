@@ -38,7 +38,7 @@ export default function CreateAnnouncement() {
         text1: 'Error',
         text2: 'Please enter a title for the announcement',
         position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -49,7 +49,7 @@ export default function CreateAnnouncement() {
         text1: 'Error',
         text2: 'Please enter message content for the announcement',
         position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -94,7 +94,7 @@ export default function CreateAnnouncement() {
         text1: 'Success',
         text2: 'Announcement created successfully',
         position: 'top',
-        topOffset: 100,
+        topOffset: 80,
         visibilityTime: 10000,
         autoHide: true,
         onHide: () => router.push('/(admin)/home') // Navigate back after toast disappears
@@ -106,7 +106,7 @@ export default function CreateAnnouncement() {
         text1: 'Error',
         text2: typeof error === 'object' && error !== null && 'message' in error ? String(error.message) : 'Failed to create announcement. Please try again.',
         position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
       console.error("Create error:", error);
     } finally {

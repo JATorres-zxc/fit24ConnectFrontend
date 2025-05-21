@@ -21,24 +21,6 @@ export default function Home() {
   const params = useLocalSearchParams();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [firstName, setFirstName] = useState("");
-
-  // Load name from params
-  useEffect(() => {
-    const handleName = async () => {
-      if (params.full_name && typeof params.full_name === "string") {
-        await saveItem("full_name", params.full_name);
-        setFirstName(params.full_name.split(" ")[0]);
-      } else {
-        const storedName = await getItem("full_name");
-        if (storedName) {
-          setFirstName(storedName.split(" ")[0]);
-        }
-      }
-    };
-
-    handleName();
-  }, [params.full_name]);
 
   // Show toast after login
   useEffect(() => {
@@ -47,14 +29,14 @@ export default function Home() {
         type: "success",
         text1: "Login Success!",
         text2: `Logged in as ${params.full_name}`,
+        topOffset: 80,
         visibilityTime: 1500
       });
     }
   }, [params.showToast, params.full_name]);
 
   // Profile verification
-  useEffect(() => {
-    const checkProfileCompletion = async () => {
+  const checkProfileCompletion = async () => {
       try {
         const profileData = await getItem("profile");
         if (profileData) {
@@ -84,25 +66,23 @@ export default function Home() {
             type: "error",
             text1: "Profile Incomplete",
             text2: "Please complete all profile details before proceeding.",
-            visibilityTime: 5000, // Show the toast for 5 seconds
+            topOffset: 80,
+            visibilityTime: 2000, // Show the toast for 2 seconds
           });
 
-          // Delay the redirection by 5 seconds
+          // Delay the redirection by 2 seconds
           setTimeout(() => {
             router.push({
               pathname: '/profile',
               params: { showToast: 'true' },
             });
-          }, 2500); // 2.5-second delay
+          }, 2000); // 2-second delay
         }
       }
     } catch (error) {
       console.error("Error checking profile completeness:", error);
     }
   };
-
-    checkProfileCompletion();
-  }, []);
 
   // Fetch announcements function
   const fetchAnnouncements = async () => {
@@ -137,22 +117,24 @@ export default function Home() {
         type: "error",
         text1: "Failed to load announcements",
         text2: "Please try again later",
+        topOffset: 80,
       });
     } finally {
       setLoading(false);
     }
   };
   
-  // Fetch announcements when screen comes into focus
+  // Fetch announcements and check profile completion when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchAnnouncements();
+      checkProfileCompletion();
     }, [])
   );
 
   return (
     <View style={styles.container}>
-      <Header userType='member' name={firstName} />
+      <Header userType='member' name='' />
 
       <View style={styles.announcementsContainer}>
         {loading ? (

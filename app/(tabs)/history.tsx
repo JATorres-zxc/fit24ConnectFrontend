@@ -49,6 +49,7 @@ export default function HistoryScreen() {
           type: "error",
           text1: "Failed to load access logs",
           text2: "Please try again later",
+          topOffset: 80,
         });
       } finally {
         setLoading(false);

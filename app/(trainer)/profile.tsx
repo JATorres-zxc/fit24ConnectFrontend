@@ -39,6 +39,7 @@ export default function ProfileScreen() {
           type: "error",
           text1: "Profile Incomplete",
           text2: "Please complete all profile details before proceeding.",
+          topOffset: 80,
         });
       }, 4000); // Adding a short delay to ensure Toast renders properly
     }

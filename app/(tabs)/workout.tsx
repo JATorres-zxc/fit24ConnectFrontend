@@ -73,6 +73,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'No Trainers Found!',
         text2: `${error}`,
+        topOffset: 80,
       });
     }
   };
@@ -130,6 +131,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'No Workouts Found!',
         text2: `${error}`,
+        topOffset: 80,
       });
 
       if (error instanceof Error) {
@@ -209,6 +211,7 @@ const WorkoutScreen = () => {
           type: 'success',
           text1: 'Workout Deleted',
           text2: 'Your workout has been deleted successfully.',
+          topOffset: 80,
         });
 
         setWorkouts((prevWorkouts) => prevWorkouts.filter(w => w.id !== workout.id)); // Remove the workout from the list
@@ -225,6 +228,7 @@ const WorkoutScreen = () => {
           type: 'error',
           text1: 'Delete Failed',
           text2: 'There was an error deleting your workout.',
+          topOffset: 80,
         });
       }
     } catch (error) {
@@ -232,6 +236,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Delete Failed',
         text2: 'There was an error deleting your workout.',
+        topOffset: 80,
       });
     }
   };
@@ -254,6 +259,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Missing Fields',
         text2: 'Please fill out all fields before submitting feedback.',
+        topOffset: 80,
       });
       return;
     }
@@ -280,6 +286,7 @@ const WorkoutScreen = () => {
           type: 'info',
           text1: 'Feedback Sent',
           text2: 'Your feedback has been sent successfully.',
+          topOffset: 80,
         });
         setViewState("plan");
         setFeedback("");
@@ -289,6 +296,7 @@ const WorkoutScreen = () => {
           type: 'error',
           text1: 'Feedback Failed',
           text2: 'There was an error submitting your feedback.',
+          topOffset: 80,
         });
       }
     } catch (error) {
@@ -296,6 +304,7 @@ const WorkoutScreen = () => {
         type: 'error',
         text1: 'Feedback Failed',
         text2: 'There was an error submitting your feedback.',
+        topOffset: 80,
       });
     }
   };
@@ -306,6 +315,7 @@ const WorkoutScreen = () => {
             type: 'error',
             text1: 'Missing Fields',
             text2: 'Please fill out all fields before submitting.',
+            topOffset: 80,
         });
         return;
     }
@@ -337,6 +347,7 @@ const WorkoutScreen = () => {
             type: 'success',
             text1: 'Request Submitted',
             text2: 'Your workout request has been submitted successfully.',
+            topOffset: 80,
         });
 
         setTimeout(() => {
@@ -347,6 +358,7 @@ const WorkoutScreen = () => {
             type: 'error',
             text1: 'Request Failed',
             text2: 'There was an error with your workout request. Please check if you already have a pending request.',
+            topOffset: 80,
         });
       }
   };  
