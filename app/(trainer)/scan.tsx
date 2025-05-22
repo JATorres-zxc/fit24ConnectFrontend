@@ -5,17 +5,18 @@ import {
   Modal,
   ActivityIndicator,
  } from 'react-native';
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Camera, CameraView } from 'expo-camera';
 import { router } from 'expo-router';
+import { getItem } from '@/utils/storageUtils';
 
 import Header from '@/components/ScanHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+
+import { API_BASE_URL } from '@/constants/ApiConfig';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
-import { getItem } from '@/utils/storageUtils';
-import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function ScanScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -23,9 +24,9 @@ export default function ScanScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [accessStatus, setAccessStatus] = useState<'granted' | 'denied' | null>(null);
-  const [scanData, setScanData] = useState<{ type: string; data: string } | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const qrCodeProcessed = useRef(false);
 
   useEffect(() => {
     const getCameraPermissions = async () => {
@@ -41,17 +42,19 @@ export default function ScanScreen() {
       setIsCameraActive(true); // Activate camera when screen is focused
       setAccessStatus(null); // Reset access status when returning to the scan page
       setScanned(false);
-      setScanData(null);
       setErrorMessage(null);
+      qrCodeProcessed.current = false; // Reset the processed state when screen comes into focus
       return () => setIsCameraActive(false); // Deactivate camera when leaving
     }, [])
   );
 
   const handleBarcodeScanned = async ({ type, data }: { type: string; data: string }) => {
-    if (isLoading || scanned) return;
+    // Prevent multiple scans of the same QR code or during loading
+    if (isLoading || scanned || qrCodeProcessed.current) return;
 
+    // Set ref to true to prevent further processing until reset
+    qrCodeProcessed.current = true;
     setScanned(true);
-    setScanData({ type, data });
     setIsLoading(true);
     setErrorMessage(null);
 
@@ -115,6 +118,13 @@ export default function ScanScreen() {
     }
   };
 
+  // Reset scanner manually if needed
+  const resetScanner = () => {
+    qrCodeProcessed.current = false;
+    setScanned(false);
+    setErrorMessage(null);
+  };
+
   // Auto-close popup and navigate after a delay
   useEffect(() => {
     let navigationTimer: number | undefined;
@@ -122,15 +132,14 @@ export default function ScanScreen() {
     if (showPopup) {
       navigationTimer = setTimeout(() => {
         setShowPopup(false);
-        setScanned(false);
-        setScanData(null);
-        setErrorMessage(null);
         
         // Navigate based on access status
         if (accessStatus === "granted") {
-          router.replace("/(tabs)/home");
+          router.replace("/(trainer)/home");
         } else { 
-          router.replace("/(tabs)/scan");
+          // Reset scanner state only on access denied to allow new scan attempt
+          resetScanner();
+          // Stay on scan screen
         }
       }, 2000); // 2 second delay before automatic navigation
     }
@@ -148,7 +157,6 @@ export default function ScanScreen() {
   }
 
   return (
-
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Header userType='trainer' />
@@ -158,7 +166,7 @@ export default function ScanScreen() {
         <View style={styles.scannercontainer}>
           {isCameraActive && ( // Render camera only when active
             <CameraView
-              onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+              onBarcodeScanned={qrCodeProcessed.current ? undefined : handleBarcodeScanned}
               barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
               style={{ width: '100%', height: '100%' }}
             />
@@ -200,7 +208,7 @@ export default function ScanScreen() {
             <Text style={styles.statusMessage}>
               {accessStatus === 'granted' 
                 ? 'You may now enter the facility.' 
-                : errorMessage || 'An error occured during verification.'}
+                : errorMessage || 'An error occurred during verification.'}
             </Text>
           </View>
         </View>

@@ -3,7 +3,6 @@ import {
   View, 
   StyleSheet,
   Modal,
-  Platform,
   ActivityIndicator,
  } from 'react-native';
 import React, { useState, useEffect, useCallback, useRef } from "react";
