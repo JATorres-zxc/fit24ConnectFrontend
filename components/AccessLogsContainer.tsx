@@ -24,7 +24,7 @@ export default function AccessLogsContainer({ accessLogs }: Props) {
       const dateObj = new Date(log.timestamp);
       return {
         ...log,
-        date: format(dateObj, 'dd/MM/yyyy'),
+        date: format(dateObj, 'MMMM d, yyyy'),
         time: format(dateObj, 'hh:mm a'),
       };
     });

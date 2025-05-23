@@ -293,4 +293,5 @@ export interface Notification {
   date: string;
   time: string;
   is_read?: boolean;
+  timestamp?: number;
 }
