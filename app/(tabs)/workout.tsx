@@ -387,7 +387,7 @@ const WorkoutScreen = () => {
                     onValueChange={(value) => setTrainer(value)}
                     items={trainers.map((trainer) => ({
                       label: trainer.user.full_name,
-                      value: trainer.id,
+                      value: trainer.user.id,
                     }))}
                     style={trainerpickerSelectStyles}
                     value={trainer}

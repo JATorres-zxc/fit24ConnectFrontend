@@ -260,14 +260,18 @@ const WorkoutScreen = () => {
       const programsData = await response.json();
 
       // Filter only completed programs where the user is the trainer or it's public (no requestee)
-      const userPrograms = programsData.filter(
+      const pendingPrograms = programsData.filter(
         (program: any) =>
-          // program.status === "completed" &&
+          program.status !== "completed" &&
           (String(program.trainer_id) === String(userID) || program.requestee === null)
       );
-
-      console.log("Programs Data: ", programsData);
-      console.log("USERID: ", userID);
+      
+      // Filter only completed programs where the user is the trainer or it's public (no requestee)
+      const userPrograms = programsData.filter(
+        (program: any) =>
+          program.status === "completed" &&
+          (String(program.trainer_id) === String(userID) || program.requestee === null)
+      );
 
       if (!userPrograms.length) {
         console.warn("No completed programs found for the user");
@@ -355,7 +359,52 @@ const WorkoutScreen = () => {
         };
       });
 
+      // Map each workout program to formatted structure
+      const formattedPendingWorkouts = pendingPrograms.map((program: any) => {
+        const visibleTo =
+          program.requestee === null
+            ? "everyone"
+            : (() => {
+                const match = allMembers.find(
+                  (member: any) => String(member.id) === String(program.requestee)
+                );
+                return match?.full_name || `User ID ${program.requestee}`;
+              })();
+
+        return {
+          id: program.id.toString(),
+          title: program.program_name,
+          fitnessGoal: program.fitness_goal,
+          intensityLevel: program.intensity_level,
+          trainer: program.trainer_id?.toString() || "N/A",
+          duration: program.duration,
+          status: program.status,
+          requestee: program.requestee?.toString() || null,
+          visibleTo,
+          feedbacks: program.feedbacks,
+          exercises: program.workout_exercises?.map((exercise: any) => ({
+            id: exercise.id.toString(),
+            image: "",
+            sets: exercise.sets,
+            reps: exercise.reps,
+            restTime: exercise.rest_time,
+            durationPerSet: exercise.duration_per_set,
+            notes: exercise.notes,
+            exercise_details: exercise.exercise_details,
+            name: exercise.exercise_details?.name,
+            description: exercise.exercise_details?.description,
+            muscle_group: exercise.exercise_details?.muscle_group,
+          })) || [],
+        };
+      });
+
       // Update workouts list
+      setPendingWorkouts((prevWorkouts) => {
+        const existingIds = new Set(prevWorkouts.map((w: any) => w.id));
+        const newWorkouts = formattedPendingWorkouts.filter((w: any) => !existingIds.has(w.id));
+        return [...prevWorkouts, ...newWorkouts];
+      });
+      
       setWorkouts((prevWorkouts) => {
         const existingIds = new Set(prevWorkouts.map((w: any) => w.id));
         const newWorkouts = formattedWorkouts.filter((w: any) => !existingIds.has(w.id));
@@ -395,6 +444,7 @@ const WorkoutScreen = () => {
   );
 
   const [workouts, setWorkouts] = useState<Workout[]>([]); // State to store all workouts]);
+  const [pendingWorkouts, setPendingWorkouts] = useState<Workout[]>([]);
 
   const handlePublish = async (currentWorkout?: Workout) => {
     const plan = currentWorkout; // Use the current workout state
@@ -456,7 +506,7 @@ const WorkoutScreen = () => {
             duration: 30, // Default number of days, adjust as needed
           }),
         });
-  
+
         if (!updateResponse.ok) {
           throw new Error(`Workout Update API error! status: ${updateResponse.status}`);
         }
@@ -495,7 +545,7 @@ const WorkoutScreen = () => {
       // Update memberData with the matched workout ID and set status to "completed"
       setMemberData((prevMemberData) =>
         prevMemberData.map((member) =>
-          member.requesteeID === requesteeID
+          String(member.requesteeID) === String(requesteeID)
             ? { ...member, status: "completed", workout_id: currentWorkout.id }
             : member
         )
@@ -504,7 +554,13 @@ const WorkoutScreen = () => {
       // Update the state with the new or updated workout
       setWorkouts(prevWorkouts =>
         prevWorkouts.map(p =>
-          p.id === plan.id ? { ...plan } : p // Replace the workout in the state
+          String(p.id) === String(plan.id) ? { ...plan } : p // Replace the workout in the state
+        )
+      );
+
+      setPendingWorkouts(prevWorkouts =>
+        prevWorkouts.map(p =>
+          String(p.id) === String(plan.id) ? { ...plan } : p // Replace the workout in the state
         )
       );
   
@@ -596,8 +652,6 @@ const WorkoutScreen = () => {
   const handleRequestSelect = (request: SelectedMemberData) => {
     // Update selectedMemberData to the request that was selected
     setSelectedMemberData(request);
-    // Change view state to "createMP" to allow editing the selected request
-    setViewState("createWO");
   };
 
   return (
@@ -622,25 +676,23 @@ const WorkoutScreen = () => {
               .filter((request) => request.status === "pending")
               .map((request) => (
                 <TouchableOpacity key={request.requesteeID}>
-                <WorkoutRequest 
-                  memberName={request.requesteeName}
-                  fitnessGoal={request.fitnessGoal}
-                  intensityLevel={request.intensityLevel}
-                  height={request.height}
-                  weight={request.weight}
-                  age={request.age}
-                  onEditPress={() => {
-                  console.log("Selected Requestee ID: ", request.requesteeID);
-                  console.log("Workouts: ", workouts);
-                    const matchingWorkout = workouts.find(
-                    (workout) => String(workout.requestee) === String(request.requesteeID)
-                  );
-                  console.log("Matching Workout: ", matchingWorkout);
-                  if (matchingWorkout) {
-                    handleWorkoutSelect(matchingWorkout);
-                  }
-                  }}
-                />
+                  <WorkoutRequest 
+                    memberName={request.requesteeName ?? "Unknown"} // Default to "Unknown"
+                    fitnessGoal={request.fitnessGoal ?? "Not Provided"}
+                    intensityLevel={request.intensityLevel ?? "Moderate"}
+                    height={request.height ?? 0} // Default to 0 if missing
+                    weight={request.weight ?? 0}
+                    age={request.age ?? "N/A"} // Default to "N/A"
+                    onEditPress={() => {
+                      const matchingWorkout = pendingWorkouts.find(
+                        (workout) => String(workout.requestee) === String(request.requesteeID)
+                      );
+                      if (matchingWorkout) {
+                        handleRequestSelect(request);
+                        handleWorkoutSelect(matchingWorkout);
+                      }
+                    }}
+                  />
                 </TouchableOpacity>
               ))}
             </View>
