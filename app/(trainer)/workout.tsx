@@ -262,9 +262,12 @@ const WorkoutScreen = () => {
       // Filter only completed programs where the user is the trainer or it's public (no requestee)
       const userPrograms = programsData.filter(
         (program: any) =>
-          program.status === "completed" &&
+          // program.status === "completed" &&
           (String(program.trainer_id) === String(userID) || program.requestee === null)
       );
+
+      console.log("Programs Data: ", programsData);
+      console.log("USERID: ", userID);
 
       if (!userPrograms.length) {
         console.warn("No completed programs found for the user");
@@ -627,9 +630,12 @@ const WorkoutScreen = () => {
                   weight={request.weight}
                   age={request.age}
                   onEditPress={() => {
+                  console.log("Selected Requestee ID: ", request.requesteeID);
+                  console.log("Workouts: ", workouts);
                     const matchingWorkout = workouts.find(
-                    (workout) => workout.requestee === request.requesteeID
+                    (workout) => String(workout.requestee) === String(request.requesteeID)
                   );
+                  console.log("Matching Workout: ", matchingWorkout);
                   if (matchingWorkout) {
                     handleWorkoutSelect(matchingWorkout);
                   }
