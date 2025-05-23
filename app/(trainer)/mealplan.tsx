@@ -38,6 +38,7 @@ const MealPlanScreen = () => {
   const [allergies, setallergies] = useState(""); // State to store allergies
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [memberData, setMemberData] = useState<SelectedMemberData[]>([
     // {
     //   requesteeID: '1',
@@ -252,7 +253,7 @@ const MealPlanScreen = () => {
         token = await getItem('authToken');
       };
       fetchUserIDandToken();
-    }, [])
+    }, [refreshTrigger])
   );
 
   const handlePublish = async (currentMealPlan?: MealPlan) => {
@@ -387,6 +388,8 @@ const MealPlanScreen = () => {
         text2: 'Your meal plan has been published successfully.',
         topOffset: 80,
       });
+
+      setRefreshTrigger(prev => !prev);
 
       setViewState('');
 

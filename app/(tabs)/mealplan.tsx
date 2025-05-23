@@ -32,6 +32,7 @@ const MealPlanScreen = () => {
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
   const [allergies, setAllergies] = useState(""); // State to store allergies
   const [feedback, setFeedback] = useState(""); // State to store feedback
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [rating, setRating] = useState<string | number | undefined>('');
 
   // Fetch trainers
@@ -157,7 +158,7 @@ const MealPlanScreen = () => {
         token = await getItem('authToken');
       };
       fetchUserIDandToken();
-    }, [])
+    }, [refreshTrigger])
   );
   
   const handleSubmit = async () => {
@@ -229,6 +230,8 @@ const MealPlanScreen = () => {
             topOffset: 80,
         });
 
+        setRefreshTrigger(prev => !prev);
+
         setTimeout(() => {
             setViewState("plan");
         }, 2000);
@@ -278,6 +281,7 @@ const MealPlanScreen = () => {
           text2: 'Your feedback has been sent successfully.',
           topOffset: 80,
         });
+        setRefreshTrigger(prev => !prev);
         setViewState("plan");
         setFeedback("");
         setRating("");
@@ -326,7 +330,7 @@ const MealPlanScreen = () => {
 
         // TEMPORARY: DELETE SNIPPET WHEN API IS AVAILABLE.
         setMealPlan(null); // Clear the meal plan by resetting to initial structure
-
+        setRefreshTrigger(prev => !prev);
         setViewState("plan");
       } else {
         Toast.show({

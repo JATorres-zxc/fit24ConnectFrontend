@@ -36,6 +36,7 @@ const WorkoutScreen = () => {
   const [rating, setRating] = useState(""); // State to store rating
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [workout, setWorkout] = useState<Workout | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [memberData, setMemberData] = useState<SelectedMemberData[]>([
       // {
       //   requesteeID: '1',
@@ -387,7 +388,7 @@ const WorkoutScreen = () => {
         token = await getItem('authToken');
       };
       fetchUserIDandToken();
-    }, [])
+    }, [refreshTrigger])
   );
 
   const [workouts, setWorkouts] = useState<Workout[]>([]); // State to store all workouts]);
@@ -515,6 +516,8 @@ const WorkoutScreen = () => {
         topOffset: 80,
       });
 
+      setRefreshTrigger(prev => !prev);
+
       setViewState('');
 
     } catch (error) {
@@ -555,7 +558,9 @@ const WorkoutScreen = () => {
           if (workout.id === workout?.id) {
             setWorkout(null); // Clear current workout if it matches the deleted one
           }
-  
+          
+          setRefreshTrigger(prev => !prev);
+
           setViewState("");
         } else {
           Toast.show({

@@ -37,6 +37,7 @@ const WorkoutScreen = () => {
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState(""); // State to store rating
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [workout, setWorkout] = useState<Workout | null>(null);
 
   // Fetching trainers from API
@@ -154,7 +155,7 @@ const WorkoutScreen = () => {
         token = await getItem('authToken');
       };
       fetchUserIDandToken();
-    }, [])
+    }, [refreshTrigger])
   ); 
 
   const [workouts, setWorkouts] = useState<Workout[]>([
@@ -221,7 +222,7 @@ const WorkoutScreen = () => {
         if (workout.id === workout?.id) {
           setWorkout(null); // Clear current workout if it matches the deleted one
         }
-
+        setRefreshTrigger(prev => !prev);
         setViewState("plan");
       } else {
         Toast.show({
@@ -288,6 +289,7 @@ const WorkoutScreen = () => {
           text2: 'Your feedback has been sent successfully.',
           topOffset: 80,
         });
+        setRefreshTrigger(prev => !prev);
         setViewState("plan");
         setFeedback("");
         setRating("");
@@ -331,12 +333,15 @@ const WorkoutScreen = () => {
                 'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify({
+                program_name: null, // Set to null if not provided
                 trainer_id: trainer, // Trainer ID is required
+                requestee: userID, // User ID is required
+                duration: null, // Set to null if not provided
                 fitness_goal: fitnessGoal,
                 intensity_level: intensityLevel,
                 status: "pending",
-                requestee: userID, // User ID is required
-            }),
+                workout_exercises: [] // Empty array ensures no exercises are created
+            })
         });
 
         if (!requestResponse.ok) {
@@ -349,6 +354,8 @@ const WorkoutScreen = () => {
             text2: 'Your workout request has been submitted successfully.',
             topOffset: 80,
         });
+
+        setRefreshTrigger(prev => !prev);
 
         setTimeout(() => {
             setViewState('plan');
