@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 200,
     height: 200,
-    borderRadius: '50%',
+    borderRadius: 100,
     resizeMode: "cover",
   },
   textContainer: {
