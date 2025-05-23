@@ -108,9 +108,15 @@ export default function Home() {
             "experience",
           ];
 
-          const missingFields = requiredFields.filter(
-            (field) => !profile[field] || profile[field] === ""
-          );
+          console.log("Found fields:", requiredFields);
+          console.log("Profile data:", profile);
+
+          const missingFields = requiredFields.filter((field) => {
+            const value = profile[field];
+            if (value === null || value === undefined) return true;
+            if (typeof value === "string" && value.trim() === "") return true;
+            return false;
+          });
 
           console.log("Missing fields:", missingFields);
 

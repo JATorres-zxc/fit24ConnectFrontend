@@ -112,10 +112,14 @@ export default function Home() {
           ];
 
           console.log("Found fields:", requiredFields);
+          console.log("Profile data:", profile);
 
-          const missingFields = requiredFields.filter(
-            (field) => !profile[field] || profile[field] === ""
-          );
+          const missingFields = requiredFields.filter((field) => {
+            const value = profile[field];
+            if (value === null || value === undefined) return true;
+            if (typeof value === "string" && value.trim() === "") return true;
+            return false;
+          });
 
           console.log("Missing fields:", missingFields);
 
@@ -131,7 +135,7 @@ export default function Home() {
           // Delay the redirection by 2 seconds
           setTimeout(() => {
             router.push({
-              pathname: '/profile',
+              pathname: '/(tabs)/profile',
               params: { showToast: 'true' },
             });
           }, 2000); // 2-second delay
