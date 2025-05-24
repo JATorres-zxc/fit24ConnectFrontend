@@ -19,6 +19,7 @@ import { Dimensions } from 'react-native'
 import { saveItem } from '@/utils/storageUtils';
 
 import { API_BASE_URL } from '@/constants/ApiConfig';
+import { FontAwesome } from '@expo/vector-icons';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -27,6 +28,9 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
+
+    // State to toggle visibility
+    const [showPassword, setShowPassword] = useState(false); 
 
     const sanitizeInput = (input: string) => {
         return input.replace(/[^a-zA-Z0-9@.]/g, '');
@@ -133,14 +137,20 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                         onChangeText={setEmail}
                     />
 
-                    <TextInput
-                        placeholder="Password"
-                        placeholderTextColor={Colors.textSecondary}
-                        style={styles.input}
-                        secureTextEntry
-                        value={password}
-                        onChangeText={setPassword}
-                    />
+                    <View style={styles.passwordContainer}>
+                        <TextInput
+                            placeholder="Password"
+                            placeholderTextColor={Colors.textSecondary}
+                            style={styles.passwordInput}
+                            secureTextEntry={!showPassword}
+                            value={password}
+                            onChangeText={setPassword}
+                        />
+
+                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.icon}>
+                            <FontAwesome name={showPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
+                        </TouchableOpacity>
+                    </View>
 
                     <TouchableOpacity
                         style={styles.button}
@@ -213,6 +223,28 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         marginVertical: 5,
         fontFamily: Fonts.regular,
+    },
+    passwordContainer: {
+        width: "85%",
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    passwordInput: {
+        width: "100%",
+        marginBottom: 10,
+        borderColor: Colors.border,
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        marginVertical: 5,
+        fontFamily: Fonts.regular,
+    },
+    icon: {
+        position: 'absolute',
+        right: 5,
+        padding: 10,
+        paddingTop: 5,
     },
     button: {
         width: "30%",
