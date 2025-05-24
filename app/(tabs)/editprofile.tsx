@@ -1,16 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useFocusEffect } from 'expo-router';
+import Toast from "react-native-toast-message";
 import { 
   Text, View, StyleSheet, Image, 
   TextInput, TouchableOpacity, Platform, 
   ScrollView, KeyboardAvoidingView,
   Keyboard,
   ActivityIndicator,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  Pressable
 } from 'react-native';
 import { router } from 'expo-router';
 import { saveItem, getItem } from '@/utils/storageUtils';
-import Toast from 'react-native-toast-message';
 
 import Header from '@/components/EditProfileHeader';
 import { Fonts } from '@/constants/Fonts';
@@ -235,9 +236,10 @@ export default function EditProfileScreen() {
         position: 'top',
         topOffset: 80,
       });
-  
+      
+      // Navigate to the profile screen after a short delay
       setTimeout(() => {
-        router.replace('/profile');
+        router.replace('/(tabs)/profile');
       }, 1500);
       
     } catch (error) {
@@ -267,7 +269,7 @@ export default function EditProfileScreen() {
   // Improved input rendering function with refs
   const renderInput = (
     label: string, 
-    value: string, 
+    value: string | number, 
     fieldName: keyof EditableMemberProfile, 
     ref: any,
     keyboardType: 'default' | 'email-address' | 'number-pad' | 'phone-pad' = 'default',
@@ -278,14 +280,14 @@ export default function EditProfileScreen() {
     return (
       <View style={styles.inputContainerOuter}>
         <Text style={styles.inputLabel}>{label}</Text>
-        <TouchableWithoutFeedback 
+        <Pressable 
           style={styles.inputWrapper}
           onPress={() => ref.current && ref.current.focus()}
         >
           <TextInput
             ref={ref}
             style={styles.textInput}
-            value={value}
+            value={value !== undefined && value !== null ? String(value) : ''}
             onChangeText={(text) => handleInputChange(fieldName, text)}
             keyboardType={keyboardType}
             autoCapitalize={autoCapitalize}
@@ -293,7 +295,7 @@ export default function EditProfileScreen() {
             returnKeyType={returnKeyType}
             onSubmitEditing={onSubmitEditing}
           />
-        </TouchableWithoutFeedback>
+        </Pressable>
       </View>
     );
   };
