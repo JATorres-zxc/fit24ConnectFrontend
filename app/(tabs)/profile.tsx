@@ -60,7 +60,6 @@ export default function ProfileScreen() {
       }
 
       const data = await response.json();
-      console.log('Profile API Response:', data);
 
       setProfile({
         image: data.image 

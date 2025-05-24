@@ -139,6 +139,7 @@ export default function CreateAnnouncement() {
         </View>
       </View>
       </ScrollView>
+      <Toast />
     </View>
   );
 }

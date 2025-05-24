@@ -52,6 +52,7 @@ export default function Home() {
       }
 
       const data = await response.json();
+      console.log("From getUserFirstName deets: ", data)
 
       await saveItem("profile", JSON.stringify(data));
 
@@ -110,7 +111,6 @@ export default function Home() {
             "age",
           ];
 
-          console.log("Found fields:", requiredFields);
           console.log("Profile data:", profile);
 
           const missingFields = requiredFields.filter((field) => {
