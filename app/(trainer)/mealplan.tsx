@@ -189,10 +189,10 @@ const MealPlanScreen = () => {
 
       const completedPlans = mealPlansData.filter(
         (plan: any) =>
-          plan.trainer_id.toString() === userID?.toString() &&
-          plan.status === "completed"
+          plan.trainer_id.toString() === userID?.toString()
+          && plan.status === "completed"
       );
-
+      
       setMealPlans(completedPlans);
 
       const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {

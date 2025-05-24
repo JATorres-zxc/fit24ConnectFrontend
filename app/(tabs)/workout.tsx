@@ -99,7 +99,7 @@ const WorkoutScreen = () => {
       const programsData = await response.json();
 
       const filteredPrograms = programsData.filter((program: any) =>
-        program.status === "completed" &&
+        // program.status === "completed" &&
         (String(program.requestee) === String(userID) || program.requestee === null)
       );
       
@@ -333,15 +333,12 @@ const WorkoutScreen = () => {
                 'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify({
-                program_name: null, // Set to null if not provided
                 trainer_id: trainer, // Trainer ID is required
-                requestee: userID, // User ID is required
-                duration: null, // Set to null if not provided
                 fitness_goal: fitnessGoal,
                 intensity_level: intensityLevel,
                 status: "pending",
-                workout_exercises: [] // Empty array ensures no exercises are created
-            })
+                requestee: userID, // User ID is required
+            }),
         });
 
         if (!requestResponse.ok) {
@@ -390,7 +387,7 @@ const WorkoutScreen = () => {
                     onValueChange={(value) => setTrainer(value)}
                     items={trainers.map((trainer) => ({
                       label: trainer.user.full_name,
-                      value: trainer.id,
+                      value: trainer.user.id,
                     }))}
                     style={trainerpickerSelectStyles}
                     value={trainer}
