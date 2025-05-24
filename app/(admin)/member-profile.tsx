@@ -1,20 +1,21 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Text, View, StyleSheet, Image, ScrollView, Platform, TouchableOpacity, TextInput } from 'react-native';
+import { Text, View, StyleSheet, Image, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 import { router, useLocalSearchParams } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import Header from '@/components/NavigateBackHeader';
+import { API_BASE_URL } from '@/constants/ApiConfig';
+
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { getItem } from '@/utils/storageUtils';
-import { API_BASE_URL } from '@/constants/ApiConfig';
+
 
 // Import MemberProfile interface
 import { MemberProfile } from '@/types/interface';
-import { set } from 'date-fns';
 
 export default function MemberProfileScreen() {
   const { memberId, fullName, membershipType, membershipStartDate, membershipEndDate } = useLocalSearchParams();
@@ -50,9 +51,6 @@ export default function MemberProfileScreen() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [hasMembership, setHasMembership] = useState(false);
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
-
 
   // Reset and update all states when params change
   useEffect(() => {
@@ -248,7 +246,6 @@ export default function MemberProfileScreen() {
                 display="default"
                 themeVariant='light'
                 onChange={(event, date) => {
-                  setShowStartPicker(false);
                   if (date) setStartDate(date.toISOString().split('T')[0]);
                 }}
               />
@@ -263,7 +260,6 @@ export default function MemberProfileScreen() {
                 display="default"
                 themeVariant='light'
                 onChange={(event, date) => {
-                  setShowEndPicker(false);
                   if (date) setEndDate(date.toISOString().split('T')[0]);
                 }}
               />
