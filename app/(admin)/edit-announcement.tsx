@@ -71,8 +71,13 @@ export default function CreateAnnouncement() {
         topOffset: 80,
         visibilityTime: 2000,
         autoHide: true,
-        onHide: () => router.back()
       });
+
+      // Navigate back to the home screen
+      setTimeout(() => {
+        router.replace('/(admin)/home');
+      }, 1500);
+      
     } catch (error) {
       Toast.show({
         type: 'error',
