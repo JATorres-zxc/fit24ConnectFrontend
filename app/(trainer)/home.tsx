@@ -1,16 +1,17 @@
-import { Text, View, StyleSheet, Platform } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
+
 import Toast from "react-native-toast-message";
 import { saveItem, getItem } from '@/utils/storageUtils';
 
 import Header from "@/components/HomeHeader";
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 import { Colors } from '@/constants/Colors';
 import { Fonts } from "@/constants/Fonts";
-import { API_BASE_URL } from '@/constants/ApiConfig';
 
 // Import interface for the announcement object
 import { Announcement } from "@/types/interface";
@@ -108,11 +109,9 @@ export default function Home() {
             "experience",
           ];
 
-          console.log("Found fields:", requiredFields);
-          console.log("Profile data:", profile);
-
           const missingFields = requiredFields.filter((field) => {
             const value = profile[field];
+
             if (value === null || value === undefined) return true;
             if (typeof value === "string" && value.trim() === "") return true;
             return false;
@@ -187,8 +186,8 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       fetchAnnouncements();
-      checkProfileCompletion();
       getUserFirstName();
+      checkProfileCompletion();
     }, [])
   );
 
