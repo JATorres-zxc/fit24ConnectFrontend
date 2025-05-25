@@ -234,9 +234,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   dateForm: {
-    flexDirection: 'column',
     width: '100%',
-    marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
   },
   datePicker: {
   borderWidth: 1,

@@ -42,6 +42,8 @@ export interface Report {
   startDate: string;
   endDate: string;
   generatedDate: string;
+  startDateRaw: string;
+  endDateRaw: string;
 }
 
 // Report type labels

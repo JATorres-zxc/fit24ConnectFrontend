@@ -1,6 +1,9 @@
 import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity, Modal, Platform } from 'react-native';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
@@ -33,14 +36,7 @@ export default function HistoryScreen() {
       
       // Add date parameters if we have a selected report
       if (selectedReport) {
-        // Convert displayed dates back to API format (YYYY-MM-DD)
-        const startDateObj = new Date(selectedReport.startDate);
-        const endDateObj = new Date(selectedReport.endDate);
-        
-        const formattedStartDate = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`;
-        const formattedEndDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`;
-        
-        apiUrl += `&start_date=${formattedStartDate}&end_date=${formattedEndDate}`;
+        apiUrl += `&start_date=${selectedReport.startDateRaw}&end_date=${selectedReport.endDateRaw}`;
       }
   
       console.log('Requesting report from:', apiUrl);
@@ -53,15 +49,27 @@ export default function HistoryScreen() {
       });
   
       if (response.ok) {
-        const blob = await response.blob();
-        const fileURL = URL.createObjectURL(blob);
-  
         // Web: open PDF in new tab
         if (Platform.OS === 'web') {
+          const blob = await response.blob();
+          const fileURL = URL.createObjectURL(blob);
           window.open(fileURL);
         } else {
-          // Mobile: use FileSystem API like expo-file-system to save/view file
-          console.warn('File preview/download not implemented for mobile.');
+          // Mobile: use expo-file-system to save/view file
+          const arrayBuffer = await response.arrayBuffer();
+          const uint8Array = new Uint8Array(arrayBuffer);
+          let binary = '';
+          for (let i = 0; i < uint8Array.length; i++) {
+            binary += String.fromCharCode(uint8Array[i]);
+          }
+          const base64data = global.btoa ? global.btoa(binary) : Buffer.from(binary, 'binary').toString('base64');
+          const fileUri = FileSystem.cacheDirectory + `report_${Date.now()}.pdf`;
+          await FileSystem.writeAsStringAsync(fileUri, base64data, { encoding: FileSystem.EncodingType.Base64 });
+          if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(fileUri);
+          } else {
+            console.warn('Sharing is not available on this device. File saved at:', fileUri);
+          }
         }
       } else {
         console.error('Failed to export report', await response.text());
@@ -97,6 +105,8 @@ export default function HistoryScreen() {
               startDate: formatDate(item.start_date),
               endDate: formatDate(item.end_date),
               generatedDate: formatDate(item.created_at),
+              startDateRaw: item.start_date,
+              endDateRaw: item.end_date,
             }));
   
             setReports(formattedReports);
