@@ -1,5 +1,6 @@
-import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Platform } from "react-native";
+import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity } from "react-native";
 import { useState, useCallback } from "react";
+import Toast from "react-native-toast-message";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { getItem } from '@/utils/storageUtils';
@@ -7,7 +8,6 @@ import { getItem } from '@/utils/storageUtils';
 import Header from "@/components/NavigateBackHeader";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
-import Toast from "react-native-toast-message";
 
 import { API_BASE_URL } from '@/constants/ApiConfig';
 
@@ -95,10 +95,11 @@ export default function CreateAnnouncement() {
         text2: 'Announcement created successfully',
         position: 'top',
         topOffset: 80,
-        visibilityTime: 10000,
-        autoHide: true,
-        onHide: () => router.push('/(admin)/home') // Navigate back after toast disappears
       });
+
+      setTimeout(() => {
+        router.replace('/(admin)/home');
+      }, 1500);
       
     } catch (error) {
       Toast.show({
@@ -163,6 +164,7 @@ export default function CreateAnnouncement() {
         </View>
       </View>
       </ScrollView>
+      <Toast />
     </View>
   );
 }

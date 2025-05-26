@@ -1,16 +1,19 @@
-import { Text, View, StyleSheet, Platform, TouchableOpacity, TextInput } from 'react-native';
-import { useState, useCallback, useEffect } from 'react';
+import { Text, View, StyleSheet, Platform, TouchableOpacity } from 'react-native';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import Header from '@/components/NavigateBackHeader';
+import { API_BASE_URL } from '@/constants/ApiConfig';
+
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
-import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
 import { getItem } from '@/utils/storageUtils';
-import { API_BASE_URL } from '@/constants/ApiConfig';
+
 
 export default function ReportsFormScreen() {
   const [reportType, setReportType] = useState<string | number | undefined>('');
@@ -152,32 +155,32 @@ export default function ReportsFormScreen() {
             />
         </View>
         
+        {/* Date Picker for Start Date */}
         <View style={styles.dateForm}>
           <Text style={styles.dateHeader}> Start Date </Text>
-          <View style={styles.datePicker}>
-            <TextInput
-              placeholder={startDate ? String(startDate) : "YYYY-MM-DD"}
-              placeholderTextColor={Colors.textSecondary}
-              style={styles.input}
-              value={startDate}
-              onChangeText={setStartDate}
-              keyboardType='numbers-and-punctuation'
-            />
-          </View>
+          <DateTimePicker
+            value={startDate ? new Date(startDate) : new Date()}
+            mode="date"
+            display="default"
+            themeVariant='light'
+            onChange={(event, date) => {
+              if (date) setStartDate(date.toISOString().split('T')[0]);
+            }}
+          />
         </View>
         
+        {/* Date Picker for End Date */}
         <View style={styles.dateForm}>
           <Text style={styles.dateHeader}> End Date </Text>
-          <View style={styles.datePicker}>
-            <TextInput
-              placeholder={endDate ? String(endDate) : "YYYY-MM-DD"}
-              placeholderTextColor={Colors.textSecondary}
-              style={styles.input}
-              value={endDate}
-              onChangeText={setEndDate}
-              keyboardType='numbers-and-punctuation'
-            />
-          </View>
+          <DateTimePicker
+            value={endDate ? new Date(endDate) : new Date()}
+            mode="date"
+            display="default"
+            themeVariant='light'
+            onChange={(event, date) => {
+              if (date) setEndDate(date.toISOString().split('T')[0]);
+            }}
+          />
         </View>
 
         <TouchableOpacity 
@@ -231,12 +234,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   dateForm: {
-    flexDirection: 'column',
     width: '100%',
-    marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
   },
   datePicker: {
-    width: '100%',
+  borderWidth: 1,
+  borderRadius: 8,
+  padding: 10,
+  backgroundColor: Colors.white,
+  width: '100%',
+  justifyContent: 'center',
   },
   generateButton: {
     backgroundColor: Colors.gold,

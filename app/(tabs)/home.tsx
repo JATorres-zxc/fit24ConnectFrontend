@@ -8,7 +8,6 @@ import { saveItem, getItem } from '@/utils/storageUtils';
 
 import Header from "@/components/HomeHeader";
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
-
 import { API_BASE_URL } from '@/constants/ApiConfig';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from "@/constants/Fonts";
@@ -53,6 +52,7 @@ export default function Home() {
       }
 
       const data = await response.json();
+      console.log("From getUserFirstName deets: ", data)
 
       await saveItem("profile", JSON.stringify(data));
 
@@ -111,7 +111,6 @@ export default function Home() {
             "age",
           ];
 
-          console.log("Found fields:", requiredFields);
           console.log("Profile data:", profile);
 
           const missingFields = requiredFields.filter((field) => {
@@ -190,8 +189,8 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       fetchAnnouncements();
-      checkProfileCompletion();
       getUserFirstName();
+      checkProfileCompletion();
     }, [])
   );
 

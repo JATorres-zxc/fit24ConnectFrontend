@@ -80,22 +80,7 @@ export default function ScanScreen() {
       });
   
       if (!response.ok) {
-        // Handle HTTP errors
-        if (response.status === 404) {
-          const errorData = await response.json();
-          setAccessStatus("denied");
-          setErrorMessage(errorData.error || 'Facility not found. Please scan a valid QR code.');
-          setShowPopup(true);
-          return;
-        } else if (response.status === 403) {
-          const errorData = await response.json();
-          setAccessStatus("denied");
-          setErrorMessage(errorData.reason || 'Access denied due to membership tier restrictions.');
-          setShowPopup(true);
-          return;
-        } else {
-          throw new Error(`Server error: ${response.status}`);
-        }
+        throw new Error(`Server error: ${response.status}`);
       }
 
       const result = await response.json();
@@ -208,7 +193,7 @@ export default function ScanScreen() {
             <Text style={styles.statusMessage}>
               {accessStatus === 'granted' 
                 ? 'You may now enter the facility.' 
-                : errorMessage || 'An error occurred during verification.'}
+                : errorMessage}
             </Text>
           </View>
         </View>

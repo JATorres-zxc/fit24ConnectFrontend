@@ -1,4 +1,4 @@
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useState } from "react";
 import {
     View,
@@ -17,6 +17,7 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { Dimensions } from 'react-native'
 import { API_BASE_URL } from '@/constants/ApiConfig';
+import { FontAwesome } from '@expo/vector-icons';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -27,7 +28,10 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmationPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
-    const [is_trainer, setIsTrainer] = useState(false); // Add state for is_trainer
+
+    // State to toggle visibility
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
 
     const sanitizeInput = (input: string) => {
         return input.replace(/[^a-zA-Z0-9@.]/g, '');
@@ -97,7 +101,6 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     email: sanitizedEmail,
                     password: sanitizedPassword,
                     confirm_password: sanitizedConfirmPassword,
-                    is_trainer: is_trainer,
                 }),
             });
 
@@ -146,24 +149,39 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 <View style={styles.formContainer}>
                     <TextInput
                         placeholder="Email"
+                        placeholderTextColor={Colors.textSecondary}
                         style={styles.input}
                         value={email}
                         onChangeText={setEmail}
                     />
-                    <TextInput
-                        placeholder="Password"
-                        style={styles.input}
-                        secureTextEntry
-                        value={password}
-                        onChangeText={setPassword}
-                    />
-                    <TextInput
-                        placeholder="Confirm Password"
-                        style={styles.input}
-                        secureTextEntry
-                        value={confirmPassword}
-                        onChangeText={setConfirmationPassword}
-                    />
+                    <View style={styles.passwordContainer}>
+                        <TextInput
+                            placeholder="Password"
+                            placeholderTextColor={Colors.textSecondary}
+                            style={styles.passwordInput}
+                            secureTextEntry={!showPassword}
+                            value={password}
+                            onChangeText={setPassword}
+                        />
+                    
+                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.icon}>
+                            <FontAwesome name={showPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.passwordContainer}>
+                        <TextInput
+                            placeholder="Password"
+                            placeholderTextColor={Colors.textSecondary}
+                            style={styles.passwordInput}
+                            secureTextEntry={!showConfirmPassword}
+                            value={confirmPassword}
+                            onChangeText={setConfirmationPassword}
+                        />
+                    
+                        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.icon}>
+                            <FontAwesome name={showPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
+                        </TouchableOpacity>
+                    </View>
 
                     <TouchableOpacity style={styles.button} onPress={handleRegister}>
                         <Text style={styles.buttonText}>
@@ -231,6 +249,28 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         marginVertical: 5,
         fontFamily: Fonts.regular,
+    },
+    passwordContainer: {
+        width: "85%",
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    passwordInput: {
+        width: "100%",
+        marginBottom: 10,
+        borderColor: Colors.border,
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        marginVertical: 5,
+        fontFamily: Fonts.regular,
+    },
+    icon: {
+        position: 'absolute',
+        right: 5,
+        padding: 10,
+        paddingTop: 5,
     },
     button: {
         width: "30%",
