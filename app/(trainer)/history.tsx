@@ -4,7 +4,8 @@ import Header from '@/components/HistoryHeader';
 import { Colors } from '@/constants/Colors';
 import AccessLogsContainer from '@/components/AccessLogsContainer';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { getItem } from '@/utils/storageUtils';
 import Toast from 'react-native-toast-message';
 import { Fonts } from '@/constants/Fonts';
@@ -17,46 +18,49 @@ export default function HistoryScreen() {
   const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Fetch access logs when component mounts
-    const fetchAccessLogs = async () => {
-      try {
-        const token = await getItem('authToken');
-        const response = await fetch(`${API_BASE_URL}/api/facility/my-access-logs/`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+  const fetchAccessLogs = async () => {
+    try {
+      const token = await getItem('authToken');
+      const response = await fetch(`${API_BASE_URL}/api/facility/my-access-logs/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         }
-        
-        const data = await response.json();
+      });
 
-        // Sort the logs in descending order (most recent first)
-        setAccessLogs(
-          data.sort(
-            (a: AccessLog, b: AccessLog) =>
-              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-          )
-        );
-      } catch (error) {
-        console.error("Error fetching access logs:", error);
-        Toast.show({
-          type: "error",
-          text1: "Failed to load access logs",
-          text2: "Please try again later",
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+        
+      const data = await response.json();
+      console.log("Access logs data:", data);
+
+      // Sort the logs in descending order (most recent first)
+      setAccessLogs(
+        data.sort(
+          (a: AccessLog, b: AccessLog) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
+      );
+    } catch (error) {
+      console.error("Error fetching access logs:", error);
+
+      Toast.show({
+        type: "error",
+        text1: "Failed to load access logs",
+        text2: "Please try again later",
         });
       } finally {
         setLoading(false);
       }
-    };
+  };
 
-    fetchAccessLogs();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchAccessLogs();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>

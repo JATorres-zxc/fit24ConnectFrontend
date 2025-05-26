@@ -36,6 +36,7 @@ const WorkoutScreen = () => {
   const [rating, setRating] = useState(""); // State to store rating
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [workout, setWorkout] = useState<Workout | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [memberData, setMemberData] = useState<SelectedMemberData[]>([
       // {
       //   requesteeID: '1',
@@ -152,7 +153,7 @@ const WorkoutScreen = () => {
 
     } catch (error) {
       Toast.show({
-        type: 'error',
+        type: 'info',
         text1: 'No Workout Requests Found!',
         text2: `${error}`,
         topOffset: 80,
@@ -231,7 +232,7 @@ const WorkoutScreen = () => {
 
     } catch (error) {
       Toast.show({
-        type: 'error',
+        type: 'info',
         text1: 'No Member Data Found!',
         text2: `${error}`,
         topOffset: 80,
@@ -258,6 +259,18 @@ const WorkoutScreen = () => {
 
       const programsData = await response.json();
 
+      console.log("Trainer_ID: ", programsData);
+      console.log("UserID: ", userID);
+
+      // Filter only completed programs where the user is the trainer or it's public (no requestee)
+      const pendingPrograms = programsData.filter(
+        (program: any) =>
+          program.status !== "completed" &&
+          (String(program.trainer_id) === String(userID) || program.requestee === null)
+      );
+
+      console.log("First pending workouts: ", pendingPrograms);
+      
       // Filter only completed programs where the user is the trainer or it's public (no requestee)
       const userPrograms = programsData.filter(
         (program: any) =>
@@ -267,7 +280,6 @@ const WorkoutScreen = () => {
 
       if (!userPrograms.length) {
         console.warn("No completed programs found for the user");
-        return;
       }
 
       // Fetch all members to match requestee info
@@ -303,6 +315,8 @@ const WorkoutScreen = () => {
         })
         .filter(Boolean);
 
+        console.log("Buhay pa ako.");
+
       // Update memberData list (avoid duplicates)
       setMemberData((prev) => {
         const existingIDs = prev.map((member) => member.requesteeID);
@@ -314,6 +328,7 @@ const WorkoutScreen = () => {
 
       // Map each workout program to formatted structure
       const formattedWorkouts = userPrograms.map((program: any) => {
+        console.log("Program requestee: ", program.requestee);
         const visibleTo =
           program.requestee === null
             ? "everyone"
@@ -337,21 +352,57 @@ const WorkoutScreen = () => {
           feedbacks: program.feedbacks,
           exercises: program.workout_exercises?.map((exercise: any) => ({
             id: exercise.id.toString(),
-            image: "",
-            sets: exercise.sets,
-            reps: exercise.reps,
-            restTime: exercise.rest_time,
-            durationPerSet: exercise.duration_per_set,
-            notes: exercise.notes,
-            exercise_details: exercise.exercise_details,
-            name: exercise.exercise_details?.name,
-            description: exercise.exercise_details?.description,
-            muscle_group: exercise.exercise_details?.muscle_group,
+            image: exercise.image,
+            name: exercise.name,
+            description: exercise.description,
+            muscle_group: exercise.muscle_group,
           })) || [],
         };
       });
 
+      // Map each workout program to formatted structure
+      const formattedPendingWorkouts = pendingPrograms.map((program: any) => {
+        console.log("I was here 2.")
+        const visibleTo =
+          program.requestee === null
+            ? "everyone"
+            : (() => {
+                const match = allMembers.find(
+                  (member: any) => String(member.id) === String(program.requestee)
+                );
+                return match?.full_name || `User ID ${program.requestee}`;
+              })();
+
+        return {
+          id: program.id.toString(),
+          title: program.program_name,
+          fitnessGoal: program.fitness_goal,
+          intensityLevel: program.intensity_level,
+          trainer: program.trainer_id?.toString() || "N/A",
+          duration: program.duration,
+          status: program.status,
+          requestee: program.requestee?.toString() || null,
+          visibleTo,
+          feedbacks: program.feedbacks,
+          exercises: program.workout_exercises?.map((exercise: any) => ({
+            id: exercise.id.toString(),
+            image: exercise.image,
+            name: exercise.name,
+            description: exercise.description,
+            muscle_group: exercise.muscle_group,
+          })) || [],
+        };
+      });
+
+      console.log("Formatted Conmpleted: ", formattedWorkouts);
+
       // Update workouts list
+      setPendingWorkouts((prevWorkouts) => {
+        const existingIds = new Set(prevWorkouts.map((w: any) => w.id));
+        const newWorkouts = formattedPendingWorkouts.filter((w: any) => !existingIds.has(w.id));
+        return [...prevWorkouts, ...newWorkouts];
+      });
+      
       setWorkouts((prevWorkouts) => {
         const existingIds = new Set(prevWorkouts.map((w: any) => w.id));
         const newWorkouts = formattedWorkouts.filter((w: any) => !existingIds.has(w.id));
@@ -387,10 +438,11 @@ const WorkoutScreen = () => {
         token = await getItem('authToken');
       };
       fetchUserIDandToken();
-    }, [])
+    }, [refreshTrigger])
   );
 
   const [workouts, setWorkouts] = useState<Workout[]>([]); // State to store all workouts]);
+  const [pendingWorkouts, setPendingWorkouts] = useState<Workout[]>([]);
 
   const handlePublish = async (currentWorkout?: Workout) => {
     const plan = currentWorkout; // Use the current workout state
@@ -426,10 +478,10 @@ const WorkoutScreen = () => {
       const trainerID = await getItem('userID');
       const requesteeID = selectedMemberData?.requesteeID || null; 
 
-      // Check if the workout exists in the state
-      const existingWorkout = workouts.find(workout => String(workout.id) === String(plan.id));
-      
-      if (existingWorkout) {
+      console.log("Workout ID: ", workout?.id);
+      console.log("Plan ID: ", plan.id);
+
+      if (String(workout?.id) === String(plan.id)) {
         // Workout exists, so we'll update it, for personal member
         const updateResponse = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/${plan.id}/`, {
           method: 'PATCH',
@@ -452,7 +504,7 @@ const WorkoutScreen = () => {
             duration: 30, // Default number of days, adjust as needed
           }),
         });
-  
+
         if (!updateResponse.ok) {
           throw new Error(`Workout Update API error! status: ${updateResponse.status}`);
         }
@@ -491,7 +543,7 @@ const WorkoutScreen = () => {
       // Update memberData with the matched workout ID and set status to "completed"
       setMemberData((prevMemberData) =>
         prevMemberData.map((member) =>
-          member.requesteeID === requesteeID
+          String(member.requesteeID) === String(requesteeID)
             ? { ...member, status: "completed", workout_id: currentWorkout.id }
             : member
         )
@@ -500,7 +552,13 @@ const WorkoutScreen = () => {
       // Update the state with the new or updated workout
       setWorkouts(prevWorkouts =>
         prevWorkouts.map(p =>
-          p.id === plan.id ? { ...plan } : p // Replace the workout in the state
+          String(p.id) === String(plan.id) ? { ...plan } : p // Replace the workout in the state
+        )
+      );
+
+      setPendingWorkouts(prevWorkouts =>
+        prevWorkouts.map(p =>
+          String(p.id) === String(plan.id) ? { ...plan } : p // Replace the workout in the state
         )
       );
   
@@ -514,6 +572,8 @@ const WorkoutScreen = () => {
         text2: 'Your workout plan has been published successfully.',
         topOffset: 80,
       });
+
+      setRefreshTrigger(prev => !prev);
 
       setViewState('');
 
@@ -555,7 +615,9 @@ const WorkoutScreen = () => {
           if (workout.id === workout?.id) {
             setWorkout(null); // Clear current workout if it matches the deleted one
           }
-  
+          
+          setRefreshTrigger(prev => !prev);
+
           setViewState("");
         } else {
           Toast.show({
@@ -588,8 +650,6 @@ const WorkoutScreen = () => {
   const handleRequestSelect = (request: SelectedMemberData) => {
     // Update selectedMemberData to the request that was selected
     setSelectedMemberData(request);
-    // Change view state to "createMP" to allow editing the selected request
-    setViewState("createWO");
   };
 
   return (
@@ -614,22 +674,25 @@ const WorkoutScreen = () => {
               .filter((request) => request.status === "pending")
               .map((request) => (
                 <TouchableOpacity key={request.requesteeID}>
-                <WorkoutRequest 
-                  memberName={request.requesteeName}
-                  fitnessGoal={request.fitnessGoal}
-                  intensityLevel={request.intensityLevel}
-                  height={request.height}
-                  weight={request.weight}
-                  age={request.age}
-                  onEditPress={() => {
-                    const matchingWorkout = workouts.find(
-                    (workout) => workout.requestee === request.requesteeID
-                  );
-                  if (matchingWorkout) {
-                    handleWorkoutSelect(matchingWorkout);
-                  }
-                  }}
-                />
+                  <WorkoutRequest 
+                    memberName={request.requesteeName ?? "Unknown"} // Default to "Unknown"
+                    fitnessGoal={request.fitnessGoal ?? "Not Provided"}
+                    intensityLevel={request.intensityLevel ?? "Moderate"}
+                    height={request.height ?? 0} // Default to 0 if missing
+                    weight={request.weight ?? 0}
+                    age={request.age ?? "N/A"} // Default to "N/A"
+                    onEditPress={() => {
+                      const matchingWorkout = pendingWorkouts.find(
+                        (workout) => String(workout.requestee) === String(request.requesteeID)
+                      );
+                      console.log("Pending Workouts: ", pendingWorkouts);
+                      console.log("Matching Workout: ", matchingWorkout);
+                      if (matchingWorkout) {
+                        handleRequestSelect(request);
+                        handleWorkoutSelect(matchingWorkout);
+                      }
+                    }}
+                  />
                 </TouchableOpacity>
               ))}
             </View>

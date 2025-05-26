@@ -1,15 +1,18 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Text, View, StyleSheet, Image, ScrollView, Platform, TouchableOpacity, TextInput } from 'react-native';
+import { Text, View, StyleSheet, Image, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
 import { router, useLocalSearchParams } from 'expo-router';
 import Toast from 'react-native-toast-message';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import Header from '@/components/NavigateBackHeader';
+import { API_BASE_URL } from '@/constants/ApiConfig';
+
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { getItem } from '@/utils/storageUtils';
-import { API_BASE_URL } from '@/constants/ApiConfig';
+
 
 // Import MemberProfile interface
 import { MemberProfile } from '@/types/interface';
@@ -233,29 +236,33 @@ export default function MemberProfileScreen() {
               />
             </View>
           </View>
-
-          {/* Subscription Start Date Details*/}
-          <View style={styles.field}>
+          
+          {/* Date Picker for Start Date */}
+          <View style={styles.datefield}>
             <Text style={styles.label}>Subscription Start Date</Text>
-            <TextInput
-              placeholder={membershipStartDate ? String(membershipStartDate) : "YYYY-MM-DD"}
-              placeholderTextColor={Colors.textSecondary}
-              style={styles.input}
-              value={startDate}
-              onChangeText={setStartDate}
-            />
+              <DateTimePicker
+                value={startDate ? new Date(startDate) : new Date()}
+                mode="date"
+                display="default"
+                themeVariant='light'
+                onChange={(event, date) => {
+                  if (date) setStartDate(date.toISOString().split('T')[0]);
+                }}
+              />
           </View>
 
-          {/* Subscription End Date Details*/}
-          <View style={styles.field}>
+          {/* Date Picker for End Date */}
+          <View style={styles.datefield}>
             <Text style={styles.label}>Subscription End Date</Text>
-            <TextInput
-              placeholder={membershipEndDate ? String(membershipEndDate) : "YYYY-MM-DD"}
-              placeholderTextColor={Colors.textSecondary}
-              style={styles.input}
-              value={endDate}
-              onChangeText={setEndDate}
-            />
+              <DateTimePicker
+                value={endDate ? new Date(endDate) : new Date()}
+                mode="date"
+                display="default"
+                themeVariant='light'
+                onChange={(event, date) => {
+                  if (date) setEndDate(date.toISOString().split('T')[0]);
+                }}
+              />
           </View>
 
           <View style={styles.buttonContainer}>
@@ -287,7 +294,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 200,
     height: 200,
-    borderRadius: '50%',
+    borderRadius: 100,
     resizeMode: "cover",
   },
   editProfile: {
@@ -321,6 +328,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   field: {
+    padding: 10,
+  },
+  datefield: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     padding: 10,
   },
   label: {

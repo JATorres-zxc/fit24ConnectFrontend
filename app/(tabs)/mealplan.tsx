@@ -32,6 +32,7 @@ const MealPlanScreen = () => {
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
   const [allergies, setAllergies] = useState(""); // State to store allergies
   const [feedback, setFeedback] = useState(""); // State to store feedback
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [rating, setRating] = useState<string | number | undefined>('');
 
   // Fetch trainers
@@ -56,7 +57,7 @@ const MealPlanScreen = () => {
         user: {
           id: trainer.user?.id || null,
           email: trainer.user?.email || "No email",
-          full_name: trainer.user?.full_name || "Unknown Trainer",
+          full_name: trainer.user?.full_name || null,
         },
         experience: trainer.experience?.trim() || "Not Specified",
         contact: trainer.contact?.trim() || "Not Available",
@@ -65,7 +66,7 @@ const MealPlanScreen = () => {
       setTrainers(resolvedTrainers);
     } catch (error) {
       Toast.show({
-        type: 'error',
+        type: 'info',
         text1: 'No Trainers Found!',
         text2: `${error}`,
         topOffset: 80,
@@ -79,7 +80,7 @@ const MealPlanScreen = () => {
       const token = await getItem('authToken');
       const userID = await getItem('userID');
 
-      const mealPlansResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
+      const mealPlansResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -112,7 +113,7 @@ const MealPlanScreen = () => {
         throw new Error('No token found');
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}/`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -130,12 +131,12 @@ const MealPlanScreen = () => {
         setMealPlan(data);
       }
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'No Meal Plans Found!',
-        text2: `${error}`,
-        topOffset: 80,
-      });
+      // Toast.show({
+      //   type: 'info',
+      //   text1: 'No Meal Plans Found!',
+      //   text2: `${error}`,
+      //   topOffset: 80,
+      // });
 
       if (error instanceof Error) {
         if (error.message.includes('NetworkError')) {
@@ -157,7 +158,7 @@ const MealPlanScreen = () => {
         token = await getItem('authToken');
       };
       fetchUserIDandToken();
-    }, [])
+    }, [refreshTrigger])
   );
   
   const handleSubmit = async () => {
@@ -229,6 +230,8 @@ const MealPlanScreen = () => {
             topOffset: 80,
         });
 
+        setRefreshTrigger(prev => !prev);
+
         setTimeout(() => {
             setViewState("plan");
         }, 2000);
@@ -278,6 +281,7 @@ const MealPlanScreen = () => {
           text2: 'Your feedback has been sent successfully.',
           topOffset: 80,
         });
+        setRefreshTrigger(prev => !prev);
         setViewState("plan");
         setFeedback("");
         setRating("");
@@ -326,7 +330,7 @@ const MealPlanScreen = () => {
 
         // TEMPORARY: DELETE SNIPPET WHEN API IS AVAILABLE.
         setMealPlan(null); // Clear the meal plan by resetting to initial structure
-
+        setRefreshTrigger(prev => !prev);
         setViewState("plan");
       } else {
         Toast.show({
@@ -365,8 +369,8 @@ const MealPlanScreen = () => {
                   <RNPickerSelect
                     onValueChange={(value) => setTrainer(value)}
                     items={trainers.map((trainer) => ({
-                      label: trainer.user.full_name,
-                      value: trainer.id,
+                      label: trainer.user.full_name || `Trainer ID: ${trainer.id}`,
+                      value: trainer.user.id,
                     }))}
                     style={trainerpickerSelectStyles}
                     value={trainer}

@@ -3,7 +3,6 @@ import {
   View, 
   StyleSheet,
   Modal,
-  Platform,
   ActivityIndicator,
  } from 'react-native';
 import React, { useState, useEffect, useCallback, useRef } from "react";
@@ -79,19 +78,31 @@ export default function ScanScreen() {
           location: "mobile-app"
          }),
       });
-  
+      
+      // Handle HTTP errors
       if (!response.ok) {
-        // Handle HTTP errors
+        // Facility QR Code not registered
         if (response.status === 404) {
           const errorData = await response.json();
           setAccessStatus("denied");
           setErrorMessage(errorData.error || 'Facility not found. Please scan a valid QR code.');
           setShowPopup(true);
           return;
+        // Inactive Membership OR Membership Tier Restrictions
         } else if (response.status === 403) {
           const errorData = await response.json();
+          console.log("errorMessage: ", errorData.reason)
           setAccessStatus("denied");
-          setErrorMessage(errorData.reason || 'Access denied due to membership tier restrictions.');
+          if (errorData.reason.includes("but your tier is")){
+            setErrorMessage('Access denied due to membership tier restrictions.');
+          } else {
+            setErrorMessage(errorData.reason || 'Access denied due to membership tier restrictions.');
+          }
+          setShowPopup(true);
+          return;
+        } else if (response.status === 400) {
+          setAccessStatus("denied");
+          setErrorMessage("Facility not found. Please scan a valid QR code")
           setShowPopup(true);
           return;
         } else {
@@ -209,7 +220,7 @@ export default function ScanScreen() {
             <Text style={styles.statusMessage}>
               {accessStatus === 'granted' 
                 ? 'You may now enter the facility.' 
-                : errorMessage || 'An error occurred during verification.'}
+                : errorMessage}
             </Text>
           </View>
         </View>

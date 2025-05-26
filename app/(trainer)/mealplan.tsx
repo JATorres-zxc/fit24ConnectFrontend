@@ -38,6 +38,7 @@ const MealPlanScreen = () => {
   const [allergies, setallergies] = useState(""); // State to store allergies
   const [feedback, setFeedback] = useState(""); // State to store feedback
   const [rating, setRating] = useState<string | number | undefined>('');
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [memberData, setMemberData] = useState<SelectedMemberData[]>([
     // {
     //   requesteeID: '1',
@@ -159,7 +160,7 @@ const MealPlanScreen = () => {
 
     } catch (error) {
       Toast.show({
-        type: 'error',
+        type: 'info',
         text1: 'No Meal Plan Requests Found!',
         text2: `${error}`,
         topOffset: 80,
@@ -188,10 +189,10 @@ const MealPlanScreen = () => {
 
       const completedPlans = mealPlansData.filter(
         (plan: any) =>
-          plan.trainer_id.toString() === userID?.toString() &&
-          plan.status === "completed"
+          plan.trainer_id.toString() === userID?.toString()
+          && plan.status === "completed"
       );
-
+      
       setMealPlans(completedPlans);
 
       const allMembersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
@@ -234,7 +235,7 @@ const MealPlanScreen = () => {
 
     } catch (error) {
       Toast.show({
-        type: 'error',
+        type: 'info',
         text1: 'No Meal Plans Found!',
         text2: `${error}`,
         topOffset: 80,
@@ -252,7 +253,7 @@ const MealPlanScreen = () => {
         token = await getItem('authToken');
       };
       fetchUserIDandToken();
-    }, [])
+    }, [refreshTrigger])
   );
 
   const handlePublish = async (currentMealPlan?: MealPlan) => {
@@ -387,6 +388,8 @@ const MealPlanScreen = () => {
         text2: 'Your meal plan has been published successfully.',
         topOffset: 80,
       });
+
+      setRefreshTrigger(prev => !prev);
 
       setViewState('');
 

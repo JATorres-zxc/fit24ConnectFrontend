@@ -1,7 +1,7 @@
 import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export async function fetchNotifications(token: string) {
-  const response = await fetch(`${API_BASE_URL}/api/notification/notifications`, {
+  const response = await fetch(`${API_BASE_URL}/api/notification/notifications/`, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',

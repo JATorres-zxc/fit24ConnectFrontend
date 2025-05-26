@@ -8,11 +8,58 @@ import { fetchNotifications } from '@/api/notifications';
 import { Notification } from '@/types/interface';
 import { getItem } from '@/utils/storageUtils';
 
+// Helper function to safely parse dates
+const parseDate = (dateString) => {
+  if (!dateString) return new Date();
+  
+  // Try different parsing approaches
+  let date;
+  
+  // First, try direct parsing
+  date = new Date(dateString);
+  if (!isNaN(date.getTime())) {
+    return date;
+  }
+  
+  // If that fails, try to clean the string
+  // Handle formats like "May 19, 2025 13:33"
+  const cleanedString = dateString.replace(/(\w+)\s+(\d+),\s+(\d+)\s+(\d+):(\d+)/, '$1 $2, $3 $4:$5:00');
+  date = new Date(cleanedString);
+  if (!isNaN(date.getTime())) {
+    return date;
+  }
+  
+  // Try ISO format conversion
+  try {
+    // Convert "May 19, 2025 13:33" to ISO format
+    const parts = dateString.match(/(\w+)\s+(\d+),\s+(\d+)\s+(\d+):(\d+)/);
+    if (parts) {
+      const [, month, day, year, hour, minute] = parts;
+      const monthMap = {
+        'January': '01', 'February': '02', 'March': '03', 'April': '04',
+        'May': '05', 'June': '06', 'July': '07', 'August': '08',
+        'September': '09', 'October': '10', 'November': '11', 'December': '12'
+      };
+      const monthNum = monthMap[month] || '01';
+      const isoString = `${year}-${monthNum}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00.000Z`;
+      date = new Date(isoString);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    }
+  } catch (e) {
+    console.warn('Date parsing failed:', e);
+  }
+  
+  // Last resort: return current date
+  console.warn('Could not parse date:', dateString, 'using current date');
+  return new Date();
+};
+
 export default function NotificationScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,16 +85,22 @@ export default function NotificationScreen() {
         const notificationsArr = Array.isArray(data) ? data : [];
         
         const mapped: Notification[] = notificationsArr.map((n: any) => {
-          const dt = new Date(n.created_at);                // parses "May 19, 2025 13:33"
-          const date = dt.toLocaleDateString("en-US", {
-            month: "long",    // “May”
-            day:   "numeric", // “19”
-            year:  "numeric"  // “2025”
+          // Parse the date once and store the original timestamp
+          const parsedDate = parseDate(n.created_at);
+          
+          console.log('Original date string:', n.created_at);
+          console.log('Parsed date object:', parsedDate);
+          
+          const date = parsedDate.toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric"
           });
-          const time = dt.toLocaleTimeString("en-US", {
+          
+          const time = parsedDate.toLocaleTimeString("en-US", {
             hour: "2-digit",
             minute: "2-digit"
-          });                                               // e.g. "1:33 PM"
+          });
 
           return {
             id: n.id.toString(),
@@ -56,6 +109,7 @@ export default function NotificationScreen() {
             date,
             time,
             is_read: n.is_read,
+            timestamp: parsedDate.getTime(),
           };
         });
         setNotifications(mapped);
@@ -71,9 +125,7 @@ export default function NotificationScreen() {
   }, [token]);
 
   const sortedNotifications = [...notifications].sort((a, b) => {
-    const dateTimeA = new Date(`${a.date} ${a.time}`).getTime();
-    const dateTimeB = new Date(`${b.date} ${b.time}`).getTime();
-    return dateTimeB - dateTimeA;
+    return (b.timestamp || 0) - (a.timestamp || 0);
   });
 
   return (

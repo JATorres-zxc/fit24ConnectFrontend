@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, FlatList, Modal, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
+import Toast from "react-native-toast-message";
 
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
@@ -55,6 +56,13 @@ export default function AdminAnnouncements({ announcements, onDelete, isLoading 
       setModalVisible(false);
       setSelectedId(null);
     }
+
+    // Show toast after successful deletion
+    Toast.show({
+      type: 'success',
+      text1: 'Announcement Deleted',
+      text2: 'The announcement was successfully removed.',
+    });
   };
 
   return (
@@ -121,6 +129,7 @@ export default function AdminAnnouncements({ announcements, onDelete, isLoading 
           </View>
         </View>
       </Modal>
+      <Toast />
     </View>
   );
 }

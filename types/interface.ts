@@ -42,6 +42,8 @@ export interface Report {
   startDate: string;
   endDate: string;
   generatedDate: string;
+  startDateRaw: string;
+  endDateRaw: string;
 }
 
 // Report type labels
@@ -293,4 +295,5 @@ export interface Notification {
   date: string;
   time: string;
   is_read?: boolean;
+  timestamp?: number;
 }

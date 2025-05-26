@@ -8,7 +8,6 @@ import { saveItem, getItem } from '@/utils/storageUtils';
 
 import Header from "@/components/HomeHeader";
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
-
 import { API_BASE_URL } from '@/constants/ApiConfig';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from "@/constants/Fonts";
@@ -53,6 +52,7 @@ export default function Home() {
       }
 
       const data = await response.json();
+      console.log("From getUserFirstName deets: ", data)
 
       await saveItem("profile", JSON.stringify(data));
 
@@ -111,11 +111,14 @@ export default function Home() {
             "age",
           ];
 
-          console.log("Found fields:", requiredFields);
+          console.log("Profile data:", profile);
 
-          const missingFields = requiredFields.filter(
-            (field) => !profile[field] || profile[field] === ""
-          );
+          const missingFields = requiredFields.filter((field) => {
+            const value = profile[field];
+            if (value === null || value === undefined) return true;
+            if (typeof value === "string" && value.trim() === "") return true;
+            return false;
+          });
 
           console.log("Missing fields:", missingFields);
 
@@ -131,7 +134,7 @@ export default function Home() {
           // Delay the redirection by 2 seconds
           setTimeout(() => {
             router.push({
-              pathname: '/profile',
+              pathname: '/(tabs)/profile',
               params: { showToast: 'true' },
             });
           }, 2000); // 2-second delay
@@ -186,8 +189,8 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       fetchAnnouncements();
-      checkProfileCompletion();
       getUserFirstName();
+      checkProfileCompletion();
     }, [])
   );
 
