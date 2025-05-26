@@ -75,7 +75,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
             const result = await response.json();
 
-            if (response.ok && result.success && result.tokens.access) {
+            if (response.ok && result.success && result.tokens?.access) {
                 // Store the token and user ID securely for future use
                 await saveItem('authToken', result.tokens.access);
                 await saveItem('refreshToken', result.tokens.refresh);
@@ -99,23 +99,66 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     });
                 }
             } else {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Login Failed',
-                    text2: result.message || 'Invalid username or password.',
-                    topOffset: 80,
-                    visibilityTime: 1500,
-                });
-                setError(result.message || 'Invalid username or password.');
+                // Handle different error types based on the message content
+                const errorMessage = result?.message ||
+                     result?.errors?.non_field_errors?.[0] ||
+                     'Login failed. Please try again.';
+
+                if (errorMessage.includes('Invalid credentials')) {
+                    // Pure authentication failure - wrong email/password
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Login Failed',
+                        text2: 'Invalid email or password. Please check your credentials.',
+                        topOffset: 80,
+                        visibilityTime: 3000,
+                    });
+                    setError('Invalid email or password.');
+                    
+                } else if (errorMessage.includes('pending activation')) {
+                    // Account exists but needs admin activation
+                    Toast.show({
+                        type: 'info', // Use 'info' type for account status issues
+                        text1: 'Account Pending',
+                        text2: 'Your account is pending activation. Please contact admin.',
+                        topOffset: 80,
+                        visibilityTime: 4000,
+                    });
+                    setError('Account pending activation. Please contact admin.');
+                    
+                } else if (errorMessage.includes('membership is not currently active')) {
+                    // Account exists but membership expired/inactive
+                    Toast.show({
+                        type: 'info',
+                        text1: 'Membership Inactive',
+                        text2: 'Your membership is not currently active. Please check your membership dates.',
+                        topOffset: 80,
+                        visibilityTime: 4000,
+                    });
+                    setError('Membership inactive. Please check your membership status.');
+                    
+                } else {
+                    // Generic fallback for other errors
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Login Failed',
+                        text2: errorMessage,
+                        topOffset: 80,
+                        visibilityTime: 3000,
+                    });
+                    setError(errorMessage);
+                }
             }
         } catch (error) {
+            // Network or parsing errors
             Toast.show({
                 type: 'error',
-                text1: 'Login Failed',
-                text2: 'An error occurred. Please try again.',
+                text1: 'Connection Error',
+                text2: 'Unable to connect to server. Please check your internet connection.',
                 topOffset: 80,
+                visibilityTime: 3000,
             });
-            setError('An error occurred. Please try again.');
+            setError('Connection error. Please try again.');
         }
     };
 
@@ -130,7 +173,7 @@ const LoginScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.formContainer}>
                     <TextInput
-                        placeholder="Username/Email"
+                        placeholder="Email"
                         placeholderTextColor={Colors.textSecondary}
                         style={styles.input}
                         value={email}

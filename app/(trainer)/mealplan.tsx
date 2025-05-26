@@ -160,7 +160,7 @@ const MealPlanScreen = () => {
 
     } catch (error) {
       Toast.show({
-        type: 'error',
+        type: 'info',
         text1: 'No Meal Plan Requests Found!',
         text2: `${error}`,
         topOffset: 80,
@@ -235,7 +235,7 @@ const MealPlanScreen = () => {
 
     } catch (error) {
       Toast.show({
-        type: 'error',
+        type: 'info',
         text1: 'No Meal Plans Found!',
         text2: `${error}`,
         topOffset: 80,

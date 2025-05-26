@@ -153,7 +153,7 @@ const WorkoutScreen = () => {
 
     } catch (error) {
       Toast.show({
-        type: 'error',
+        type: 'info',
         text1: 'No Workout Requests Found!',
         text2: `${error}`,
         topOffset: 80,
@@ -232,7 +232,7 @@ const WorkoutScreen = () => {
 
     } catch (error) {
       Toast.show({
-        type: 'error',
+        type: 'info',
         text1: 'No Member Data Found!',
         text2: `${error}`,
         topOffset: 80,
@@ -259,12 +259,17 @@ const WorkoutScreen = () => {
 
       const programsData = await response.json();
 
+      console.log("Trainer_ID: ", programsData);
+      console.log("UserID: ", userID);
+
       // Filter only completed programs where the user is the trainer or it's public (no requestee)
       const pendingPrograms = programsData.filter(
         (program: any) =>
           program.status !== "completed" &&
           (String(program.trainer_id) === String(userID) || program.requestee === null)
       );
+
+      console.log("First pending workouts: ", pendingPrograms);
       
       // Filter only completed programs where the user is the trainer or it's public (no requestee)
       const userPrograms = programsData.filter(
@@ -275,7 +280,6 @@ const WorkoutScreen = () => {
 
       if (!userPrograms.length) {
         console.warn("No completed programs found for the user");
-        return;
       }
 
       // Fetch all members to match requestee info
@@ -311,6 +315,8 @@ const WorkoutScreen = () => {
         })
         .filter(Boolean);
 
+        console.log("Buhay pa ako.");
+
       // Update memberData list (avoid duplicates)
       setMemberData((prev) => {
         const existingIDs = prev.map((member) => member.requesteeID);
@@ -322,6 +328,7 @@ const WorkoutScreen = () => {
 
       // Map each workout program to formatted structure
       const formattedWorkouts = userPrograms.map((program: any) => {
+        console.log("Program requestee: ", program.requestee);
         const visibleTo =
           program.requestee === null
             ? "everyone"
@@ -355,6 +362,7 @@ const WorkoutScreen = () => {
 
       // Map each workout program to formatted structure
       const formattedPendingWorkouts = pendingPrograms.map((program: any) => {
+        console.log("I was here 2.")
         const visibleTo =
           program.requestee === null
             ? "everyone"
@@ -385,6 +393,8 @@ const WorkoutScreen = () => {
           })) || [],
         };
       });
+
+      console.log("Formatted Conmpleted: ", formattedWorkouts);
 
       // Update workouts list
       setPendingWorkouts((prevWorkouts) => {
@@ -468,10 +478,10 @@ const WorkoutScreen = () => {
       const trainerID = await getItem('userID');
       const requesteeID = selectedMemberData?.requesteeID || null; 
 
-      // Check if the workout exists in the state
-      const existingWorkout = workouts.find(workout => String(workout.id) === String(plan.id));
-      
-      if (existingWorkout) {
+      console.log("Workout ID: ", workout?.id);
+      console.log("Plan ID: ", plan.id);
+
+      if (String(workout?.id) === String(plan.id)) {
         // Workout exists, so we'll update it, for personal member
         const updateResponse = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/${plan.id}/`, {
           method: 'PATCH',
@@ -675,6 +685,8 @@ const WorkoutScreen = () => {
                       const matchingWorkout = pendingWorkouts.find(
                         (workout) => String(workout.requestee) === String(request.requesteeID)
                       );
+                      console.log("Pending Workouts: ", pendingWorkouts);
+                      console.log("Matching Workout: ", matchingWorkout);
                       if (matchingWorkout) {
                         handleRequestSelect(request);
                         handleWorkoutSelect(matchingWorkout);

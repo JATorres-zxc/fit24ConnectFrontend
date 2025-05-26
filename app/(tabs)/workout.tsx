@@ -62,7 +62,7 @@ const WorkoutScreen = () => {
         user: {
           id: trainer.user?.id || null,
           email: trainer.user?.email || "No email",
-          full_name: trainer.user?.full_name || "Unknown Trainer",
+          full_name: trainer.user?.full_name || null,
         },
         experience: trainer.experience?.trim() || "Not Specified",
         contact: trainer.contact?.trim() || "Not Available",
@@ -71,7 +71,7 @@ const WorkoutScreen = () => {
       setTrainers(resolvedTrainers);
     } catch (error) {
       Toast.show({
-        type: 'error',
+        type: 'info',
         text1: 'No Trainers Found!',
         text2: `${error}`,
         topOffset: 80,
@@ -129,7 +129,7 @@ const WorkoutScreen = () => {
 
     } catch (error) {
       Toast.show({
-        type: 'error',
+        type: 'info',
         text1: 'No Workouts Found!',
         text2: `${error}`,
         topOffset: 80,
@@ -386,7 +386,7 @@ const WorkoutScreen = () => {
                   <RNPickerSelect
                     onValueChange={(value) => setTrainer(value)}
                     items={trainers.map((trainer) => ({
-                      label: trainer.user.full_name,
+                      label: trainer.user.full_name || `Trainer ID: ${trainer.id}`,
                       value: trainer.user.id,
                     }))}
                     style={trainerpickerSelectStyles}
@@ -404,6 +404,7 @@ const WorkoutScreen = () => {
               <Text style={styles.requestHeaders}>Fitness Goal</Text>
               <TextInput
                 placeholder="Enter Your Fitness Goal"
+                placeholderTextColor={Colors.textSecondary}
                 style={styles.input}
                 value={fitnessGoal}
                 onChangeText={(text) => setFitnessGoal(text)}
@@ -412,6 +413,7 @@ const WorkoutScreen = () => {
               <Text style={styles.requestHeaders}>Intensity Level</Text>
               <TextInput
                 placeholder="Enter Your Intensity Level"
+                placeholderTextColor={Colors.textSecondary}
                 style={styles.input}
                 value={intensityLevel}
                 onChangeText={(text) => setIntensityLevel(text)}
@@ -503,7 +505,7 @@ const WorkoutScreen = () => {
                 {workouts.filter(w => String(w.visibleTo) === String(userID)).length > 0 ? (
                   <View>
                     <WorkoutsContainer
-                      workouts={workouts.filter(w => String(w.visibleTo) === String(userID))}
+                      workouts={workouts.filter(w => String(w.visibleTo) === String(userID) && w.status === "completed")}
                       onWorkoutPress={handleWorkoutPress}
                       onTrashPress={handleTrashPress}
                     />
