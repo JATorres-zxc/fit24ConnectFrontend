@@ -345,16 +345,10 @@ const WorkoutScreen = () => {
           feedbacks: program.feedbacks,
           exercises: program.workout_exercises?.map((exercise: any) => ({
             id: exercise.id.toString(),
-            image: "",
-            sets: exercise.sets,
-            reps: exercise.reps,
-            restTime: exercise.rest_time,
-            durationPerSet: exercise.duration_per_set,
-            notes: exercise.notes,
-            exercise_details: exercise.exercise_details,
-            name: exercise.exercise_details?.name,
-            description: exercise.exercise_details?.description,
-            muscle_group: exercise.exercise_details?.muscle_group,
+            image: exercise.image,
+            name: exercise.name,
+            description: exercise.description,
+            muscle_group: exercise.muscle_group,
           })) || [],
         };
       });
@@ -384,16 +378,10 @@ const WorkoutScreen = () => {
           feedbacks: program.feedbacks,
           exercises: program.workout_exercises?.map((exercise: any) => ({
             id: exercise.id.toString(),
-            image: "",
-            sets: exercise.sets,
-            reps: exercise.reps,
-            restTime: exercise.rest_time,
-            durationPerSet: exercise.duration_per_set,
-            notes: exercise.notes,
-            exercise_details: exercise.exercise_details,
-            name: exercise.exercise_details?.name,
-            description: exercise.exercise_details?.description,
-            muscle_group: exercise.exercise_details?.muscle_group,
+            image: exercise.image,
+            name: exercise.name,
+            description: exercise.description,
+            muscle_group: exercise.muscle_group,
           })) || [],
         };
       });

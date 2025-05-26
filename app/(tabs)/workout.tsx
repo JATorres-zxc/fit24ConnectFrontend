@@ -115,7 +115,7 @@ const WorkoutScreen = () => {
         trainer: userProgram.trainer || "N/A",
         exercises: userProgram.workout_exercises.map((exercise: any) => ({
           id: exercise.id.toString(),
-          image: "", // Adjust if backend supports image
+          image: exercise.image,
           name: exercise.name,
           description: exercise.description,
           muscle_group: exercise.muscle_group,
