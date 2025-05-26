@@ -20,8 +20,8 @@ const WorkoutRequest: React.FC<WorkoutRequestProps> = ({ memberName, fitnessGoal
             <View style={styles.container}>
                 <View style={styles.requestContainer}>
                     <View style={styles.headerContainer}>
-                        <Text style={styles.title}>Requested by: {memberName}</Text>
-                        <TouchableOpacity onPress={onEditPress}>
+                        <Text style={styles.title}>Requested by:{"\n"}{memberName}</Text>
+                        <TouchableOpacity style={{ marginLeft: 10, marginRight: 10 }} onPress={onEditPress}>
                             <FontAwesome name="edit" size={24} color={Colors.black} />
                         </TouchableOpacity>
                     </View>
@@ -34,11 +34,11 @@ const WorkoutRequest: React.FC<WorkoutRequestProps> = ({ memberName, fitnessGoal
                         </View>
                         <View style={styles.column}>
                             <Text style={styles.infoTitle}>Height:</Text>
-                            <Text style={styles.infoText}>{height}</Text>
+                            <Text style={styles.infoText}>{height} cm</Text>
                             <Text style={styles.infoTitle}>Weight:</Text>
-                            <Text style={styles.infoText}>{weight}</Text>
+                            <Text style={styles.infoText}>{weight} kg</Text>
                             <Text style={styles.infoTitle}>Age:</Text>
-                            <Text style={styles.infoText}>{age}</Text>
+                            <Text style={styles.infoText}>{age} Y.O.</Text>
                         </View>
                     </View>
                     <View style={styles.horizontalLine} />
@@ -57,13 +57,13 @@ const styles = StyleSheet.create({
     },
     requestContainer: {
         width: "100%",
-        padding: 16,
+        padding: 10,
         backgroundColor: Colors.bg,
     },
     headerContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "center",
+        alignItems: "flex-start",
         marginBottom: 10,
     },
     title: {

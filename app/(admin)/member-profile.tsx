@@ -1,56 +1,212 @@
-import { useState, useEffect, useCallback } from 'react';
 import { Text, View, StyleSheet, Image, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
 import RNPickerSelect from 'react-native-picker-select';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import Toast from 'react-native-toast-message';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import Header from '@/components/NavigateBackHeader';
+import { API_BASE_URL } from '@/constants/ApiConfig';
+
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import { getItem } from '@/utils/storageUtils';
 
-interface Profile {
-  image: any,
-  username: string,
-  fullName: string,
-  membershipType: string,
-  subscriptionStatus: string,
-}
+
+// Import MemberProfile interface
+import { MemberProfile } from '@/types/interface';
 
 export default function MemberProfileScreen() {
-  const [profile, setProfile] = useState<Profile>({
-      image: require("@/assets/images/icon.png"),
-      username: 'John',
-      fullName: 'John Doe',
-      membershipType: 'Tier 1',
-      subscriptionStatus: 'Active',
+  const { memberId, fullName, membershipType, membershipStartDate, membershipEndDate } = useLocalSearchParams();
+
+  // Function to format membership type from backend format to display format
+  const formatMembershipType = (backendType: string): string => {
+    if (!backendType) return "";
+    
+    // Convert e.g., "tier2" to "Tier 2"
+    const match = backendType.match(/tier(\d+)/i);
+    if (match) {
+      return `Tier ${match[1]}`;
+    }
+    
+    // Fallback for other formats - capitalize first letter and add space before any digit
+    return backendType
+      .replace(/^(.)(.*)$/, (_, first: string, rest: string) => first.toUpperCase() + rest)
+      .replace(/(\d+)/, ' $1')
+      .trim();
+  };
+
+  const [profile, setProfile] = useState<MemberProfile>({
+    image: require("@/assets/images/darkicon.png"),
+    username: '',
+    fullName: '',
+    membershipType: '',
+    startDate: '',
+    endDate: '',
   });
 
-  const [membershipType, setMembershipType] = useState<string | undefined>('');
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string | undefined>('');
+  // Initialize selectedMembershipType with the correct formatted value from params
+  const [selectedMembershipType, setSelectedMembershipType] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [hasMembership, setHasMembership] = useState(false);
+
+  // Reset and update all states when params change
+  useEffect(() => {
+    console.log('Params updated:', memberId);
+    console.log('Full Name:', fullName);
+    console.log('Membership Type:', membershipType);
+    console.log('Dates:', membershipStartDate, membershipEndDate);
+    
+    // Fields that must not be empty
+    const requiredFields = [
+      fullName,
+    ];
+
+    const missingFields = requiredFields.filter(field => !field || field === "");
+
+    if (missingFields.length > 0) {
+      Toast.show({
+        type: "error",
+        text1: "Incomplete Profile",
+        text2: "Some members have not set up their profiles. Please remind them.",
+        topOffset: 80,
+        visibilityTime: 4000,
+      });
+    }
+    
+    // Reset all state to ensure no data from previous member persists
+    setProfile({
+      image: require("@/assets/images/darkicon.png"),
+      username: fullName ? String(fullName).split(' ')[0] : '',
+      fullName: fullName ? String(fullName) : '',
+      membershipType: membershipType ? String(membershipType) : '',
+      startDate: membershipStartDate ? String(membershipStartDate) : '',
+      endDate: membershipEndDate ? String(membershipEndDate) : '',
+    });
+
+    // Update membership type display
+    setSelectedMembershipType(
+      membershipType ? formatMembershipType(String(membershipType)) : ""
+    );
+    
+    // Update dates
+    setStartDate(membershipStartDate ? String(membershipStartDate) : "");
+    setEndDate(membershipEndDate ? String(membershipEndDate) : "");
+
+    //Determine if member has current membership
+    setHasMembership(
+      Boolean(membershipStartDate && membershipEndDate)
+    );
+  }, [memberId, fullName, membershipStartDate, membershipEndDate, membershipType]);
+
+  const updateMemberDetails = async () => {
+    // Validate date format (YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    
+    if (startDate && !dateRegex.test(startDate)) {
+      Toast.show({
+        type: "error",
+        text1: "Invalid Date Format",
+        text2: "Start date must be in YYYY-MM-DD format",
+        topOffset: 80,
+      });
+      return;
+    }
+    
+    if (endDate && !dateRegex.test(endDate)) {
+      Toast.show({
+        type: "error",
+        text1: "Invalid Date Format",
+        text2: "End date must be in YYYY-MM-DD format",
+        topOffset: 80,
+      });
+      return;
+    }
+  
+    const token = await getItem('authToken');
+  
+    try {
+      // Update Membership Type
+      if (selectedMembershipType) {
+        // Convert e.g., "Tier 2" to "tier2"
+        const backendMembershipType = selectedMembershipType
+          .toLowerCase()
+          .replace(/tier\s*(\d+)/, 'tier$1');
+
+        const typeResponse = await fetch(`${API_BASE_URL}/api/account/admin/update-membership-type/${memberId}/`, {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type_of_membership: backendMembershipType,
+          }),
+        });
+  
+        if (!typeResponse.ok) {
+          const err = await typeResponse.text();
+          console.error('Membership type update failed:', err);
+        }
+      }
+
+      if (startDate !== membershipStartDate || endDate !== membershipEndDate) {
+        const datesResponse = await fetch(`${API_BASE_URL}/api/account/admin/members/${memberId}/status/`, {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            membership_start_date: startDate,
+            membership_end_date: endDate,
+          }),
+        });
+  
+        if (!datesResponse.ok) {
+          throw new Error('Subscription dates update failed');
+        }
+      }
+      Toast.show({
+        type: "success",
+        text1: "Update Successful",
+        text2: `Successfully updated ${profile.fullName}'s subscription details`,
+        topOffset: 80,
+        visibilityTime: 1500
+      });
+      setTimeout(() => {
+        router.push('/(admin)/members');
+      }, 1600);
+    } catch (error) {
+      console.error('Error updating member details:', error);
+    }
+  };  
 
   return (
     <View style={styles.container}>
       <Header screen='Update Subscription' prevScreen='/(admin)/members' />
 
-      <View style={styles.profileContainer}>
-        <View style={styles.imageContainer}>
-          <Image 
-            source={typeof profile.image === 'string' ? { uri: profile.image } : profile.image} 
-            style={styles.profileImage} 
-          />
-        </View>
-
-        <View style={styles.textContainer}>
-          <Text style={styles.username}>{profile.username}</Text>
-        </View>
-      </View>
-
       <ScrollView style={styles.scrollViewCont}>
+        <View style={styles.profileContainer}>
+          <View style={styles.imageContainer}>
+            <Image 
+              source={typeof profile.image === 'string' ? { uri: profile.image } : profile.image} 
+              style={styles.profileImage} 
+            />
+          </View>
+
+          <View style={styles.textContainer}>
+            <Text style={styles.username}>{fullName ? (fullName as string).split(' ')[0] : 'User has not set up profile.'}</Text>
+          </View>
+        </View>
+      
         <View style={styles.detailsContainer}>
           {/* Full Name Details*/}
           <View style={styles.field}>
             <Text style={styles.label}>Full Name</Text>
-            <Text style={styles.value}>{profile.fullName}</Text>
+            <Text style={styles.value}>{fullName ? fullName : ''}</Text>
           </View>
 
           {/* Membership Type Details*/}
@@ -58,15 +214,19 @@ export default function MemberProfileScreen() {
             <Text style={styles.label}>Membership Type</Text>
             <View style={styles.typePicker}>
               <RNPickerSelect
-                onValueChange={(value) => setMembershipType(value)}
+                onValueChange={(value) => setSelectedMembershipType(value)}
                 items={[
                   { label: 'Tier 1', value: 'Tier 1' },
                   { label: 'Tier 2', value: 'Tier 2' },
                   { label: 'Tier 3', value: 'Tier 3' },
                 ]}
                 style={pickerSelectStyles}
-                value={membershipType}
-                placeholder={{ label: 'Choose Membership Type', value: null }}
+                value={selectedMembershipType || (hasMembership ? hasMembership : null)}
+                placeholder={{
+                  label: "Choose Membership Type",
+                  value: null,
+                  color: 'gray',
+                }}
                 useNativeAndroidPickerStyle={false}
                 Icon={() =>
                   Platform.OS === "ios" ? (
@@ -76,37 +236,43 @@ export default function MemberProfileScreen() {
               />
             </View>
           </View>
-
-          {/* Subscription Status Details*/}
-          <View style={styles.field}>
-            <Text style={styles.label}>Subscription Status</Text>
-            <View style={styles.typePicker}>
-              <RNPickerSelect
-                onValueChange={(value) => setSubscriptionStatus(value)}
-                items={[
-                  { label: 'Active', value: 'active' },
-                  { label: 'Inactive', value: 'inactive' },
-                ]}
-                style={pickerSelectStyles}
-                value={subscriptionStatus}
-                placeholder={{ label: 'Choose Subscription Status', value: null }}
-                useNativeAndroidPickerStyle={false}
-                Icon={() =>
-                  Platform.OS === "ios" ? (
-                    <MaterialCommunityIcons name="chevron-down" size={20} color="gray" />
-                  ) : null
-                }
+          
+          {/* Date Picker for Start Date */}
+          <View style={styles.datefield}>
+            <Text style={styles.label}>Subscription Start Date</Text>
+              <DateTimePicker
+                value={startDate ? new Date(startDate) : new Date()}
+                mode="date"
+                display="default"
+                themeVariant='light'
+                onChange={(event, date) => {
+                  if (date) setStartDate(date.toISOString().split('T')[0]);
+                }}
               />
-            </View>
+          </View>
+
+          {/* Date Picker for End Date */}
+          <View style={styles.datefield}>
+            <Text style={styles.label}>Subscription End Date</Text>
+              <DateTimePicker
+                value={endDate ? new Date(endDate) : new Date()}
+                mode="date"
+                display="default"
+                themeVariant='light'
+                onChange={(event, date) => {
+                  if (date) setEndDate(date.toISOString().split('T')[0]);
+                }}
+              />
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={() => router.push('/(admin)/members')}>
+            <TouchableOpacity style={styles.button} onPress={updateMemberDetails}>
               <Text style={styles.buttonText}>Update Details</Text>
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
+      <Toast />
     </View>
   );
 }
@@ -126,9 +292,9 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   profileImage: {
-    width: 250,
-    height: 250,
-    borderRadius: 175,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
     resizeMode: "cover",
   },
   editProfile: {
@@ -164,6 +330,11 @@ const styles = StyleSheet.create({
   field: {
     padding: 10,
   },
+  datefield: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+  },
   label: {
     fontFamily: Fonts.regular,
     fontSize: 16,
@@ -182,8 +353,19 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     fontSize: 14,
   },
+  input: {
+    marginBottom: 10,
+    borderColor: Colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginVertical: 5,
+    fontFamily: Fonts.regular,
+},
   buttonContainer: {
     marginTop: 30,
+    marginBottom: 50,
   },
   button: {
     backgroundColor: Colors.gold,

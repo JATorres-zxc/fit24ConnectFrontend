@@ -4,32 +4,8 @@ import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
-interface Exercise {
-    id: string | null;
-    name: string;
-    description: string;
-    image: ImageSourcePropType | null; // Accepts an image or null if not set
-  }
-
-  interface Feedback {
-    id: string;
-    feedback: string;
-    rating: number;
-    createdAt: Date;
-  }
-  
-  interface Workout {
-    id: string | null;
-    title: string;
-    duration: number; // in days
-    fitnessGoal: string;
-    intensityLevel: string;
-    trainer: string;
-    exercises: Exercise[];
-    visibleTo: string;
-    feedbacks: Feedback[];
-    member_id?: string; // Added member_id property
-  }
+// Import interfaces for workouts
+import { Exercise2 as Exercise, Feedback, Workout2 as Workout } from "@/types/interface";
 
 interface MemberWorkoutProps {
     workout: Workout;
@@ -42,10 +18,10 @@ const MemberWorkout: React.FC<MemberWorkoutProps> = ({ workout, requesteeName, o
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Image
-                    source={workout.exercises[0].image ? { uri: workout.exercises[0].image } : require("@/assets/images/icon.png")}
-                    style={styles.image}
-                />
+            <Image
+                source={require("@/assets/images/darkicon.png")}
+                style={styles.image}
+            />
                 <View style={styles.textContainer}>
                     <Text style={styles.title}>{workout.title}</Text>
                     <Text style={styles.subtitle}>Accessible by:</Text>
@@ -75,10 +51,9 @@ const MemberWorkout: React.FC<MemberWorkoutProps> = ({ workout, requesteeName, o
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         backgroundColor: Colors.bg,
-        padding: 16,
-        marginTop: 15,
+        padding: 10,
+        marginTop: 5,
     },
     editIcon: {
         alignSelf: "flex-end",

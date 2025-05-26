@@ -5,7 +5,33 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
 
-export default function Header() {
+import { HeaderPropsUserType } from '@/types/interface';
+
+export default function Header({ userType }: HeaderPropsUserType) {
+  const handleHomePress = () => {
+    if (userType === 'trainer') {
+      router.push('/(trainer)/home');
+    } else {
+      router.push('/(tabs)/home');
+    }
+  };
+
+  const handleProfilePress = () => {
+    if (userType === 'trainer') {
+      router.push('/(trainer)/profile');
+    } else {
+      router.push('/(tabs)/profile');
+    }
+  }
+
+  const handleNotificationPress = () => {
+    if (userType === 'trainer') {
+      router.push('/(trainer)/notifications');
+    } else {
+      router.push('/(tabs)/notifications');
+    }
+  };
+
   return (
     <SafeAreaView>
       <View style={styles.header}>
@@ -15,7 +41,7 @@ export default function Header() {
             name='home' 
             color={'black'} 
             size={24} 
-            onPress={() => router.push('/home')} 
+            onPress={handleHomePress} 
           />
           <Text style={styles.headerText}>
             Facility Access Logs
@@ -23,8 +49,8 @@ export default function Header() {
         </View>
 
         <View style={styles.headerIcon}>
-          <FontAwesome name='user-circle' color={'black'} size={24} onPress={() => router.push('/(tabs)/profile')} />
-          <FontAwesome name='bell-o' color={'black'} size={24} onPress={() => router.push('/(tabs)/notifications')} />
+          <FontAwesome name='user-circle' color={'black'} size={24} onPress={handleProfilePress} />
+          <FontAwesome name='bell-o' color={'black'} size={24} onPress={handleNotificationPress} />
         </View>
       </View>
     </SafeAreaView>

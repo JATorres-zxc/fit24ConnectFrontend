@@ -1,13 +1,15 @@
-import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity, Platform } from "react-native";
+import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity } from "react-native";
 import { useState, useCallback } from "react";
+import Toast from "react-native-toast-message";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getItem } from '@/utils/storageUtils';
 
 import Header from "@/components/NavigateBackHeader";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Fonts";
-import Toast from "react-native-toast-message";
+
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 export default function CreateAnnouncement() {
   const [announcementTitle, setAnnouncementTitle] = useState("");
@@ -36,7 +38,7 @@ export default function CreateAnnouncement() {
         text1: 'Error',
         text2: 'Please enter a title for the announcement',
         position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -47,19 +49,13 @@ export default function CreateAnnouncement() {
         text1: 'Error',
         text2: 'Please enter message content for the announcement',
         position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
 
     try {
       setIsLoading(true);
-      
-      // Use the same API_BASE_URL pattern as in Home component
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://172.16.15.51:8000';
       
       // Create a new announcement object
       const newAnnouncement = {
@@ -69,7 +65,7 @@ export default function CreateAnnouncement() {
       };
       
       // Get auth token from AsyncStorage
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       if (!token) {
         throw new Error('Authentication token not found');
       }
@@ -98,11 +94,12 @@ export default function CreateAnnouncement() {
         text1: 'Success',
         text2: 'Announcement created successfully',
         position: 'top',
-        topOffset: 100,
-        visibilityTime: 2000,
-        autoHide: true,
-        onHide: () => router.push('/(admin)/home') // Navigate back after toast disappears
+        topOffset: 80,
       });
+
+      setTimeout(() => {
+        router.replace('/(admin)/home');
+      }, 1500);
       
     } catch (error) {
       Toast.show({
@@ -110,7 +107,7 @@ export default function CreateAnnouncement() {
         text1: 'Error',
         text2: typeof error === 'object' && error !== null && 'message' in error ? String(error.message) : 'Failed to create announcement. Please try again.',
         position: 'top',
-        topOffset: 100,
+        topOffset: 80,
       });
       console.error("Create error:", error);
     } finally {
@@ -136,6 +133,7 @@ export default function CreateAnnouncement() {
           <TextInput
             style={styles.input}
             placeholder="Enter Title for Announcement"
+            placeholderTextColor={Colors.textSecondary}
             value={announcementTitle}
             onChangeText={handleTitleChange}
           />
@@ -166,6 +164,7 @@ export default function CreateAnnouncement() {
         </View>
       </View>
       </ScrollView>
+      <Toast />
     </View>
   );
 }

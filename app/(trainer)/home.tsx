@@ -1,92 +1,199 @@
-import { Text, View, StyleSheet, Platform } from "react-native";
-import { useEffect, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
-import Toast from "react-native-toast-message";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Text, View, StyleSheet } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 
-import Header from "@/components/TrainerHomeHeader";
+import Toast from "react-native-toast-message";
+import { saveItem, getItem } from '@/utils/storageUtils';
+
+import Header from "@/components/HomeHeader";
 import AnnouncementsContainer from "@/components/AnnouncementsContainer";
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
 import { Colors } from '@/constants/Colors';
 import { Fonts } from "@/constants/Fonts";
 
+// Import interface for the announcement object
+import { Announcement } from "@/types/interface";
+
 export default function Home() {
+  const router = useRouter();
   const params = useLocalSearchParams();
-  const [firstName, setFirstName] = useState("");
-  const [announcements, setAnnouncements] = useState([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [firstName, setFirstName] = useState('');
 
+  // Show toast after login
   useEffect(() => {
-    // Fetch announcements when component mounts
-    const fetchAnnouncements = async () => {
-      try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000' // Web uses localhost
-            : 'http://192.168.1.5:8000'; // Mobile uses local network IP (adjust as needed)
-
-        const token = await AsyncStorage.getItem('authToken');
-        const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        
-        const data = await response.json();
-        setAnnouncements(data);
-      } catch (error) {
-        console.error("Error fetching announcements:", error);
-        Toast.show({
-          type: "error",
-          text1: "Failed to load announcements",
-          text2: "Please try again later",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAnnouncements();
-  }, []);
-
-  useEffect(() => {
-    const loadName = async () => {
-      const storedName = await AsyncStorage.getItem("full_name");
-      if (storedName) {
-        const first = storedName.split(" ")[0];
-        setFirstName(first);
-      }
-    };
-  
-    loadName();
-  }, []);
-
-  useEffect(() => {
-    if (params.full_name) {
-      if (typeof params.full_name === "string") {
-        AsyncStorage.setItem("full_name", params.full_name);
-      }
-    }
-
-    if (params.showToast === "true") {
+    if (params.showToast === "true" && params.full_name) {
       Toast.show({
         type: "success",
         text1: "Login Success!",
         text2: `Logged in as ${params.full_name}`,
+        topOffset: 80,
         visibilityTime: 1500
       });
     }
-  }, [params.showToast]);
+  }, [params.showToast, params.full_name]);
+
+  const getUserFirstName = async () => {
+    try {
+      // Fetch latest profile data from API
+      const token = await getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch profile data');
+      }
+
+      const data = await response.json();
+
+      await saveItem("profile", JSON.stringify(data));
+
+      if (data.full_name) {
+        // Extract the first name from the full name
+        const firstName = data.full_name.split(" ")[0];
+        setFirstName(firstName);
+      }
+    } catch (error) {
+      console.error("Error fetching profile data:", error);
+
+       // Fallback to local storage if API call fails
+      try {
+        // Try to get userData from storage
+        const userData = await getItem("userData");
+        if (userData) {
+          const user = JSON.parse(userData);
+          if (user.full_name) {
+            // Extract first name (text before first space)
+            const firstNameOnly = user.full_name.split(' ')[0];
+            setFirstName(firstNameOnly);
+            return;
+          }
+        }
+        
+        // If we couldn't get from userData, try profile
+        const profileData = await getItem("profile");
+        if (profileData) {
+          const profile = JSON.parse(profileData);
+          if (profile.full_name) {
+            const firstNameOnly = profile.full_name.split(' ')[0];
+            setFirstName(firstNameOnly);
+          }
+        }
+      } catch (fallbackError) {
+        console.error("Error in fallback method for getting user's name:", fallbackError);
+      }
+    }
+  };
+
+  // Profile verification
+  const checkProfileCompletion = async () => {
+      try {
+        const profileData = await getItem("profile");
+        if (profileData) {
+          const profile = JSON.parse(profileData);
+
+          // Fields that must not be null or empty (excluding some fields)
+          const requiredFields = [
+            "email",
+            "full_name",
+            "contact_number",
+            "complete_address",
+            "experience",
+          ];
+
+          const missingFields = requiredFields.filter((field) => {
+            const value = profile[field];
+
+            if (value === null || value === undefined) return true;
+            if (typeof value === "string" && value.trim() === "") return true;
+            return false;
+          });
+
+          console.log("Missing fields:", missingFields);
+
+          if (missingFields.length > 0) {
+          Toast.show({
+            type: "error",
+            text1: "Profile Incomplete",
+            text2: "Please complete all profile details before proceeding.",
+            topOffset: 80,
+            visibilityTime: 2000, // Show the toast for 2 seconds
+          });
+
+          // Delay the redirection by 2 seconds
+          setTimeout(() => {
+            router.push({
+              pathname: '/(trainer)/profile',
+              params: { showToast: 'true' },
+            });
+          }, 2000); // 2-second delay
+        }
+      }
+    } catch (error) {
+      console.error("Error checking profile completeness:", error);
+    }
+  };
+
+  // Fetch announcements function
+  const fetchAnnouncements = async () => {
+    try {
+      const token = await getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch announcements');
+      }
+
+      const data = await response.json();
+
+      // Sort announcements by updated_at date (most recent first)
+      const sortedAnnouncements: Announcement[] = [...data].sort((a, b) => {
+        const dateA = new Date(a.updated_at).getTime();
+        const dateB = new Date(b.updated_at).getTime();
+        return dateB - dateA;
+      });
+
+      // Set sorted announcements to state
+      setAnnouncements(sortedAnnouncements);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+      Toast.show({
+        type: "error",
+        text1: "Failed to load announcements",
+        text2: "Please try again later",
+        topOffset: 80,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch announcements and check profile completion when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchAnnouncements();
+      getUserFirstName();
+      checkProfileCompletion();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
-      <Header name={`Trainer ${firstName}`} />
+      <Header userType="trainer" name={`Trainer ${firstName}`} />
 
       <View style={styles.announcementsContainer}>
         {loading ? (

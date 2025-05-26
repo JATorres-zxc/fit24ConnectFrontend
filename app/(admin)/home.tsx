@@ -1,30 +1,43 @@
-import { View, StyleSheet, Platform, } from "react-native";
-import { useCallback, useState } from "react";
+import { View, StyleSheet } from "react-native";
+import { useEffect, useCallback, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
+import Toast from "react-native-toast-message";
 
 import Button from '@/components/CreateAnnouncementButton';
 import Header from '@/components/AdminHomeHeader';
 import AdminAnnouncements from "@/components/AdminSideAnnouncementsContainer";
 
 import { Colors } from "@/constants/Colors";
-import { announcements as initialAnnouncements } from "@/context/announcements";
 import { useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { saveItem, getItem } from '@/utils/storageUtils';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
-export default function Home() {
+// Import interface for the announcement object
+import { Announcement } from "@/types/interface";
+
+export default function AdminHome() {
+  const params = useLocalSearchParams();
   // Use state to manage announcements instead of static import
-  const [announcements, setAnnouncements] = useState(initialAnnouncements);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Show toast after login
+  useEffect(() => {
+    if (params.showToast === "true") {
+      Toast.show({
+        type: "success",
+        text1: "Login Success!",
+        text2: `Logged in as Admin`,
+        visibilityTime: 1500
+      });
+    }
+  }, [params.showToast]);
 
   // Function to fetch announcements from API
   const fetchAnnouncements = async () => {
     setLoading(true);
     try {
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://172.16.15.51:8000';
-      
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/announcement/`, {
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -36,21 +49,22 @@ export default function Home() {
       }
       
       const data = await response.json();
-      setAnnouncements(data);
-      
-      // Optionally, also update AsyncStorage
-      await AsyncStorage.setItem('announcements', JSON.stringify(data));
+
+      // Sort announcements by updated_at date (most recent first)
+      const sortedAnnouncements: Announcement[] = [...data].sort((a, b) => {
+        const dateA = new Date(a.updated_at).getTime();
+        const dateB = new Date(b.updated_at).getTime();
+        return dateB - dateA;
+      });
+
+      setAnnouncements(sortedAnnouncements);
     } catch (error) {
       console.error("Error fetching announcements:", error);
-      // Fallback to cached data if API call fails
-      try {
-        const storedAnnouncements = await AsyncStorage.getItem('announcements');
-        if (storedAnnouncements) {
-          setAnnouncements(JSON.parse(storedAnnouncements));
-        }
-      } catch (storageError) {
-        console.error("Error fetching from storage:", storageError);
-      }
+      Toast.show({
+        type: "error",
+        text1: "Failed to load announcements",
+        text2: "Please try again later",
+      });
     } finally {
       setLoading(false);
     }
@@ -66,12 +80,7 @@ export default function Home() {
   // Handle deletion
   const handleDelete = async (id: string) => {
     try {
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://172.16.15.51:8000';
-      
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/api/announcement/${id}/`, {
         method: 'DELETE',
         headers: {
@@ -90,7 +99,7 @@ export default function Home() {
       
       // Update AsyncStorage
       const updatedAnnouncements = announcements.filter(announcement => announcement.id !== id);
-      await AsyncStorage.setItem('announcements', JSON.stringify(updatedAnnouncements));
+      await saveItem('announcements', JSON.stringify(updatedAnnouncements));
     } catch (error) {
       console.error("Error deleting announcement:", error);
     }

@@ -1,4 +1,4 @@
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useState } from "react";
 import {
     View,
@@ -16,6 +16,8 @@ import { NavigationProp } from '@react-navigation/native';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { Dimensions } from 'react-native'
+import { API_BASE_URL } from '@/constants/ApiConfig';
+import { FontAwesome } from '@expo/vector-icons';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -26,7 +28,10 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmationPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
-    const [is_trainer, setIsTrainer] = useState(false); // Add state for is_trainer
+
+    // State to toggle visibility
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
 
     const sanitizeInput = (input: string) => {
         return input.replace(/[^a-zA-Z0-9@.]/g, '');
@@ -44,7 +49,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Email is required',
-                position: 'bottom'
+                topOffset: 80,
             });
             return;
         }
@@ -54,7 +59,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Invalid email format',
-                position: 'bottom'
+                topOffset: 80,
             });
             return;
         }
@@ -63,16 +68,16 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Password is required',
-                position: 'bottom'
+                topOffset: 80,
             });
             return;
         }
-        if (sanitizedPassword.length < 6) {
+        if (sanitizedPassword.length < 8) {
             Toast.show({
                 type: 'error',
                 text1: 'Validation Error',
-                text2: 'Password must be at least 6 characters',
-                position: 'bottom'
+                text2: 'Password must be at least 8 characters',
+                topOffset: 80,
             });
             return;
         }
@@ -81,19 +86,12 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Validation Error',
                 text2: 'Passwords do not match',
-                position: 'bottom'
+                topOffset: 80,
             });
             return;
         }
 
         try {
-            // Perform the API login call
-            const API_BASE_URL =
-                Platform.OS === 'web'
-                ? 'http://127.0.0.1:8000' // Web uses localhost
-                : 'http://172.16.6.198:8000'; // Mobile uses local network IP
-
-            // Commented out API call for testing
             const response = await fetch(`${API_BASE_URL}/api/account/register/`, {
                 method: 'POST',
                 headers: {
@@ -103,7 +101,6 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     email: sanitizedEmail,
                     password: sanitizedPassword,
                     confirm_password: sanitizedConfirmPassword,
-                    is_trainer: is_trainer,
                 }),
             });
 
@@ -117,7 +114,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     type: 'success',
                     text1: 'Registration Successful',
                     text2: 'You have successfully registered.',
-                    position: 'bottom'
+                    topOffset: 80,
                 });
                 setTimeout(() => {
                     router.push('/(auth)/login');
@@ -127,7 +124,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     type: 'error',
                     text1: 'Registration Failed',
                     text2: 'There was an error with your registration.',
-                    position: 'bottom'
+                    topOffset: 80,
                 });
             }
         } catch (error) {
@@ -135,7 +132,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 type: 'error',
                 text1: 'Registration Failed',
                 text2: 'An error occurred. Please try again.',
-                position: 'bottom'
+                topOffset: 80,
             });
         }
     };
@@ -146,47 +143,44 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
             <View style={styles.logoContainer}>
-                <Image source={require("./assets/images/icon.png")} style={styles.logo} />
+                <Image source={require("@/assets/images/icon.png")} style={styles.logo} />
             </View>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.formContainer}>
                     <TextInput
                         placeholder="Email"
+                        placeholderTextColor={Colors.textSecondary}
                         style={styles.input}
                         value={email}
                         onChangeText={setEmail}
                     />
-                    <TextInput
-                        placeholder="Password"
-                        style={styles.input}
-                        secureTextEntry
-                        value={password}
-                        onChangeText={setPassword}
-                    />
-                    <TextInput
-                        placeholder="Confirm Password"
-                        style={styles.input}
-                        secureTextEntry
-                        value={confirmPassword}
-                        onChangeText={setConfirmationPassword}
-                    />
-
-                    <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 10 }}>
-                        <TouchableOpacity
-                            onPress={() => setIsTrainer(!is_trainer)}
-                            style={{
-                                width: 20,
-                                height: 20,
-                                borderRadius: 4,
-                                borderWidth: 1,
-                                borderColor: Colors.border,
-                                backgroundColor: is_trainer ? Colors.gold : "transparent",
-                                marginRight: 10,
-                            }}
+                    <View style={styles.passwordContainer}>
+                        <TextInput
+                            placeholder="Password"
+                            placeholderTextColor={Colors.textSecondary}
+                            style={styles.passwordInput}
+                            secureTextEntry={!showPassword}
+                            value={password}
+                            onChangeText={setPassword}
                         />
-                        <Text style={{ fontFamily: Fonts.regular, color: Colors.linkText }}>
-                            Register as Trainer
-                        </Text>
+                    
+                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.icon}>
+                            <FontAwesome name={showPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.passwordContainer}>
+                        <TextInput
+                            placeholder="Password"
+                            placeholderTextColor={Colors.textSecondary}
+                            style={styles.passwordInput}
+                            secureTextEntry={!showConfirmPassword}
+                            value={confirmPassword}
+                            onChangeText={setConfirmationPassword}
+                        />
+                    
+                        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.icon}>
+                            <FontAwesome name={showPassword ? "eye" : "eye-slash"} size={20} color={Colors.eyeIcon} />
+                        </TouchableOpacity>
                     </View>
 
                     <TouchableOpacity style={styles.button} onPress={handleRegister}>
@@ -226,13 +220,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     logoContainer: {
-        marginTop: 150,
+        marginTop: 100,
         justifyContent: "center",
         alignItems: "center",
     },
     logo: {
-        width: 200,
-        height: 200,
+        width: 250,
+        height: 250,
         resizeMode: "contain",
     },
     formContainer: {
@@ -256,6 +250,28 @@ const styles = StyleSheet.create({
         marginVertical: 5,
         fontFamily: Fonts.regular,
     },
+    passwordContainer: {
+        width: "85%",
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    passwordInput: {
+        width: "100%",
+        marginBottom: 10,
+        borderColor: Colors.border,
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        marginVertical: 5,
+        fontFamily: Fonts.regular,
+    },
+    icon: {
+        position: 'absolute',
+        right: 5,
+        padding: 10,
+        paddingTop: 5,
+    },
     button: {
         width: "30%",
         backgroundColor: Colors.gold,
@@ -274,7 +290,7 @@ const styles = StyleSheet.create({
     },
     bottomText: {
         textAlign: "center",
-        marginTop: 10,
+        marginTop: 20,
         color: Colors.linkText,
         fontFamily: Fonts.italic,
         fontSize: 12,

@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, FlatList, Modal, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
+import Toast from "react-native-toast-message";
 
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
@@ -11,8 +12,7 @@ interface Announcement {
   id: string;
   title: string;
   content: string;
-  date: string;
-  admin: string;
+  updated_at: string;
 }
 
 interface Props {
@@ -26,6 +26,15 @@ export default function AdminAnnouncements({ announcements, onDelete, isLoading 
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
 
   // Add loading state handling
   if (isLoading) {
@@ -47,6 +56,13 @@ export default function AdminAnnouncements({ announcements, onDelete, isLoading 
       setModalVisible(false);
       setSelectedId(null);
     }
+
+    // Show toast after successful deletion
+    Toast.show({
+      type: 'success',
+      text1: 'Announcement Deleted',
+      text2: 'The announcement was successfully removed.',
+    });
   };
 
   return (
@@ -59,7 +75,7 @@ export default function AdminAnnouncements({ announcements, onDelete, isLoading 
             <View style={styles.cardHeader}>
               <View style={styles.headerText}>
                 <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.date}>{item.date}</Text>
+                <Text style={styles.date}>{formatDate(item.updated_at)}</Text>
               </View>
             </View>
 
@@ -113,6 +129,7 @@ export default function AdminAnnouncements({ announcements, onDelete, isLoading 
           </View>
         </View>
       </Modal>
+      <Toast />
     </View>
   );
 }
@@ -147,7 +164,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: 5,
+    justifyContent: "space-between",
   },
   title: {
     fontSize: 16,

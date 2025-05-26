@@ -7,12 +7,8 @@ import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from "expo-image-picker";
 
-interface Exercise {
-  id: string | null;
-  name: string;
-  description: string;
-  image: ImageSourcePropType | null; 
-}
+// Import interface
+import { Exercise2 as Exercise } from "@/types/interface";
 
 interface TrainerWorkoutFormProps {
   exercises: Exercise[];
@@ -70,38 +66,35 @@ const TrainerWorkoutForm: React.FC<TrainerWorkoutFormProps> = ({
       />
       
       {exercises.map((exercise, index) => (
-        <View>
-          <View key={exercise.id || index} style={styles.exerciseItem}>
-            <View style={styles.imageContainer}>
-              {exercise.image ? (
-                <Image source={exercise.image} style={styles.imagePreview} />
-              ) : (
-                <TouchableOpacity onPress={() => handlePickImage(index)}>
-                  <Ionicons name="image" size={50} color={Colors.textPrimary} />
-                </TouchableOpacity>
-              )}
-            </View>
-            <View style={styles.exerciseDetails}>
-              <TextInput
-                style={styles.exerciseTitleInput}
-                placeholder={`Exercise ${index + 1}`}
-                defaultValue={exercise.name}
-                onChangeText={(text) => onChangeExercise(index, 'name', text)}
-              />
-              <Text style={styles.label}>Description</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={"Enter Description for Exercise"}
-                placeholderTextColor={Colors.textSecondary}
-                defaultValue={exercise.description}
-                onChangeText={(text) => onChangeExercise(index, 'description', text)}
-              />
-              <TouchableOpacity onPress={() => onDeleteExercise(index)} style={styles.trashIcon}>
-                <Ionicons name="trash-outline" size={24} color="red" />
+        <View key={exercise.id || index} style={styles.exerciseItem}>
+          <View style={styles.imageContainer}>
+            {exercise.image ? (
+              <Image source={exercise.image} style={styles.imagePreview} />
+            ) : (
+              <TouchableOpacity onPress={() => handlePickImage(index)}>
+                <Ionicons name="image" size={50} color={Colors.textPrimary} />
               </TouchableOpacity>
-            </View>
+            )}
           </View>
-          <View style={styles.horizontalLine} />
+          <View style={styles.exerciseDetails}>
+            <TextInput
+              style={styles.exerciseTitleInput}
+              placeholder={`Exercise ${index + 1}`}
+              defaultValue={exercise.name}
+              onChangeText={(text) => onChangeExercise(index, 'name', text)}
+            />
+            <Text style={styles.label}>Description</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={"Enter Description for Exercise"}
+              placeholderTextColor={Colors.textSecondary}
+              defaultValue={exercise.description}
+              onChangeText={(text) => onChangeExercise(index, 'description', text)}
+            />
+            <TouchableOpacity onPress={() => onDeleteExercise(index)} style={styles.trashIcon}>
+              <Ionicons name="trash-outline" size={24} color="red" />
+            </TouchableOpacity>
+          </View>
         </View>
       ))}
       
@@ -115,7 +108,7 @@ const TrainerWorkoutForm: React.FC<TrainerWorkoutFormProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 0,
   },
   headerTitle: {
     fontSize: 22,

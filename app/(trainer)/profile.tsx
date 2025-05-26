@@ -1,28 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Text, View, StyleSheet, Image, ScrollView, Platform, ActivityIndicator } from 'react-native';
+import { Text, View, StyleSheet, Image, ScrollView, ActivityIndicator, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLocalSearchParams } from "expo-router";
+import Toast from "react-native-toast-message";
+import { saveItem, getItem, deleteItem } from '@/utils/storageUtils';
 
 import Header from '@/components/ProfileHeader';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import { FontAwesome6 } from '@expo/vector-icons';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
-interface Profile {
-  image: any,
-  username: string,
-  membershipType: string,
-  membershipStatus: string,
-  fullName: string,
-  email: string,
-  address: string,
-  contact_number: string,
-  experience: string,
-}
+// Import interface for the profile object
+import { TrainerProfileDetails } from '@/types/interface';
 
 export default function ProfileScreen() {
-  const [profile, setProfile] = useState<Profile>({
-    image: require("@/assets/images/icon.png"),
+  const [profile, setProfile] = useState<TrainerProfileDetails>({
+    image: require("@/assets/images/darkicon.png"),
     username: '',
     membershipType: '',
     membershipStatus: '',
@@ -32,21 +27,33 @@ export default function ProfileScreen() {
     address: '',
     contact_number: '',
   });
+  const params = useLocalSearchParams();    
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+    
+  useEffect(() => {
+    if (params.showToast === "true") {
+      setTimeout(() => {
+        Toast.show({
+          type: "error",
+          text1: "Profile Incomplete",
+          text2: "Please complete all profile details before proceeding.",
+          topOffset: 80,
+        });
+      }, 4000); // Adding a short delay to ensure Toast renders properly
+    }
+  }, [params.showToast]);
 
   const fetchProfile = async () => {
     try {
       setLoading(true);
       setError('');
-      
-      const API_BASE_URL = 
-        Platform.OS === 'web'
-          ? 'http://127.0.0.1:8000'
-          : 'http://192.168.1.11:8000';
 
-      const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch(`${API_BASE_URL}/api/profilee/profile`, {
+
+      const token = await getItem('authToken');
+
+      const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -58,12 +65,11 @@ export default function ProfileScreen() {
       }
 
       const data = await response.json();
-      console.log('Profile API Response:', data);
 
       setProfile({
         image: data.image 
           ? { uri: `${API_BASE_URL}${data.image}` } // Assuming image is a URL path
-          : require("@/assets/images/icon.png"),
+          : require("@/assets/images/darkicon.png"),
         username: data.username || '',
         membershipType: data.membership_type || '',
         membershipStatus: data.membership_status || '',
@@ -75,21 +81,21 @@ export default function ProfileScreen() {
       });
 
       // Cache the profile data locally
-      await AsyncStorage.setItem('profile', JSON.stringify(data));
+      await saveItem('profile', JSON.stringify(data));
     } catch (error) {
       console.error('Error fetching profile:', error);
       setError('Failed to load profile data');
       
       // Try to load cached profile if API fails
       try {
-        const cachedProfile = await AsyncStorage.getItem('profile');
+        const cachedProfile = await getItem('profile');
         if (cachedProfile) {
           const parsed = JSON.parse(cachedProfile);
           setProfile({
             ...parsed,
             image: parsed.image 
               ? { uri: parsed.image }
-              : require("@/assets/images/icon.png"),
+              : require("@/assets/images/darkicon.png"),
           });
           setError('Using cached data (offline mode)');
         }
@@ -101,17 +107,62 @@ export default function ProfileScreen() {
     }
   };
 
-  // Fetch profile on component mount
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
   // Refresh profile when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchProfile();
     }, [])
   );
+
+  const handleLogout = () => {
+    setLogoutModalVisible(true); // open the modal
+  };
+
+  const handleConfirmLogout = async () => {
+    try {
+      const refreshToken = await getItem('refreshToken');
+      const accessToken = await getItem('authToken');
+        
+      if (!refreshToken) {
+        console.error('No refresh token found.');
+        setLogoutModalVisible(false);
+        return;
+      }
+
+      if (!accessToken) {
+        console.error('No access token found.');
+        setLogoutModalVisible(false);
+        return;
+      }
+  
+      const response = await fetch(`${API_BASE_URL}/api/account/logout/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ refresh: refreshToken}),
+      });
+  
+      if (response.ok) {
+        console.log('Logged out successfully');
+      } else {
+        const errorData = await response.json();
+        console.error('Logout API call failed:', errorData);
+      }
+
+      // Clear all authentication tokens
+      await deleteItem('accessToken');
+      await deleteItem('refreshToken');
+      await deleteItem('userID');
+      
+      setLogoutModalVisible(false);
+      router.push('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      setLogoutModalVisible(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -147,10 +198,6 @@ export default function ProfileScreen() {
 
         <View style={styles.textContainer}>
           <Text style={styles.username}>{profile.fullName.split(' ')[0] || ''}</Text>
-          <Text style={styles.membership}>
-            {profile.membershipType}: {' '}
-            <Text style={{ fontFamily: Fonts.mediumItalic }}>{profile.membershipStatus}</Text>
-          </Text>
         </View>
       </View>
 
@@ -186,9 +233,55 @@ export default function ProfileScreen() {
             <Text style={styles.value}>{profile.contact_number}</Text>
           </View>
 
+          {/* Logout Button */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.button}
+              onPress={handleLogout}
+            >
+              <Text style={styles.buttonText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
 
+      {/* Logout Confirmation Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={logoutModalVisible}
+        onRequestClose={() => setLogoutModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setLogoutModalVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <View style={styles.modalIconContainer}>
+                  <FontAwesome6 name="right-from-bracket" size={36} color={Colors.black} />
+                </View>
+                <Text style={styles.modalTitle}>Confirm Logout</Text>
+                <Text style={styles.modalText}>
+                  Are you sure you want to log out?
+                </Text>
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.cancelButton]} 
+                    onPress={() => setLogoutModalVisible(false)}
+                  >
+                    <Text style={styles.buttonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.modalButton, styles.logoutButton]} 
+                    onPress={handleConfirmLogout}
+                  >
+                    <Text style={[styles.buttonText, styles.logoutButtonText]}>Logout</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 }
@@ -208,9 +301,9 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   profileImage: {
-    width: 250,
-    height: 250,
-    borderRadius: 175,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
     resizeMode: "cover",
   },
   editProfile: {
@@ -219,13 +312,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     position: 'absolute',
-    bottom: 5,
+    bottom: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: Colors.icongray,
   },
   textContainer: {
     alignItems: 'center',
+    marginTop: 10,
   },
   username: {
     fontFamily: Fonts.regular,
@@ -254,5 +348,74 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.semibold,
     fontSize: 16,
     marginTop: 10,
+  },
+  buttonContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  button: {
+    backgroundColor: Colors.black,
+    padding: 10,
+    borderRadius: 10,
+    width: '50%',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: Colors.white,
+    fontFamily: Fonts.medium,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalIconContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontFamily: Fonts.bold,
+    fontSize: 20,
+    marginBottom: 15,
+  },
+  modalText: {
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  selectedMember: {
+    fontFamily: Fonts.semiboldItalic,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    flex: 1,
+    marginHorizontal: 5,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: Colors.red,
+  },
+  logoutButton: {
+    backgroundColor: Colors.black,
+  },
+  logoutButtonText: {
+    color: Colors.white,
   },
 });

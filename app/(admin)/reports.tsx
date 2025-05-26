@@ -1,31 +1,130 @@
-import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity, Modal } from 'react-native';
-import { useState } from 'react';
+import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity, Modal, Platform } from 'react-native';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
 import { router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { getItem } from '@/utils/storageUtils';
+import { API_BASE_URL } from '@/constants/ApiConfig';
+
+// Import interface for the report object
+import { Report, typeLabels } from '@/types/interface';
 
 export default function HistoryScreen() {
-  const [reports, setReports] = useState([
-    {id: "1", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
-    {id: "2", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
-    {id: "3", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
-    {id: "4", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
-    {id: "5", reportType: "Memberships", startDate: "Jan 1, 2023", endDate: "Dec 31, 2023", generatedDate: "Mar 9, 2025"},
-  ]); // Replace with actual data fetching logic
-
+  const [reports, setReports] = useState<Report[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedReportType, setSelectedReportType] = useState('');
 
-  const showExportPopup = (reportType: string) => {
+  const showExportPopup = async (reportType: string) => {
     setSelectedReportType(reportType);
     setModalVisible(true);
+    console.log('Exporting report for type:', reportType);
+
+    try {
+      const token = await getItem('authToken');
+
+      // Find the corresponding report to get date range
+      const selectedReport = reports.find(report => report.reportType === reportType);
+      
+      // Build the API URL with query parameters
+      let apiUrl = `${API_BASE_URL}/api/reports/reports/generate/?type=${reportType}`;
+      
+      // Add date parameters if we have a selected report
+      if (selectedReport) {
+        apiUrl += `&start_date=${selectedReport.startDateRaw}&end_date=${selectedReport.endDateRaw}`;
+      }
+  
+      console.log('Requesting report from:', apiUrl);
+
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (response.ok) {
+        // Web: open PDF in new tab
+        if (Platform.OS === 'web') {
+          const blob = await response.blob();
+          const fileURL = URL.createObjectURL(blob);
+          window.open(fileURL);
+        } else {
+          // Mobile: use expo-file-system to save/view file
+          const arrayBuffer = await response.arrayBuffer();
+          const uint8Array = new Uint8Array(arrayBuffer);
+          let binary = '';
+          for (let i = 0; i < uint8Array.length; i++) {
+            binary += String.fromCharCode(uint8Array[i]);
+          }
+          const base64data = global.btoa ? global.btoa(binary) : Buffer.from(binary, 'binary').toString('base64');
+          const fileUri = FileSystem.cacheDirectory + `report_${Date.now()}.pdf`;
+          await FileSystem.writeAsStringAsync(fileUri, base64data, { encoding: FileSystem.EncodingType.Base64 });
+          if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(fileUri);
+          } else {
+            console.warn('Sharing is not available on this device. File saved at:', fileUri);
+          }
+        }
+      } else {
+        console.error('Failed to export report', await response.text());
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
+
     setTimeout(() => {
       setModalVisible(false);
     }, 2000); // Hide after 2 seconds
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchReports = async () => {
+        try {
+          const token = await getItem('authToken');
+          const response = await fetch(`${API_BASE_URL}/api/reports/reports/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
   
+          if (response.ok) {
+            const data = await response.json();
+            console.log('API Response:', data);
+  
+            const formattedReports = (data as any[]).map((item) => ({
+              id: item.id.toString(),
+              reportType: item.type,
+              startDate: formatDate(item.start_date),
+              endDate: formatDate(item.end_date),
+              generatedDate: formatDate(item.created_at),
+              startDateRaw: item.start_date,
+              endDateRaw: item.end_date,
+            }));
+  
+            setReports(formattedReports);
+          } else {
+            console.error('Failed to fetch reports', await response.text());
+          }
+        } catch (error) {
+          console.error('Error fetching reports:', error);
+        }
+      };
+      fetchReports();
+    }, [])
+  );
+  
+  const formatDate = (dateString: string) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' } as const;
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };  
 
   return (
     <View style={styles.container}>
@@ -44,7 +143,7 @@ export default function HistoryScreen() {
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.headerLabel}>Report Type:{' '}
-                    <Text style={styles.headerValue}>{item.reportType}</Text>
+                    <Text style={styles.headerValue}>{typeLabels[item.reportType]}</Text>
                   </Text>
                   <TouchableOpacity onPress={() => showExportPopup(item.reportType)}>
                     <MaterialCommunityIcons name="export" size={24} color="black" />

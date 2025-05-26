@@ -1,49 +1,42 @@
 import { Text, View, StyleSheet, Platform, TouchableOpacity } from 'react-native';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import RNPickerSelect from 'react-native-picker-select';
-import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import Header from '@/components/NavigateBackHeader';
+import { API_BASE_URL } from '@/constants/ApiConfig';
+
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
-import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { getItem } from '@/utils/storageUtils';
+
 
 export default function ReportsFormScreen() {
   const [reportType, setReportType] = useState<string | number | undefined>('');
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset state when the screen is focused
   useFocusEffect(
     useCallback(() => {
       setReportType('');
-      setStartDate(new Date());
-      setEndDate(new Date());
+      setStartDate('');
+      setEndDate('');
     }, [])
   );
 
-  // Handle date change for start date
-  const handleStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date | null) => {
-    const currentDate = selectedDate || startDate;
-    setStartDate(currentDate);
-  };
-
-  // Handle date change for end date
-  const handleEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date | null) => {
-    const currentDate = selectedDate || endDate;
-    setEndDate(currentDate);
-  };
-
-  const handleGenerateReport = () => {
+  const handleGenerateReport = async () => {
     if (!reportType) {
       Toast.show({
         type: 'error',
         text1: 'Incomplete Fields',
         text2: 'Please select a report type',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -53,7 +46,7 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Incomplete Fields',
         text2: 'Please select both dates.',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
@@ -63,33 +56,78 @@ export default function ReportsFormScreen() {
         type: 'error',
         text1: 'Invalid Date Range',
         text2: 'End date cannot be earlier than start date.',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
 
-    const today = new Date();
+    const today = new Date().toISOString().split('T')[0];
 
     if (endDate > today) {
       Toast.show({
         type: 'error',
         text1: 'Invalid End Date',
         text2: 'End date cannot be later than today.',
-        topOffset: 100,
+        topOffset: 80,
       });
       return;
     }
   
-    // Proceed to generate report
-    Toast.show({
-      type: 'success',
-      text1: 'Generating Report',
-      text2: 'Your report is being processed...',
-      topOffset: 100,
-      visibilityTime: 2000,
-      autoHide: true,
-      onHide: () => router.push('/(admin)/reports')
-    });
+    try {
+      setIsSubmitting(true);
+
+      const token = await getItem('authToken');
+      if (!token) throw new Error('No authentication token found');
+
+      // Map frontend report types to backend values
+      const typeMapping: { [key: string]: string } = {
+        'memberships': 'membership',
+        'history': 'access_logs'
+      };
+
+      const reportData = {
+        title: `${reportType} Report (${startDate} - ${endDate})`,
+        type: typeMapping[reportType],
+        start_date: startDate,
+        end_date: endDate,
+        facility: null // Add facility ID here if needed
+      };
+
+      const response = await fetch(`${API_BASE_URL}/api/reports/reports/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reportData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to create report');
+      }
+
+      Toast.show({
+        type: 'success',
+        text1: 'Report Generated',
+        text2: 'Your report has been created successfully',
+        topOffset: 80,
+        visibilityTime: 2000,
+        autoHide: true,
+        onHide: () => router.push('/(admin)/reports')
+      });
+
+    } catch (error) {
+      console.error('Report generation error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Generation Failed',
+        text2: error instanceof Error ? error.message : 'Failed to create report',
+        topOffset: 80,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -117,34 +155,42 @@ export default function ReportsFormScreen() {
             />
         </View>
         
+        {/* Date Picker for Start Date */}
         <View style={styles.dateForm}>
           <Text style={styles.dateHeader}> Start Date </Text>
-          <View style={styles.datePicker}>
-            <RNDateTimePicker
-              mode="date"
-              display="default"
-              themeVariant="light"
-              value={startDate || new Date()}
-              onChange={handleStartDateChange}
-            />
-          </View>
+          <DateTimePicker
+            value={startDate ? new Date(startDate) : new Date()}
+            mode="date"
+            display="default"
+            themeVariant='light'
+            onChange={(event, date) => {
+              if (date) setStartDate(date.toISOString().split('T')[0]);
+            }}
+          />
         </View>
         
+        {/* Date Picker for End Date */}
         <View style={styles.dateForm}>
           <Text style={styles.dateHeader}> End Date </Text>
-          <View style={styles.datePicker}>
-            <RNDateTimePicker
-              mode="date"
-              display="default"
-              themeVariant="light"
-              value={endDate || new Date()}
-              onChange={handleEndDateChange}
-            />
-          </View>
+          <DateTimePicker
+            value={endDate ? new Date(endDate) : new Date()}
+            mode="date"
+            display="default"
+            themeVariant='light'
+            onChange={(event, date) => {
+              if (date) setEndDate(date.toISOString().split('T')[0]);
+            }}
+          />
         </View>
 
-        <TouchableOpacity style={styles.generateButton} onPress={handleGenerateReport}>
-          <Text style={styles.buttonText}>Generate Report</Text>
+        <TouchableOpacity 
+          style={[styles.generateButton, isSubmitting && styles.disabledButton]}
+          onPress={handleGenerateReport}
+          disabled={isSubmitting}
+        >
+          <Text style={styles.buttonText}>
+            {isSubmitting ? 'Generating...' : 'Generate Report'}
+          </Text>
         </TouchableOpacity>
       </View>
     
@@ -185,16 +231,21 @@ const styles = StyleSheet.create({
     textAlign: "left",
     fontFamily: Fonts.semibold,
     paddingTop: 8,
+    marginBottom: 10,
   },
   dateForm: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 20,
+    paddingVertical: 10,
   },
   datePicker: {
-    alignSelf: "flex-start",
-    marginBottom: 20,
+  borderWidth: 1,
+  borderRadius: 8,
+  padding: 10,
+  backgroundColor: Colors.white,
+  width: '100%',
+  justifyContent: 'center',
   },
   generateButton: {
     backgroundColor: Colors.gold,
@@ -208,7 +259,20 @@ const styles = StyleSheet.create({
     color: Colors.white,
     textAlign: 'center',
     fontFamily: Fonts.medium,
-  }
+  },
+  input: {
+    marginBottom: 10,
+    borderColor: Colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontFamily: Fonts.regular,
+  },
+  disabledButton: {
+    backgroundColor: Colors.textSecondary,
+    opacity: 0.7,
+  },
 });
 
 const trainerpickerSelectStyles = {

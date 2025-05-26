@@ -4,32 +4,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
-interface Meal {
-    id: string | null;
-    mealplan: string;
-    meal_name: string;
-    description: string;
-    meal_type: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-}
-
-interface MealPlan {
-    mealplan_id: string | null;
-    meals: Meal[];
-    member_id: string;
-    trainer_id: string;
-    mealplan_name: string;
-    fitness_goal: string;
-    calorie_intake: number;
-    protein: number;
-    carbs: number;
-    weight_goal: string;
-    allergies: string;
-    instructions: string;
-    status: string;
-}
+// Import interfaces
+import { Meal2 as Meal, MealPlan2 as MealPlan } from "@/types/interface";
 
 interface MemberMealPlanProps {
     mealPlan: MealPlan;
@@ -41,7 +17,7 @@ const MemberMealPlan: React.FC<MemberMealPlanProps> = ({ mealPlan, requesteeName
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Image source={require('@/assets/images/icon.png')} style={styles.image} />
+                <Image source={require('@/assets/images/darkicon.png')} style={styles.image} />
                 <View style={styles.textContainer}>
                     <Text style={styles.title}>{requesteeName}'s Meal Plan</Text>
                     <Text style={styles.subtitle}>Working on:</Text>
@@ -66,10 +42,9 @@ const MemberMealPlan: React.FC<MemberMealPlanProps> = ({ mealPlan, requesteeName
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         backgroundColor: Colors.bg,
-        padding: 16,
-        marginTop: 15,
+        padding: 10,
+        marginTop: 5,
     },
     editIcon: {
         alignSelf: 'flex-start',

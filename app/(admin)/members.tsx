@@ -1,35 +1,33 @@
 import { View, StyleSheet, TextInput, Text, TouchableOpacity, Modal, FlatList, TouchableWithoutFeedback, Platform } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Toast from "react-native-toast-message";
 import { AntDesign, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import Header from '@/components/AdminSectionHeaders';
 import { Colors } from '@/constants/Colors';
 import { Fonts } from '@/constants/Fonts';
-import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router, useFocusEffect } from 'expo-router';
+import { getItem } from '@/utils/storageUtils';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
-type Member = {
-  id: string;
-  full_name: string;
-};
+// Import interface for the member object
+import { Member } from '@/types/interface';
 
 export default function MembersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [allMembers, setAllMembers] = useState<Member[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [trainers, setTrainers] = useState<Member[]>([]);
-  
-  // 👇 Fetch the trainer list from the API
-  useEffect(() => {
+  const hasMissingNames = members.some(member => !member.full_name?.trim());
+
+  const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
+
+  // Fetch the member list from the API
     const fetchMembers = async () => {
       try {
-        const API_BASE_URL = 
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.11:8000';
-
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/account/members/`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -39,10 +37,11 @@ export default function MembersScreen() {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('API Response:', data);
 
-          // Assuming your API returns something like [{ name: 'John', trainerId: 1 }, ...]
+          // Set members to state
+          setAllMembers(data);
           setMembers(data);
+          setFilteredMembers(data);
         } else {
           console.error('Failed to fetch members', await response.text());
         }
@@ -51,27 +50,26 @@ export default function MembersScreen() {
       }
     };
 
-    fetchMembers();
-  }, []);
+  useFocusEffect (
+    useCallback(() => {
+      fetchMembers();
+    }, [])
+  )
 
   useEffect(() => {
-    const filtered = members.filter(member =>
-      member.full_name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filtered = allMembers.filter(member => {
+      const name = String(member.full_name || member.id || '');
+      return name.toLowerCase().includes(searchQuery.toLowerCase());
+    });
     setMembers(filtered);
-  }, [searchQuery]);
+  }, [searchQuery, allMembers]);
 
   const handleAssignTrainer = async () => {
     if (selectedMember) {
       try {
-        const API_BASE_URL =
-          Platform.OS === 'web'
-            ? 'http://127.0.0.1:8000'
-            : 'http://192.168.1.11:8000';
+        const token = await getItem('authToken');
   
-        const token = await AsyncStorage.getItem('authToken');
-  
-        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedMember.id}/assign/`, {
+        const response = await fetch(`${API_BASE_URL}/api/account/trainer-status/${selectedMember.id}/make/`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -93,21 +91,45 @@ export default function MembersScreen() {
   
           // Remove from members list
           setMembers(prev => prev.filter(m => m.id !== selectedMember.id));
-          
           setModalVisible(false);
+          
+          // Show success toast
+          Toast.show({
+            type: 'success',
+            text1: 'Trainer Assigned',
+            text2: `${selectedMember.full_name || selectedMember.id} has been assigned as a trainer.`,
+            topOffset: 80,
+          });
+
+          
           setSelectedMember(null);
         } else {
           const errorData = await response.json();
           console.error('Failed to assign trainer:', errorData);
-          alert(errorData.detail || 'Failed to assign trainer');
+          setModalVisible(false);
+
+          // Show error toast
+          Toast.show({
+            type: 'error',
+            text1: 'Assignment Failed',
+            text2: errorData.message || 'Failed to assign trainer. Please try again.',
+            topOffset: 80,
+          });
         }
       } catch (error) {
         console.error('Error assigning trainer:', error);
-        alert('An error occurred while assigning trainer');
+        setModalVisible(false);
+        
+        // Show error toast for exception
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'An error occurred while assigning the trainer. Please try again.',
+          topOffset: 80,
+        });
       }
     }
   };
-  
 
   return (
     <View style={styles.container}>
@@ -126,6 +148,12 @@ export default function MembersScreen() {
         </View>
       </View>
 
+      {hasMissingNames && (
+        <Text style={{ color: 'orange', fontStyle: 'italic', marginHorizontal: 20 }}>
+          Some members and/or trainers have not set up their profiles yet.
+        </Text>
+      )}
+
       <FlatList
         data={members}
         keyExtractor={(item) => item.id.toString()}
@@ -133,7 +161,9 @@ export default function MembersScreen() {
           <View style={styles.card}>
             {/* Left Section - Member Name */}
             <View style={styles.leftSection}>
-              <Text style={styles.name}>{item.full_name}</Text>
+              <Text style={styles.name}>
+                {item.full_name || `Member ID: ${item.id}`}
+              </Text>
             </View>
 
             {/* Right Section - Icons */}
@@ -147,7 +177,13 @@ export default function MembersScreen() {
               
               <TouchableOpacity onPress={() => router.push({
                   pathname: `/(admin)/member-profile`,
-                  params: { memberId: item.id }
+                  params: {
+                    memberId: item.id,
+                    fullName: item.full_name,
+                    membershipType: item.type_of_membership,
+                    membershipStartDate: item.membership_start_date,
+                    membershipEndDate: item.membership_end_date,
+                  } // Pass the member details to member-profile screen
                 })}>
                 <MaterialCommunityIcons name="credit-card-edit-outline" size={24} color="black"  />
               </TouchableOpacity>
@@ -180,7 +216,7 @@ export default function MembersScreen() {
                 <Text style={styles.modalText}>
                   You're going to assign{' '}
                   <Text style={styles.selectedMember}>
-                    "{selectedMember?.full_name}"
+                    "{selectedMember?.full_name?.trim() || selectedMember?.id}"
                   </Text> 
                   {' '}as a trainer. Are you sure?
                 </Text>
@@ -203,7 +239,7 @@ export default function MembersScreen() {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-
+      <Toast />
     </View>
   );
 }

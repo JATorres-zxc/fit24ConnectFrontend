@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import { 
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform 
 } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
 import RNPickerSelect from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 
@@ -11,61 +12,12 @@ import SendFeedbackHeaderMP from '@/components/SendFeedbackHeaderMP';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getItem } from '@/utils/storageUtils';
+import { API_BASE_URL } from '@/constants/ApiConfig';
 
-interface Meal {
-  id: string;
-  mealplan: string;
-  meal_name: string;
-  description: string;
-  meal_type: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-}
-
-interface User{
-  id: string;
-  email: string;
-  full_name: string;
-}
-interface Trainer{
-  id: string;
-  user: User;
-  experience?: string;
-  contact?: string;
-}
-
-interface Feedback {
-  id: string;
-  feedback: string;
-  rating: number;
-  createdAt: Date;
-}
-
-interface MealPlan {
-  mealplan_id: number;
-  meals: Meal[];
-  member_id: string;
-  trainer_id: string;
-  mealplan_name: string;
-  fitness_goal: string;
-  calorie_intake: number;
-  protein: number;
-  carbs: number;
-  weight_goal: number;
-  allergies: string;
-  instructions: string;
-  visibleTo: string;
-  requestee_id: string;
-  requestee: string;
-  status: string;
-}
-
-const API_BASE_URL =
-  Platform.OS === 'web'
-    ? 'http://127.0.0.1:8000' // Web uses localhost
-    : 'http://172.16.6.198:8000'; // Mobile uses local network IP
+// Import interfaces for meals
+import { Meal, User, Feedback, MealPlan } from "@/types/interface";
+import { Trainer2 as Trainer } from "@/types/interface";
 
 let token: string | null = null;
 let userID: string | null = null;
@@ -80,136 +32,148 @@ const MealPlanScreen = () => {
   const [weightGoal, setWeightGoal] = useState(""); // State to store weight goal
   const [allergies, setAllergies] = useState(""); // State to store allergies
   const [feedback, setFeedback] = useState(""); // State to store feedback
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [rating, setRating] = useState<string | number | undefined>('');
 
-  // Fetching trainers from API
+  // Fetch trainers
+  const fetchTrainers = async () => {
+    try {
+      const token = await getItem('authToken');
+      const trainerResponse = await fetch(`${API_BASE_URL}/api/account/trainers/`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-  useEffect(() => {
-    const fetchTrainers = async () => {
-      try {
-        const token = await AsyncStorage.getItem('authToken');
-        const trainerResponse = await fetch(`${API_BASE_URL}/api/account/trainers/`, {
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-  
-        if (!trainerResponse.ok) {
-          throw new Error(`Trainer fetch error! Status: ${trainerResponse.status}`);
-        }
-  
-        const trainerList = await trainerResponse.json();
-
-        const resolvedTrainers = trainerList.map((trainer: Trainer) => ({
-          id: trainer.id,
-          user: {
-            id: trainer.user?.id || null,
-            email: trainer.user?.email || "No email",
-            full_name: trainer.user?.full_name || "Unknown Trainer",
-          },
-          experience: trainer.experience?.trim() || "Not Specified",
-          contact: trainer.contact?.trim() || "Not Available",
-        }));
-  
-        setTrainers(resolvedTrainers);
-      } catch (error) {
-        console.error('Error fetching trainers:', error);
+      if (!trainerResponse.ok) {
+        throw new Error(`Trainer fetch error! Status: ${trainerResponse.status}`);
       }
-    };
-  
-    fetchTrainers();
-  }, []);
 
-  // Fetching Meal Plan from API
-  
-  useEffect(() => {
-    const fetchMealPlan = async () => {
-      try {
-        const token = await AsyncStorage.getItem('authToken');
-        const userID = await AsyncStorage.getItem('userID'); // Retrieve the logged-in user's ID
-  
-        const mealPlansResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans`, {
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-  
-        if (!mealPlansResponse.ok) {
-          throw new Error(`HTTP error! status: ${mealPlansResponse.status}`);
-        }
-  
-        const mealPlansData = await mealPlansResponse.json();
-  
-        // Filter meal plans to only include those with status "completed"
-        // const completedMealPlans = mealPlansData.filter((plan: MealPlan) => plan.status === 'completed');
-        const completedMealPlans = mealPlansData;
-        setMealPlan(completedMealPlans);
-  
-        if (completedMealPlans.length === 0) {
-          throw new Error('No completed meal plan found for the user');
-        }
-  
-        const memberIds = completedMealPlans.map((plan: MealPlan) => plan.member_id.toString());
-        const userMealPlan = completedMealPlans.find((plan: MealPlan) => memberIds.includes(plan.member_id.toString()));
-  
-        if (!userMealPlan) {
-          throw new Error('No completed meal plan found for the user');
-        }
-  
-        mealPlan_id = userMealPlan.mealplan_id;
-  
-        if (!token) {
-          throw new Error('No token found');
-        }
-  
-        const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}`, {
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-  
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-  
-        if (response.status === 404) {
-          setMealPlan(null);
-        } else {
-          const data = await response.json();
-          setMealPlan(data);
-        }
-      } catch (error) {
-        console.error('Error fetching meal plan:', error);
-  
-        if (error instanceof Error) {
-          if (error.message.includes('NetworkError')) {
-            console.error('Network error: Please check if the server is running and accessible.');
-          } else if (error.message.includes('CORS')) {
-            console.error('CORS error: Please ensure your server allows requests from your frontend.');
-          }
+      const trainerList = await trainerResponse.json();
+
+      const resolvedTrainers = trainerList.map((trainer: Trainer) => ({
+        id: trainer.id,
+        user: {
+          id: trainer.user?.id || null,
+          email: trainer.user?.email || "No email",
+          full_name: trainer.user?.full_name || null,
+        },
+        experience: trainer.experience?.trim() || "Not Specified",
+        contact: trainer.contact?.trim() || "Not Available",
+      }));
+
+      setTrainers(resolvedTrainers);
+    } catch (error) {
+      Toast.show({
+        type: 'info',
+        text1: 'No Trainers Found!',
+        text2: `${error}`,
+        topOffset: 80,
+      });
+    }
+  };
+
+  // Fetch meal plan
+  const fetchMealPlan = async () => {
+    try {
+      const token = await getItem('authToken');
+      const userID = await getItem('userID');
+
+      const mealPlansResponse = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!mealPlansResponse.ok) {
+        throw new Error(`HTTP error! status: ${mealPlansResponse.status}`);
+      }
+
+      const mealPlansData = await mealPlansResponse.json();
+
+      const completedMealPlans = mealPlansData;
+
+      if (completedMealPlans.length === 0) {
+        throw new Error('No completed meal plan found for the user');
+      }
+
+      const userMealPlan = completedMealPlans.find(
+        (plan: MealPlan) => plan.member_id.toString() === userID
+      );
+
+      if (!userMealPlan) {
+        throw new Error('No completed meal plan found for the user');
+      }
+
+      mealPlan_id = userMealPlan.mealplan_id;
+
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}/`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      if (response.status === 404) {
+        setMealPlan(null);
+      } else {
+        const data = await response.json();
+        setMealPlan(data);
+      }
+    } catch (error) {
+      // Toast.show({
+      //   type: 'info',
+      //   text1: 'No Meal Plans Found!',
+      //   text2: `${error}`,
+      //   topOffset: 80,
+      // });
+
+      if (error instanceof Error) {
+        if (error.message.includes('NetworkError')) {
+          console.error('Network error: Please check if the server is running and accessible.');
+        } else if (error.message.includes('CORS')) {
+          console.error('CORS error: Please ensure your server allows requests from your frontend.');
         }
       }
-    };
-  
-    fetchMealPlan();
-  }, []);    
+    }
+  };
 
+  // actual call to API
+  useFocusEffect(
+    useCallback(() => {
+      fetchTrainers();
+      fetchMealPlan();
+      const fetchUserIDandToken = async () => {
+        userID = await getItem('userID');
+        token = await getItem('authToken');
+      };
+      fetchUserIDandToken();
+    }, [refreshTrigger])
+  );
+  
   const handleSubmit = async () => {
     if (!trainer || !fitnessGoal || !weightGoal || !allergies) {
         Toast.show({
             type: 'error',
             text1: 'Missing Fields',
             text2: 'Please fill out all fields before submitting.',
-            position: 'bottom'
+            topOffset: 80,
         });
         return;
     }
 
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
       
       // Fetch member data from the profile API
       // const profileResponse = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
@@ -249,9 +213,9 @@ const MealPlanScreen = () => {
                 fitness_goal: fitnessGoal,
                 weight_goal: weightGoal,
                 user_allergies: allergies,
-                height,
-                weight,
-                age,
+                // height: profileData.height,
+                // weight: profileData.weight,
+                // age: profileData.age,
             }),
         });
 
@@ -263,8 +227,10 @@ const MealPlanScreen = () => {
             type: 'success',
             text1: 'Request Submitted',
             text2: 'Your meal plan request has been submitted successfully.',
-            position: 'bottom'
+            topOffset: 80,
         });
+
+        setRefreshTrigger(prev => !prev);
 
         setTimeout(() => {
             setViewState("plan");
@@ -275,7 +241,7 @@ const MealPlanScreen = () => {
             type: 'error',
             text1: 'Request Failed',
             text2: 'There was an error with your meal plan request. Please check if you already have a pending request.',
-            position: 'bottom'
+            topOffset: 80,
         });
       }
   };
@@ -286,14 +252,14 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'Missing Fields',
         text2: 'Please fill out all fields before submitting feedback.',
-        position: 'bottom'
+        topOffset: 80,
       });
       return;
     }
 
     try {
       // This is in line with an agreed central feedback and request database.
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
 
       const response = await fetch(`${API_BASE_URL}/api/mealplan/feedbacks/`, {
         method: 'POST',
@@ -313,8 +279,9 @@ const MealPlanScreen = () => {
           type: 'info',
           text1: 'Feedback Sent',
           text2: 'Your feedback has been sent successfully.',
-          position: 'bottom'
+          topOffset: 80,
         });
+        setRefreshTrigger(prev => !prev);
         setViewState("plan");
         setFeedback("");
         setRating("");
@@ -323,7 +290,7 @@ const MealPlanScreen = () => {
           type: 'error',
           text1: 'Feedback Failed',
           text2: 'There was an error submitting your feedback.',
-          position: 'bottom'
+          topOffset: 80,
         });
       }
     } catch (error) {
@@ -331,16 +298,16 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'Feedback Failed',
         text2: 'There was an error submitting your feedback.',
-        position: 'bottom'
+        topOffset: 80,
       });
     }
   };
 
   const handleDelete = async () => {
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await getItem('authToken');
 
-      // // Replace with actual API call
+      // Replace with actual API call
       const response = await fetch(`${API_BASE_URL}/api/mealplan/mealplans/${mealPlan_id}/`, {
         method: 'DELETE',
         headers: {
@@ -358,19 +325,19 @@ const MealPlanScreen = () => {
           type: 'success',
           text1: 'Meal Plan Deleted',
           text2: 'Your meal plan has been deleted successfully.',
-          position: 'bottom'
+          topOffset: 80,
         });
 
         // TEMPORARY: DELETE SNIPPET WHEN API IS AVAILABLE.
         setMealPlan(null); // Clear the meal plan by resetting to initial structure
-
+        setRefreshTrigger(prev => !prev);
         setViewState("plan");
       } else {
         Toast.show({
           type: 'error',
           text1: 'Delete Failed',
           text2: 'There was an error deleting your meal plan.',
-          position: 'bottom'
+          topOffset: 80,
         });
       }
     } catch (error) {
@@ -378,7 +345,7 @@ const MealPlanScreen = () => {
         type: 'error',
         text1: 'Delete Failed',
         text2: 'There was an error deleting your meal plan.',
-        position: 'bottom'
+        topOffset: 80,
       });
     }
   };
@@ -402,8 +369,8 @@ const MealPlanScreen = () => {
                   <RNPickerSelect
                     onValueChange={(value) => setTrainer(value)}
                     items={trainers.map((trainer) => ({
-                      label: trainer.user.full_name,
-                      value: trainer.id,
+                      label: trainer.user.full_name || `Trainer ID: ${trainer.id}`,
+                      value: trainer.user.id,
                     }))}
                     style={trainerpickerSelectStyles}
                     value={trainer}
@@ -488,7 +455,6 @@ const MealPlanScreen = () => {
                     }
                   />
                 </View>
-
                 <TouchableOpacity style={styles.submitButton} onPress={handleFeedbackSubmit}>
                   <Text style={styles.buttonText}>Submit Feedback</Text>
                 </TouchableOpacity>
@@ -514,7 +480,7 @@ const MealPlanScreen = () => {
             // Nutritional Meal Plan View
             <>
               {mealPlan ? (
-                (mealPlan.status === "completed") ? (
+                  mealPlan.status === "completed" && mealPlan.meals.length > 0 ? (
                   <View style={styles.planContainer}>
                     <Header />
                     {mealPlan.meals.map((meal, index) => (
