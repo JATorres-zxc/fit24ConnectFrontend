@@ -170,7 +170,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                     </View>
                     <View style={styles.passwordContainer}>
                         <TextInput
-                            placeholder="Password"
+                            placeholder="Confirm Password"
                             placeholderTextColor={Colors.textSecondary}
                             style={styles.passwordInput}
                             secureTextEntry={!showConfirmPassword}
