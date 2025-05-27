@@ -35,9 +35,6 @@ const WorkoutsContainer: React.FC<WorkoutsContainerProps> = ({ workouts, onWorko
                   <Text style={styles.intensityLevel}>Intensity Level:</Text>
                   <Text style={{fontFamily: Fonts.semiboldItalic}}>{workout.intensityLevel}</Text>
                 </View>
-                <TouchableOpacity style={styles.trashIcon} onPress={() => onTrashPress(workout)}>
-                  <FontAwesome name="trash" size={24} color={Colors.black} />
-                </TouchableOpacity>
               </TouchableOpacity>
               <View style={styles.horizontalLine} />
             </View>
@@ -116,11 +113,6 @@ const styles = StyleSheet.create({
     color: "gray",
     marginBottom: 15,
     fontFamily: Fonts.regular,
-  },
-  trashIcon: {
-    alignSelf: 'flex-start',
-    paddingTop: 5,
-    flexGrow: 0,
   },
 });
 
