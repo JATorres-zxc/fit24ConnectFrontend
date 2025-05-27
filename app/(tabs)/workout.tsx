@@ -536,7 +536,7 @@ const WorkoutScreen = () => {
               {workouts.filter(w => w.visibleTo === "everyone" && w.status === "completed").length > 0 ? (
                 <View style={styles.planContainer}>
                   <Header />
-                  <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("personalWO")}>
+                  <TouchableOpacity style={styles.button} onPress={() => setViewState("personalWO")}>
                     <Text style={styles.buttonText}>Personal Workout Programs</Text>
                   </TouchableOpacity>
                   <WorkoutsContainer
@@ -574,7 +574,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "flex-start",
     backgroundColor: Colors.bg,
-    paddingVertical: 20,
     paddingLeft: 30,
     paddingRight: 30,
   },
@@ -688,9 +687,8 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: Colors.gold,
     padding: 12,
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: "center",
-    marginTop: 20,
     width: "100%",
     fontFamily: Fonts.medium,
   },
