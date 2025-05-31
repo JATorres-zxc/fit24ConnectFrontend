@@ -16,7 +16,7 @@ export default function Header() {
             name='home' 
             color={'black'} 
             size={24} 
-            onPress={() => router.push('/home')} 
+            onPress={() => router.push('/(tabs)/home')} 
           />
           <Text style={styles.headerText}>
             Nutritional Meal Plan
@@ -38,7 +38,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
   },
   leftSection: {
     flexDirection: 'row',

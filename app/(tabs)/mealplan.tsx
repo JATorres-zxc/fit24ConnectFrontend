@@ -461,19 +461,21 @@ const MealPlanScreen = () => {
               </View>
             </View>
           ) : viewState === "delete" ? (
-            <View style={styles.deleteContainer}>
-              <Ionicons name="trash-outline" size={24} color="black" style={styles.icon} />
-              <Text style={styles.alertTitle}>Delete Meal Plan?</Text>
-              <Text style={styles.alertMessage}>
-                You're going to permanently delete your Meal Plan. Are you sure?
-              </Text>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
-                  <Text style={styles.buttonText}>NO</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonGreen} onPress={handleDelete}>
-                  <Text style={styles.buttonText}>YES</Text>
-                </TouchableOpacity>
+            <View style={styles.overlay}>
+              <View style={styles.deleteContainer}>
+                <Ionicons name="trash-outline" size={36} color="black" style={styles.icon} />
+                <Text style={styles.alertTitle}>Delete Meal Plan?</Text>
+                <Text style={styles.alertMessage}>
+                  You're going to permanently delete your Meal Plan. Are you sure?
+                </Text>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
+                    <Text style={styles.buttonText}>NO</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.buttonGreen} onPress={handleDelete}>
+                    <Text style={styles.buttonText}>YES</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           ) : (
@@ -566,16 +568,16 @@ const styles = StyleSheet.create({
   },
   alertTitle: {
     fontSize: 20,
-    marginBottom: 10,
+    marginBottom: 15,
     textAlign: "center",
     fontFamily: Fonts.bold,
   },
   alertMessage: {
     textAlign: "center",
-    fontSize: 14,
-    color: "gray",
-    marginBottom: 25,
+    fontSize: 16,
+    marginBottom: 20,
     fontFamily: Fonts.regular,
+    color: Colors.textSecondary,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -733,20 +735,16 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontFamily: Fonts.regular,
   },
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   deleteContainer: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -150 }, { translateY: -100 }],
-    width: 300,
+    width: '80%',
     padding: 20,
-    backgroundColor: Colors.bg,
+    backgroundColor: Colors.white,
     borderRadius: 10,
-    shadowColor: Colors.shadowColor,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
   },
   sendFBContainer: {
     width: "100%",
