@@ -22,13 +22,22 @@ export default function EditWorkoutButton({ setViewState, setWorkout, setSelecte
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <AntDesign 
+        <View style={styles.leftSection}>
+          <AntDesign 
             name='arrowleft' 
             color={'black'} 
             size={24} 
             onPress={handlePress}
-        />
-        <Text style={styles.backText}>  Edit Workout</Text>
+          />
+          <Text style={styles.headerText}>
+            Edit Workout
+          </Text>
+        </View>
+
+        {/* For spacing purposes */}
+        <View style={styles.rightSection}>
+          <Text>{''}</Text>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -41,13 +50,21 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backText: {
-    fontSize: 20,
-    fontFamily: Fonts.semibold,
-    color: 'black',
-  },
+      width: '100%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between'
+    },
+    leftSection: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+    },
+    headerText: {
+      fontSize: 20,
+      fontFamily: Fonts.semibold,
+    },
+    rightSection: {
+      alignItems: 'center',
+    },
 });

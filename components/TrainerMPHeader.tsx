@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
   },
   subtitleText: {
     fontSize: 14,
-    fontFamily: Fonts.regular,
-    color: Colors.icongray,
+    fontFamily: Fonts.italic,
+    color: Colors.textSecondary,
   },
   headerIcon: {
     flexDirection: 'row',
