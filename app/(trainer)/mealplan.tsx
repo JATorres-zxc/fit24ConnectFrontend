@@ -730,9 +730,9 @@ const styles = StyleSheet.create({
 
   // Subtitle styles for the "No meal plan available" message
   subtitle2: {
-    fontSize: 16,
+    fontSize: 12,
     color: Colors.textSecondary,
-    textAlign: "center",
+    textAlign: "justify",
     fontFamily: Fonts.mediumItalic,
   },
 

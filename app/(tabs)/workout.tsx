@@ -539,7 +539,7 @@ const WorkoutScreen = () => {
                 <View style={styles.planContainer}>
                   <Header />
                   <TouchableOpacity style={styles.button} onPress={() => setViewState("personalWO")}>
-                    <Text style={styles.buttonText}>Personal Workout Programs</Text>
+                    <Text style={styles.buttonText}>Personal Workout Program</Text>
                   </TouchableOpacity>
                   <WorkoutsContainer
                     workouts={workouts.filter(w => w.visibleTo === "everyone")}
