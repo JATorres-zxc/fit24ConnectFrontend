@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, ActivityIndicator } from 'react-native';
 
 import Header from '@/components/NotificationsHeader';

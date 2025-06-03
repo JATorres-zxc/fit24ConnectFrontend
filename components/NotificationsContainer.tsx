@@ -68,11 +68,6 @@ export default function NotificationsContainer({ notifications, token, onNotific
                 <View style={styles.modalContentContainer}>
                   <Text style={styles.modalContent}>{selectedNotification.content}</Text>
                 </View>
-                <View style={styles.modalDetailsContainer}>
-                  <Text style={styles.modalDate}>{date}</Text>
-                  <View style={styles.modalDivider} />
-                  <Text style={styles.modalTime}>{time}</Text>
-                </View>
               </View>
             </TouchableWithoutFeedback>
           </View>

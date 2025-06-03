@@ -22,13 +22,22 @@ export default function CreateMealPlanButton({ setViewState, setMealPlan, setSel
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <AntDesign 
+        <View style={styles.leftSection}>
+          <AntDesign 
             name='arrowleft' 
             color={'black'} 
             size={24} 
             onPress={handlePress}
-        />
-        <Text style={styles.backText}>  Create Meal Plan</Text>
+          />
+          <Text style={styles.headerText}>
+            Create Meal Plan
+          </Text>
+        </View>
+
+        {/* For spacing purposes */}
+        <View style={styles.rightSection}>
+          <Text>{''}</Text>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -41,13 +50,21 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   header: {
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between'
   },
-  backText: {
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  headerText: {
     fontSize: 20,
     fontFamily: Fonts.semibold,
-    color: 'black',
+  },
+  rightSection: {
+    alignItems: 'center',
   },
 });
