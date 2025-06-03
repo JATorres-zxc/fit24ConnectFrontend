@@ -482,20 +482,22 @@ const WorkoutScreen = () => {
               </TouchableOpacity>
             </View> 
           ) : viewState === "delete" ? (
-            <View style={styles.deleteContainer}>
-              <Ionicons name="trash-outline" size={24} color="black" style={styles.icon} />
-              <Text style={styles.alertTitle}>Delete Workout?</Text>
-              <Text style={styles.alertMessage}>
-                You're going to permanently delete your workout. Are you sure?
-              </Text>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
-                  <Text style={styles.buttonText}>NO</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonGreen} onPress={() => selectedWorkout && handleDelete(selectedWorkout)}> 
-                  {/* short-circuited potential null workout */}
-                  <Text style={styles.buttonText}>YES</Text>
-                </TouchableOpacity>
+            <View style={styles.overlay}>
+              <View style={styles.deleteContainer}>
+                <Ionicons name="trash-outline" size={36} color="black" style={styles.icon} />
+                <Text style={styles.alertTitle}>Delete Workout?</Text>
+                <Text style={styles.alertMessage}>
+                  You're going to permanently delete your workout. Are you sure?
+                </Text>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("plan")}>
+                    <Text style={styles.buttonText}>NO</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.buttonGreen} onPress={() => selectedWorkout && handleDelete(selectedWorkout)}> 
+                    {/* short-circuited potential null workout */}
+                    <Text style={styles.buttonText}>YES</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           ) : viewState === "personalWO" ? (
@@ -536,7 +538,7 @@ const WorkoutScreen = () => {
               {workouts.filter(w => w.visibleTo === "everyone" && w.status === "completed").length > 0 ? (
                 <View style={styles.planContainer}>
                   <Header />
-                  <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("personalWO")}>
+                  <TouchableOpacity style={styles.button} onPress={() => setViewState("personalWO")}>
                     <Text style={styles.buttonText}>Personal Workout Programs</Text>
                   </TouchableOpacity>
                   <WorkoutsContainer
@@ -574,7 +576,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "flex-start",
     backgroundColor: Colors.bg,
-    paddingVertical: 20,
     paddingLeft: 30,
     paddingRight: 30,
   },
@@ -602,17 +603,17 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   alertTitle: {
-    fontSize: 18,
-    marginBottom: 5,
+    fontSize: 20,
+    marginBottom: 15,
     textAlign: "center",
     fontFamily: Fonts.bold,
   },
   alertMessage: {
     textAlign: "center",
-    fontSize: 14,
-    color: "gray",
-    marginBottom: 15,
+    fontSize: 16,
+    marginBottom: 20,
     fontFamily: Fonts.regular,
+    color: Colors.textSecondary,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -688,9 +689,8 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: Colors.gold,
     padding: 12,
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: "center",
-    marginTop: 20,
     width: "100%",
     fontFamily: Fonts.medium,
   },
@@ -726,20 +726,16 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontFamily: Fonts.regular,
   },
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   deleteContainer: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -150 }, { translateY: -100 }],
-    width: 300,
+    width: '80%',
     padding: 20,
-    backgroundColor: Colors.bg,
+    backgroundColor: Colors.white,
     borderRadius: 10,
-    shadowColor: Colors.shadowColor,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
     alignSelf: "center",
   },  
   trashIcon: {

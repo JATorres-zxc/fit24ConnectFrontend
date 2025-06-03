@@ -35,9 +35,9 @@ export default function Home() {
     }
   }, [params.showToast, params.full_name]);
 
-  const getUserFirstName = async () => {
+  const initializeUserData = async () => {
     try {
-      // Fetch latest profile data from API
+      // First fetch the latest profile data
       const token = await getItem("authToken");
       const response = await fetch(`${API_BASE_URL}/api/profilee/profile/`, {
         method: "GET",
@@ -52,96 +52,46 @@ export default function Home() {
       }
 
       const data = await response.json();
-      console.log("From getUserFirstName deets: ", data)
-
       await saveItem("profile", JSON.stringify(data));
 
+      // Set first name
       if (data.full_name) {
-        // Extract the first name from the full name
         const firstName = data.full_name.split(" ")[0];
         setFirstName(firstName);
       }
-    } catch (error) {
-      console.error("Error fetching profile data:", error);
 
-       // Fallback to local storage if API call fails
-      try {
-        // Try to get userData from storage
-        const userData = await getItem("userData");
-        if (userData) {
-          const user = JSON.parse(userData);
-          if (user.full_name) {
-            // Extract first name (text before first space)
-            const firstNameOnly = user.full_name.split(' ')[0];
-            setFirstName(firstNameOnly);
-            return;
-          }
-        }
-        
-        // If we couldn't get from userData, try profile
-        const profileData = await getItem("profile");
-        if (profileData) {
-          const profile = JSON.parse(profileData);
-          if (profile.full_name) {
-            const firstNameOnly = profile.full_name.split(' ')[0];
-            setFirstName(firstNameOnly);
-          }
-        }
-      } catch (fallbackError) {
-        console.error("Error in fallback method for getting user's name:", fallbackError);
-      }
-    }
-  };
+      // Now check profile completion with fresh data
+      const requiredFields = [
+        "email", "full_name", "contact_number", 
+        "complete_address", "height", "weight", "age"
+      ];
 
-  // Profile verification
-  const checkProfileCompletion = async () => {
-      try {
-        const profileData = await getItem("profile");
-        if (profileData) {
-          const profile = JSON.parse(profileData);
+      const missingFields = requiredFields.filter((field) => {
+        const value = data[field];
+        if (value === null || value === undefined) return true;
+        if (typeof value === "string" && value.trim() === "") return true;
+        return false;
+      });
 
-          // Fields that must not be null or empty (excluding some fields)
-          const requiredFields = [
-            "email",
-            "full_name",
-            "contact_number",
-            "complete_address",
-            "height",
-            "weight",
-            "age",
-          ];
+      if (missingFields.length > 0) {
+        Toast.show({
+          type: "error",
+          text1: "Profile Incomplete",
+          text2: "Please complete all profile details before proceeding.",
+          topOffset: 80,
+          visibilityTime: 2000,
+        });
 
-          console.log("Profile data:", profile);
-
-          const missingFields = requiredFields.filter((field) => {
-            const value = profile[field];
-            if (value === null || value === undefined) return true;
-            if (typeof value === "string" && value.trim() === "") return true;
-            return false;
+        setTimeout(() => {
+          router.push({
+            pathname: '/(tabs)/profile',
+            params: { showToast: 'true' },
           });
-
-          console.log("Missing fields:", missingFields);
-
-          if (missingFields.length > 0) {
-          Toast.show({
-            type: "error",
-            text1: "Profile Incomplete",
-            text2: "Please complete all profile details before proceeding.",
-            topOffset: 80,
-            visibilityTime: 2000, // Show the toast for 2 seconds
-          });
-
-          // Delay the redirection by 2 seconds
-          setTimeout(() => {
-            router.push({
-              pathname: '/(tabs)/profile',
-              params: { showToast: 'true' },
-            });
-          }, 2000); // 2-second delay
-        }
+        }, 2000);
       }
+
     } catch (error) {
-      console.error("Error checking profile completeness:", error);
+      console.error("Error initializing user data:", error);
     }
   };
 
@@ -184,13 +134,12 @@ export default function Home() {
       setLoading(false);
     }
   };
-  
-  // Fetch announcements and check profile completion when screen comes into focus
+
+  // Use useFocusEffect to run the initialization and fetch functions when the screen is focused
   useFocusEffect(
     useCallback(() => {
+      initializeUserData();
       fetchAnnouncements();
-      getUserFirstName();
-      checkProfileCompletion();
     }, [])
   );
 

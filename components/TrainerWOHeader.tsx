@@ -27,8 +27,8 @@ export default function TrainerWOHeader() {
         </View>
 
         <View style={styles.headerIcon}>
-          <FontAwesome name='user-circle' color={Colors.black} size={24} onPress={() => router.push('/profile')} />
-          <FontAwesome name='bell-o' color={Colors.black} size={24} onPress={() => router.push('/notifications')} />
+          <FontAwesome name='user-circle' color={Colors.black} size={24} onPress={() => router.push('/(trainer)/profile')} />
+          <FontAwesome name='bell-o' color={Colors.black} size={24} onPress={() => router.push('/(trainer)/notifications')} />
         </View>
         
       </View>
@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
   },
   subtitleText: {
     fontSize: 14,
-    fontFamily: Fonts.regular,
-    color: Colors.icongray,
+    fontFamily: Fonts.italic,
+    color: Colors.textSecondary,
   },
   headerIcon: {
     flexDirection: 'row',

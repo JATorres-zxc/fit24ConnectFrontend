@@ -35,22 +35,22 @@ export default function Header({ screen, prevScreen }: HeaderPropsNavigation) {
 }
 
 const styles = StyleSheet.create({
-    header: {
-      width: '85%',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between'
-    },
-    leftSection: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 5,
-    },
-    headerText: {
-      fontSize: 20,
-      fontFamily: Fonts.semibold,
-    },
-    rightSection: {
-      alignItems: 'center',
-    },
-  });
+  header: {
+    width: '85%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  headerText: {
+    fontSize: 20,
+    fontFamily: Fonts.semibold,
+  },
+  rightSection: {
+    alignItems: 'center',
+  },
+});

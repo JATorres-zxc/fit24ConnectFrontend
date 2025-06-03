@@ -18,13 +18,22 @@ export default function CreateMealPlanButton({ setViewState }: MealPlanRequestBu
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <AntDesign 
+        <View style={styles.leftSection}>
+          <AntDesign 
             name='arrowleft' 
             color={'black'} 
             size={24} 
             onPress={handlePress}
-        />
-        <Text style={styles.backText}>  Meal Plan Requests</Text>
+          />
+          <Text style={styles.headerText}>
+            Meal Plan Requests
+          </Text>
+        </View>
+
+        {/* For spacing purposes */}
+        <View style={styles.rightSection}>
+          <Text>{''}</Text>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -37,13 +46,21 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+      width: '85%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between'
   },
-  backText: {
-    fontSize: 20,
-    fontFamily: Fonts.semibold,
-    color: 'black',
+  leftSection: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+  },
+    headerText: {
+      fontSize: 20,
+      fontFamily: Fonts.semibold,
+  },
+    rightSection: {
+      alignItems: 'center',
   },
 });

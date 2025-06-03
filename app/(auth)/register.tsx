@@ -24,6 +24,7 @@ const screenHeight = Dimensions.get('window').height;
 const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const router = useRouter();
 
+    const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmationPassword] = useState("");
@@ -44,6 +45,15 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
         const sanitizedConfirmPassword = sanitizeInput(confirmPassword);
 
         // Validate input fields
+        if(!fullName) {
+            Toast.show({
+                type: 'error',
+                text1: 'Incomplete Field',
+                text2: "Name is required",
+                topOffset: 80,
+            })
+            return;
+        }
         if (!sanitizedEmail) {
             Toast.show({
                 type: 'error',
@@ -98,6 +108,7 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
                 'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
+                    full_name: fullName,
                     email: sanitizedEmail,
                     password: sanitizedPassword,
                     confirm_password: sanitizedConfirmPassword,
@@ -147,6 +158,13 @@ const RegisterScreen = ({ navigation }: { navigation: NavigationProp<any> }) => 
             </View>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.formContainer}>
+                    <TextInput
+                        placeholder="Full Name"
+                        placeholderTextColor={Colors.textSecondary}
+                        style={styles.input}
+                        value={fullName}
+                        onChangeText={setFullName}
+                    />
                     <TextInput
                         placeholder="Email"
                         placeholderTextColor={Colors.textSecondary}

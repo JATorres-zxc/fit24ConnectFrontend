@@ -598,7 +598,7 @@ const MealPlanScreen = () => {
           ) : ( 
             <View>
               <TrainerMPHeader />
-              <TouchableOpacity style={[styles.submitButton, {marginBottom: 15}]} onPress={() => setViewState("requests")}>
+              <TouchableOpacity style={[styles.requestsButton, {marginBottom: 15}]} onPress={() => setViewState("requests")}>
               <Text style={styles.buttonText}>Meal Plan Requests</Text>
               </TouchableOpacity>
               {mealPlans.map((plan) => {
@@ -748,6 +748,13 @@ const styles = StyleSheet.create({
       fontFamily: Fonts.semibold,
       color: Colors.black,
       marginBottom: 15,
+  },
+
+  requestsButton: {
+    backgroundColor: Colors.gold,
+    fontFamily: Fonts.medium,
+    borderRadius: 10,
+    padding: 12,
   },
 });
 

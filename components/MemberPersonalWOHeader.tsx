@@ -16,34 +16,47 @@ export default function PersonalWorkoutMember({ setViewState }: MemberPersonalWo
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView>
+
       <View style={styles.header}>
-        <AntDesign 
+
+        <View style={styles.leftSection}>
+          <AntDesign 
             name='arrowleft' 
             color={'black'} 
             size={24} 
             onPress={handlePress}
-        />
-        <Text style={styles.backText}>  Personal Workouts</Text>
+          />
+          <Text style={styles.backText}>  Personal Workouts</Text>
+        </View>
+
+        {/* For spacing purposes */}
+        <View style={styles.rightSection}>
+          <Text>{''}</Text>
+        </View>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: Colors.bg,
-    marginBottom: 30,
-    marginTop: 30,
-  },
   header: {
+    width: '85%',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between'
   },
   backText: {
     fontSize: 20,
     fontFamily: Fonts.semibold,
     color: 'black',
+  },
+  leftSection: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+  },
+  rightSection: {
+    alignItems: 'center',
   },
 });

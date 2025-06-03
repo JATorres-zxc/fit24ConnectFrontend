@@ -829,7 +829,7 @@ const WorkoutScreen = () => {
           ) : ( 
             <View>
               <TrainerWOHeader />
-              <TouchableOpacity style={[styles.submitButton, {marginBottom: 15}]} onPress={() => setViewState("requests")}>
+              <TouchableOpacity style={[styles.requestsButton, {marginBottom: 15}]} onPress={() => setViewState("requests")}>
                 <Text style={styles.buttonText}>Personal Workout Requests</Text>
               </TouchableOpacity>
                 {workouts
@@ -844,7 +844,7 @@ const WorkoutScreen = () => {
                   />
                   </TouchableOpacity>
                 ))}
-              <TouchableOpacity style={styles.submitButton} onPress={() => setViewState("createWO")}>
+              <TouchableOpacity style={styles.createButton} onPress={() => setViewState("createWO")}>
                 <Text style={styles.buttonText}>Create New Program</Text>
               </TouchableOpacity>
             </View>
@@ -984,6 +984,21 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 5,
   },
+
+  requestsButton: {
+    backgroundColor: Colors.gold,
+    fontFamily: Fonts.medium,
+    borderRadius: 10,
+    padding: 12,
+  },
+  createButton: {
+    backgroundColor: Colors.gold,
+    fontFamily: Fonts.medium,
+    borderRadius: 10,
+    padding: 12,
+    paddingHorizontal: 48,
+    alignSelf: 'center',
+  }
 });
 
 export default WorkoutScreen;
