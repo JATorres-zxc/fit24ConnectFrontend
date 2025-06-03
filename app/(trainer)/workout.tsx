@@ -161,84 +161,84 @@ const WorkoutScreen = () => {
     }
   };
 
-  // Fetching Member Data
+  // // Fetching Member Data
 
-  const fetchMembersAndWorkouts = async () => {
-    try {
-      const token = await getItem("authToken");
-      if (!token) throw new Error("Token not found");
+  // const fetchMembersAndWorkouts = async () => {
+  //   try {
+  //     const token = await getItem("authToken");
+  //     if (!token) throw new Error("Token not found");
 
-      // Fetch all workout requests
-      const workoutResponse = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  //     // Fetch all workout requests
+  //     const workoutResponse = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/`, {
+  //       method: "GET",
+  //       headers: {
+  //         Accept: "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
 
-      if (!workoutResponse.ok) {
-        throw new Error(`Failed to fetch workouts! Status: ${workoutResponse.status}`);
-      }
+  //     if (!workoutResponse.ok) {
+  //       throw new Error(`Failed to fetch workouts! Status: ${workoutResponse.status}`);
+  //     }
 
-      const workoutData = await workoutResponse.json();
+  //     const workoutData = await workoutResponse.json();
 
-      // Filter workouts with 'pending' status
-      const filteredWorkouts = workoutData.filter(
-        (workout: any) => workout.status === "pending"
-      );
+  //     // Filter workouts with 'pending' status
+  //     const filteredWorkouts = workoutData.filter(
+  //       (workout: any) => workout.status === "pending"
+  //     );
 
-      // Extract requestee IDs
-      const requesteeIDs = filteredWorkouts.map((workout: any) => workout.requestee).filter(Boolean);
+  //     // Extract requestee IDs
+  //     const requesteeIDs = filteredWorkouts.map((workout: any) => workout.requestee).filter(Boolean);
 
-      // Fetch all members
-      const membersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  //     // Fetch all members
+  //     const membersResponse = await fetch(`${API_BASE_URL}/api/account/members/`, {
+  //       method: "GET",
+  //       headers: {
+  //         Accept: "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
 
-      if (!membersResponse.ok) {
-        throw new Error(`Failed to fetch members! Status: ${membersResponse.status}`);
-      }
+  //     if (!membersResponse.ok) {
+  //       throw new Error(`Failed to fetch members! Status: ${membersResponse.status}`);
+  //     }
 
-      const membersData = await membersResponse.json();
+  //     const membersData = await membersResponse.json();
 
-      // Match members with workout requests
-      const matchedMembers = membersData
-        .filter((member: any) => requesteeIDs.includes(member.id))
-        .map((member: any) => {
-          const workout = filteredWorkouts.find((workout: any) => workout.requestee === member.id);
-          return {
-            requesteeID: member.id.toString(),
-            requesteeName: member.full_name || "User Name Not Set",
-            height: member.height || "N/A",
-            weight: member.weight || "N/A",
-            age: member.age || "N/A",
-            fitnessGoal: workout?.fitness_goal || "Not Specified",
-            intensityLevel: workout?.intensity_level || "Not Specified",
-            status: workout?.status || "Unknown Status",
-          };
-        });
+  //     // Match members with workout requests
+  //     const matchedMembers = membersData
+  //       .filter((member: any) => requesteeIDs.includes(member.id))
+  //       .map((member: any) => {
+  //         const workout = filteredWorkouts.find((workout: any) => workout.requestee === member.id);
+  //         return {
+  //           requesteeID: member.id.toString(),
+  //           requesteeName: member.full_name || "User Name Not Set",
+  //           height: member.height || "N/A",
+  //           weight: member.weight || "N/A",
+  //           age: member.age || "N/A",
+  //           fitnessGoal: workout?.fitness_goal || "Not Specified",
+  //           intensityLevel: workout?.intensity_level || "Not Specified",
+  //           status: workout?.status || "Unknown Status",
+  //         };
+  //       });
 
-      // Append matched members to memberData without duplicates
-      setMemberData((prev) => {
-        const existingIDs = prev.map((member) => member.requesteeID);
-        const newData = matchedMembers.filter((newMember: any) => !existingIDs.includes(newMember.requesteeID));
-        return [...prev, ...newData];
-      });
+  //     // Append matched members to memberData without duplicates
+  //     setMemberData((prev) => {
+  //       const existingIDs = prev.map((member) => member.requesteeID);
+  //       const newData = matchedMembers.filter((newMember: any) => !existingIDs.includes(newMember.requesteeID));
+  //       return [...prev, ...newData];
+  //     });
 
-    } catch (error) {
-      Toast.show({
-        type: 'info',
-        text1: 'No Member Data Found!',
-        text2: `${error}`,
-        topOffset: 80,
-      });
-    }
-  };
+  //   } catch (error) {
+  //     Toast.show({
+  //       type: 'info',
+  //       text1: 'No Member Data Found!',
+  //       text2: `${error}`,
+  //       topOffset: 80,
+  //     });
+  //   }
+  // };
   
   // Fetching Workout from API
   
@@ -420,7 +420,7 @@ const WorkoutScreen = () => {
   useFocusEffect(
     useCallback(() => {
       fetchWorkoutRequests();
-      fetchMembersAndWorkouts();
+      // fetchMembersAndWorkouts();
       fetchWorkout();
       const fetchUserIDandToken = async () => {
         userID = await getItem('userID');
