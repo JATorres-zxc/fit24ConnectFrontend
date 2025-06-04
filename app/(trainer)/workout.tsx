@@ -341,7 +341,12 @@ const WorkoutScreen = () => {
           status: program.status,
           requestee: program.requestee?.toString() || null,
           visibleTo,
-          feedbacks: program.feedbacks,
+          feedbacks: program.feedbacks?.map((feedback: any) => ({
+            id: feedback.id.toString(),
+            comment: feedback.comment.toString(),
+            created_at: feedback.created_at.toString(),
+            rating: feedback.rating,
+          })) || [],
           exercises: program.workout_exercises?.map((exercise: any) => ({
             id: exercise.id.toString(),
             image: exercise.image,
@@ -374,7 +379,12 @@ const WorkoutScreen = () => {
           status: program.status,
           requestee: program.requestee?.toString() || null,
           visibleTo,
-          feedbacks: program.feedbacks,
+          feedbacks: program.feedbacks?.map((feedback: any) => ({
+            id: feedback.id.toString(),
+            comment: feedback.comment.toString(),
+            created_at: feedback.created_at,
+            rating: feedback.rating,
+          })) || [],
           exercises: program.workout_exercises?.map((exercise: any) => ({
             id: exercise.id.toString(),
             image: exercise.image,
