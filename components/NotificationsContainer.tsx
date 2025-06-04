@@ -8,23 +8,110 @@ import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { FontAwesome } from "@expo/vector-icons";
 import { markNotificationAsRead } from '@/api/notifications';
+import { addHours } from 'date-fns';
 
 import { Notification } from '@/types/interface';
 
+type MonthMap = {
+  [key: string]: string;
+};
+
+// Helper function to safely parse dates
+const parseDate = (dateString: string): Date => {
+  if (!dateString) return addHours(new Date(), 8);
+  
+  // Try different parsing approaches
+  let date: Date;
+  
+  // First, try direct parsing
+  date = new Date(dateString);
+  if (!isNaN(date.getTime())) {
+    return addHours(date, 8); // Add 8 hours for UTC+8
+  }
+  
+  // If that fails, try to clean the string
+  // Handle formats like "May 19, 2025 13:33"
+  const cleanedString = dateString.replace(/(\w+)\s+(\d+),\s+(\d+)\s+(\d+):(\d+)/, '$1 $2, $3 $4:$5:00');
+  date = new Date(cleanedString);
+  if (!isNaN(date.getTime())) {
+    return addHours(date, 8); // Add 8 hours for UTC+8
+  }
+  
+  // Try ISO format conversion
+  try {
+    // Convert "May 19, 2025 13:33" to ISO format
+    const parts = dateString.match(/(\w+)\s+(\d+),\s+(\d+)\s+(\d+):(\d+)/);
+    if (parts) {
+      const [, month, day, year, hour, minute] = parts;
+      const monthMap: MonthMap = {
+        'January': '01', 'February': '02', 'March': '03', 'April': '04',
+        'May': '05', 'June': '06', 'July': '07', 'August': '08',
+        'September': '09', 'October': '10', 'November': '11', 'December': '12'
+      };
+      const monthNum = monthMap[month] || '01';
+      const isoString = `${year}-${monthNum}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00.000Z`;
+      date = new Date(isoString);
+      if (!isNaN(date.getTime())) {
+        return addHours(date, 8); // Add 8 hours for UTC+8
+      }
+    }
+  } catch (e) {
+    // Remove console.warn for presentation
+  }
+  
+  // Last resort: return current date
+  return addHours(new Date(), 8);
+};
+
+interface RawNotification {
+  id: number;
+  title: string;
+  message: string;
+  created_at: string;
+  is_read: boolean;
+}
+
 interface Props {
-  notifications: Notification[];
+  rawNotifications: RawNotification[];
   token?: string | null;
   onNotificationRead?: (id: string) => void;
 }
 
-export default function NotificationsContainer({ notifications, token, onNotificationRead }: Props) {
+export default function NotificationsContainer({ rawNotifications, token, onNotificationRead }: Props) {
+  const processNotifications = (raw: RawNotification[]): Notification[] => {
+    return raw.map(n => {
+      const parsedDate = parseDate(n.created_at);
+      
+      const date = parsedDate.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      });
+      
+      const time = parsedDate.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      return {
+        id: n.id.toString(),
+        title: n.title,
+        content: n.message,
+        date,
+        time,
+        is_read: n.is_read,
+        timestamp: parsedDate.getTime(),
+      };
+    });
+  };
+
   const [selectedNotification, setSelectedNotification] = useState<any | null>(null);
-  const [localNotifications, setLocalNotifications] = useState<any[]>(notifications);
+  const [localNotifications, setLocalNotifications] = useState<Notification[]>(processNotifications(rawNotifications));
 
   // Update localNotifications if notifications prop changes
   React.useEffect(() => {
-    setLocalNotifications(notifications);
-  }, [notifications]);
+    setLocalNotifications(processNotifications(rawNotifications));
+  }, [rawNotifications]);
 
   const openNotificationModal = async (notification: any) => {
     setSelectedNotification(notification);

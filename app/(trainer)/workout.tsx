@@ -820,20 +820,22 @@ const WorkoutScreen = () => {
               )}
             </>
           ) : viewState === "delete" ? (
-            <View style={styles.deleteContainer}>
-              <Ionicons name="trash-outline" size={24} color="black" style={styles.icon} />
-              <Text style={styles.alertTitle}>Delete Workout?</Text>
-              <Text style={styles.alertMessage}>
-                You're going to permanently delete your workout. Are you sure?
-              </Text>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("")}>
-                  <Text style={styles.buttonText}>NO</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonGreen} onPress={() => workout && handleDelete(workout)}> 
-                  {/* short-circuited potential null workout */}
-                  <Text style={styles.buttonText}>YES</Text>
-                </TouchableOpacity>
+            <View style={styles.overlay}>
+              <View style={styles.deleteContainer}>
+                <Ionicons name="trash-outline" size={24} color="black" style={styles.icon} />
+                <Text style={styles.alertTitle}>Delete Workout?</Text>
+                <Text style={styles.alertMessage}>
+                  You're going to permanently delete your workout. Are you sure?
+                </Text>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity style={styles.buttonRed} onPress={() => setViewState("")}>
+                    <Text style={styles.buttonText}>NO</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.buttonGreen} onPress={() => workout && handleDelete(workout)}> 
+                    {/* short-circuited potential null workout */}
+                    <Text style={styles.buttonText}>YES</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           ) : ( 
@@ -979,22 +981,17 @@ const styles = StyleSheet.create({
   },
 
   // Delete confirmation dialog container
-  deleteContainer: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -150 }, { translateY: -100 }],
-    width: 300,
-    padding: 20,
-    backgroundColor: Colors.bg,
-    borderRadius: 10,
-    shadowColor: Colors.shadowColor,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-
+  deleteContainer: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+  },
   requestsButton: {
     backgroundColor: Colors.gold,
     fontFamily: Fonts.medium,
