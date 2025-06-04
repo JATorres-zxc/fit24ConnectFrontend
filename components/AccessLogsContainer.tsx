@@ -1,8 +1,8 @@
 import { 
   View, Text, StyleSheet, FlatList
-  } from "react-native";
+} from "react-native";
 import React, { useMemo } from "react";
-import { format } from "date-fns";
+import { format, parseISO, addHours } from "date-fns";
 
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
@@ -21,12 +21,20 @@ interface Props {
 export default function AccessLogsContainer({ accessLogs }: Props) {
   const formattedLogs = useMemo(() => {
     return accessLogs.map(log => {
-      const dateObj = new Date(log.timestamp);
-      console.log("data: ", dateObj)
+      console.log('Original timestamp: ', log.timestamp);
+
+      // Parse the ISO timestamp string to a Date object
+      const date = parseISO(log.timestamp);
+      console.log('Parsed date: ', date);
+      
+      // Convert to UTC+8 timezone
+      const utc8Date = addHours(date, 8);
+      console.log('UTC+8 date: ', utc8Date);
+      
       return {
         ...log,
-        date: format(dateObj, 'MMMM d, yyyy'),
-        time: format(dateObj, 'hh:mm a'),
+        formattedDate: format(utc8Date, 'MMMM d, yyyy'),
+        formattedTime: format(utc8Date, 'h:mm a')
       };
     });
   }, [accessLogs]);
@@ -37,14 +45,15 @@ export default function AccessLogsContainer({ accessLogs }: Props) {
         data={formattedLogs}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View 
-            style={styles.card}
-          >
+          <View style={styles.card}>
             <View style={styles.leftSection}>
               <Text style={styles.title}>{item.facility_name}</Text>
               <Text style={styles.content}>
                 Access Status:{' '}
-                <Text style={styles.status}>
+                <Text style={[
+                  styles.status,
+                  { color: item.status === 'success' ? Colors.green : Colors.red }
+                ]}>
                   {item.status}
                 </Text>
               </Text>
@@ -53,8 +62,8 @@ export default function AccessLogsContainer({ accessLogs }: Props) {
             <View style={styles.divider} />
 
             <View style={styles.rightSection}>
-              <Text style={styles.date}>{item.date}</Text>
-              <Text style={styles.time}>{item.time}</Text>
+              <Text style={styles.date}>{item.formattedDate}</Text>
+              <Text style={styles.time}>{item.formattedTime}</Text>
             </View>
           </View>
         )}
@@ -97,7 +106,6 @@ const styles = StyleSheet.create({
   },
   status: {
     fontFamily: Fonts.italic,
-    color: Colors.textSecondary,
   },
   divider: {
     width: 1,
