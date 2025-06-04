@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { addHours } from 'date-fns';
 
 import Header from '@/components/NotificationsHeader';
 import { Colors } from '@/constants/Colors';
@@ -16,7 +17,7 @@ type MonthMap = {
 
 // Helper function to safely parse dates
 const parseDate = (dateString: string): Date => {
-  if (!dateString) return new Date();
+  if (!dateString) return addHours(new Date(), 8);
   
   // Try different parsing approaches
   let date: Date;
@@ -24,7 +25,7 @@ const parseDate = (dateString: string): Date => {
   // First, try direct parsing
   date = new Date(dateString);
   if (!isNaN(date.getTime())) {
-    return date;
+    return addHours(date, 8); // Add 8 hours for UTC+8
   }
   
   // If that fails, try to clean the string
@@ -32,7 +33,7 @@ const parseDate = (dateString: string): Date => {
   const cleanedString = dateString.replace(/(\w+)\s+(\d+),\s+(\d+)\s+(\d+):(\d+)/, '$1 $2, $3 $4:$5:00');
   date = new Date(cleanedString);
   if (!isNaN(date.getTime())) {
-    return date;
+    return addHours(date, 8); // Add 8 hours for UTC+8
   }
   
   // Try ISO format conversion
@@ -50,7 +51,7 @@ const parseDate = (dateString: string): Date => {
       const isoString = `${year}-${monthNum}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00.000Z`;
       date = new Date(isoString);
       if (!isNaN(date.getTime())) {
-        return date;
+        return addHours(date, 8); // Add 8 hours for UTC+8
       }
     }
   } catch (e) {
@@ -58,7 +59,7 @@ const parseDate = (dateString: string): Date => {
   }
   
   // Last resort: return current date
-  return new Date();
+  return addHours(new Date(), 8);
 };
 
 export default function NotificationScreen() {
