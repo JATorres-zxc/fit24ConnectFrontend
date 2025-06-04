@@ -7,8 +7,11 @@ import { Fonts } from '../constants/Fonts';
 import { Colors } from '@/constants/Colors';
 
 import { HeaderPropsUserType } from '@/types/interface';
+import { useNotifications } from '@/context/NotificationContext';
 
 export default function Header({ userType }: HeaderPropsUserType) {
+  const { unreadCount } = useNotifications();
+
   const handleHomePress = () => {
     if (userType === 'trainer') {
       router.push('/(trainer)/home');
@@ -51,7 +54,23 @@ export default function Header({ userType }: HeaderPropsUserType) {
 
         <View style={styles.headerIcon}>
           <FontAwesome name='user-circle' color={'black'} size={24} onPress={handleProfilePress} />
-          <FontAwesome name='bell-o' color={'black'} size={24} onPress={handleNotificationPress} />
+
+          <View style={styles.notificationIconContainer}>
+            <FontAwesome 
+              name='bell-o' 
+              color={'black'} 
+              size={24} 
+              onPress={handleNotificationPress} 
+            />
+            {unreadCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
+          </View>
+
         </View>
       </View>
     </SafeAreaView>
@@ -82,5 +101,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
+  },
+  notificationIconContainer: {
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: Colors.red,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });

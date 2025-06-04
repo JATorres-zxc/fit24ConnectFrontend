@@ -1,6 +1,7 @@
 import { Stack, SplashScreen } from "expo-router";
 import { useEffect } from "react";
 import Toast from "react-native-toast-message";
+import { NotificationProvider } from '@/context/NotificationContext';
 
 import { useFonts, 
   Montserrat_400Regular,
@@ -36,7 +37,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <NotificationProvider>
       <Stack>
         <Stack.Screen 
           name="(auth)" 
@@ -57,7 +58,7 @@ export default function RootLayout() {
       </Stack>
 
       <Toast />
-    </>
+    </NotificationProvider>
       
   );
 }

@@ -180,7 +180,7 @@ export default function ProfileScreen() {
   
   return (
     <View style={styles.container}>
-      <Header />
+      <Header userType='member' />
 
       <View style={styles.profileContainer}>
         <View style={styles.imageContainer}>

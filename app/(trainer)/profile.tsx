@@ -182,7 +182,7 @@ export default function ProfileScreen() {
   
   return (
     <View style={styles.container}>
-      <Header />
+      <Header userType='trainer' />
 
       <View style={styles.profileContainer}>
         <View style={styles.imageContainer}>
