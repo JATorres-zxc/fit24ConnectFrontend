@@ -82,19 +82,46 @@ export default function NotificationsContainer({ notifications, token, onNotific
         data={localNotifications}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
+          const isUnread = !item.is_read;
           return (
             <TouchableOpacity 
-              style={styles.card}
+              style={[
+                styles.card,
+                isUnread && styles.unreadCard
+              ]}
               onPress={() => openNotificationModal(item)}
             >
               <View style={styles.leftSection}>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.content}>{item.content}</Text>
+                <View style={styles.titleContainer}>
+                  <Text style={[
+                    styles.title,
+                    isUnread && styles.unreadTitle
+                  ]}>
+                    {item.title}
+                  </Text>
+                  {isUnread && <View style={styles.unreadDot} />}
+                </View>
+                <Text style={[
+                  styles.content,
+                  isUnread && styles.unreadContent
+                ]}>
+                  {item.content}
+                </Text>
               </View>
               <View style={styles.divider} />
               <View style={styles.rightSection}>
-                <Text style={styles.date}>{item.date}</Text>
-                <Text style={styles.time}>{item.time}</Text>
+                <Text style={[
+                  styles.date,
+                  isUnread && styles.unreadText
+                ]}>
+                  {item.date}
+                </Text>
+                <Text style={[
+                  styles.time,
+                  isUnread && styles.unreadText
+                ]}>
+                  {item.time}
+                </Text>
               </View>
             </TouchableOpacity>
           );
@@ -125,17 +152,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 5,
   },
+  unreadCard: {
+    backgroundColor: '#f8f9ff', // Slightly blue-tinted background
+    borderColor: Colors.gold || '#FFD700',
+    borderWidth: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
   leftSection: {
     flex: 1, 
     paddingRight: 10, 
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
   },
   title: {
     fontFamily: Fonts.medium,
     fontSize: 14,
     marginBottom: 5,
   },
+  unreadTitle: {
+    fontFamily: Fonts.semibold,
+    color: Colors.textPrimary || '#000',
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.gold || '#FFD700',
+    marginLeft: 8,
+  },
   content: {
     fontFamily: Fonts.regular,
+  },
+  unreadContent: {
+    fontFamily: Fonts.medium,
+    color: Colors.textPrimary || '#000',
+  },
+  unreadText: {
+    fontFamily: Fonts.medium,
+    color: Colors.textPrimary || '#000',
   },
   divider: {
     width: 1,

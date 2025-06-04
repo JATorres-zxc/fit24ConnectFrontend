@@ -7,13 +7,19 @@ import NotificationsContainer from '@/components/NotificationsContainer';
 import { fetchNotifications } from '@/api/notifications';
 import { Notification } from '@/types/interface';
 import { getItem } from '@/utils/storageUtils';
+import { useNotifications } from '@/context/NotificationContext';
+import { useFocusEffect } from '@react-navigation/native';
+
+type MonthMap = {
+  [key: string]: string;
+};
 
 // Helper function to safely parse dates
-const parseDate = (dateString) => {
+const parseDate = (dateString: string): Date => {
   if (!dateString) return new Date();
   
   // Try different parsing approaches
-  let date;
+  let date: Date;
   
   // First, try direct parsing
   date = new Date(dateString);
@@ -35,7 +41,7 @@ const parseDate = (dateString) => {
     const parts = dateString.match(/(\w+)\s+(\d+),\s+(\d+)\s+(\d+):(\d+)/);
     if (parts) {
       const [, month, day, year, hour, minute] = parts;
-      const monthMap = {
+      const monthMap: MonthMap = {
         'January': '01', 'February': '02', 'March': '03', 'April': '04',
         'May': '05', 'June': '06', 'July': '07', 'August': '08',
         'September': '09', 'October': '10', 'November': '11', 'December': '12'
@@ -48,11 +54,10 @@ const parseDate = (dateString) => {
       }
     }
   } catch (e) {
-    console.warn('Date parsing failed:', e);
+    // Remove console.warn for presentation
   }
   
   // Last resort: return current date
-  console.warn('Could not parse date:', dateString, 'using current date');
   return new Date();
 };
 
@@ -61,6 +66,7 @@ export default function NotificationScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const { unreadCount, markAsRead, refreshUnreadCount } = useNotifications();
 
   useEffect(() => {
     const getToken = async () => {
@@ -69,6 +75,13 @@ export default function NotificationScreen() {
     };
     getToken();
   }, []);
+
+  // Refresh notifications when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      refreshUnreadCount();
+    }, [refreshUnreadCount])
+  );
 
   useEffect(() => {
     const loadNotifications = async () => {
@@ -124,6 +137,14 @@ export default function NotificationScreen() {
     }
   }, [token]);
 
+  // Handle notification read callback
+  const handleNotificationRead = (id: string) => {
+    setNotifications(prev => 
+      prev.map(n => n.id === id ? { ...n, is_read: true } : n)
+    );
+    markAsRead(id);
+  };
+
   const sortedNotifications = [...notifications].sort((a, b) => {
     return (b.timestamp || 0) - (a.timestamp || 0);
   });
@@ -135,9 +156,15 @@ export default function NotificationScreen() {
         {loading ? (
           <ActivityIndicator size="large" color={Colors.gold} />
         ) : error ? (
-          <Text style={{ color: 'red' }}>{error}</Text>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
         ) : (
-          <NotificationsContainer notifications={sortedNotifications} token={token} />
+          <NotificationsContainer 
+            notifications={sortedNotifications} 
+            token={token}
+            onNotificationRead={handleNotificationRead}
+          />
         )}
       </View>
     </View>
@@ -154,5 +181,16 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     alignItems: "center",
+  },
+  errorContainer: {
+    padding: 16,
+    backgroundColor: '#ffebee',
+    borderRadius: 8,
+    margin: 16,
+  },
+  errorText: {
+    color: '#d32f2f',
+    textAlign: 'center',
+    fontWeight: '500',
   },
 });

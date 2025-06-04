@@ -54,7 +54,6 @@ export default function Home() {
 
       const data = await response.json();
       await saveItem("profile", JSON.stringify(data));
-      console.log("From getUserFirstName deets: ", data);
 
       // Set first name
       if (data.full_name) {
@@ -71,16 +70,12 @@ export default function Home() {
         "experience",
       ];
 
-      console.log("Profile data:", data);
-
       const missingFields = requiredFields.filter((field) => {
         const value = data[field];
         if (value === null || value === undefined) return true;
         if (typeof value === "string" && value.trim() === "") return true;
         return false;
       });
-
-      console.log("Missing fields:", missingFields);
 
       if (missingFields.length > 0) {
         Toast.show({
@@ -100,7 +95,13 @@ export default function Home() {
       }
 
     } catch (error) {
-      console.error("Error initializing user data:", error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to load profile data. Please check your connection.',
+        topOffset: 80,
+        visibilityTime: 3000,
+      });
     }
   };
 

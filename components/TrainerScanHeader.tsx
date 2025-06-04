@@ -5,8 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '../constants/Fonts';
 import { Colors } from '@/constants/Colors';
+import { useNotifications } from '@/context/NotificationContext';
 
 export default function Header() {
+  const { unreadCount } = useNotifications();
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
@@ -25,7 +28,22 @@ export default function Header() {
 
         <View style={styles.headerIcon}>
           <FontAwesome name='user-circle' color={'black'} size={24} onPress={() => router.push('/(trainer)/profile')} />
-          <FontAwesome name='bell-o' color={'black'} size={24} onPress={() => router.push('/(trainer)/notifications')} />
+          
+          <View style={styles.notificationIconContainer}>
+            <FontAwesome 
+              name='bell-o' 
+              color={'black'} 
+              size={24} 
+              onPress={() => router.push('/(trainer)/notifications')}
+            />
+            {unreadCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -56,5 +74,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
+  },
+  notificationIconContainer: {
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: Colors.red,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
