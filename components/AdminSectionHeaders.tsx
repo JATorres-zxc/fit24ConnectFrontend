@@ -9,10 +9,11 @@ import { useNotifications } from '@/context/NotificationContext';
 
 interface HeaderProps {
   screen: string;
-  unreadCount?: number;
 }
 
-export default function Header({ screen, unreadCount = 0 }: HeaderProps) {
+export default function Header({ screen }: HeaderProps) {
+  const { unreadCount } = useNotifications();
+  
   return (
     <SafeAreaView>
       <View style={styles.header}>

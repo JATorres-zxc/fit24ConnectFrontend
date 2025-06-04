@@ -6,12 +6,13 @@ import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { Fonts } from '@/constants/Fonts';
 import { Colors } from '@/constants/Colors';
 import { HeaderPropsUserType } from '@/types/interface';
+import { useNotifications } from '@/context/NotificationContext';
 
-interface NotificationHeaderProps extends HeaderPropsUserType {
-  unreadCount?: number;
-}
+interface NotificationHeaderProps extends HeaderPropsUserType {}
 
-export default function Header({ userType, unreadCount = 0 }: NotificationHeaderProps) {
+export default function Header({ userType }: NotificationHeaderProps) {
+  const { unreadCount } = useNotifications();
+
   const handleHomePress = () => {
     if (userType === 'trainer') {
       router.push('/(trainer)/home');

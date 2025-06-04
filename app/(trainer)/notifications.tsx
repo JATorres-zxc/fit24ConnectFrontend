@@ -148,7 +148,7 @@ export default function NotificationScreen() {
 
   return (
     <View style={styles.container}>
-      <Header userType='trainer' unreadCount={unreadCount} />
+      <Header userType='trainer' />
       <View style={styles.notificationsContainer}>
         {loading ? (
           <ActivityIndicator size="large" color={Colors.gold} />
