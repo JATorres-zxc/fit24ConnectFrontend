@@ -124,8 +124,13 @@ const WorkoutScreen = () => {
         status: userProgram.status,
         feedbacks: [],
       }));
-
-      setWorkouts(formattedWorkouts);
+      
+      setWorkouts((prevWorkouts) => {
+        // Retain workouts that are not in the updated backend response (e.g. newly submitted pending requests)
+        const existingIds = new Set(formattedWorkouts.map(w => w.id));
+        const preserved = prevWorkouts.filter(w => !existingIds.has(w.id));
+        return [...preserved, ...formattedWorkouts];
+      });
 
     } catch (error) {
       Toast.show({
@@ -352,6 +357,24 @@ const WorkoutScreen = () => {
             topOffset: 80,
         });
 
+        const newRequest = await requestResponse.json(); // Get the newly created workout program from the backend
+
+        // Construct a minimal workout object (you can expand as needed)
+        const newWorkout = {
+          id: newRequest.id.toString(),
+          title: newRequest.program_name || "Untitled Workout",
+          fitnessGoal: newRequest.fitness_goal || fitnessGoal,
+          intensityLevel: newRequest.intensity_level || intensityLevel,
+          trainer: trainer.toString(),
+          exercises: [], // No exercises yet — trainer will fill them
+          visibleTo: newRequest.requestee?.toString() || userID,
+          status: "pending",
+          feedbacks: [],
+          requestee: userID,
+        };
+
+        // Add to current workout state
+        setWorkouts((prev) => [...prev, newWorkout]);
         setRefreshTrigger(prev => !prev);
 
         setTimeout(() => {
@@ -375,10 +398,8 @@ const WorkoutScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
           { viewState === "request" ? (
-            // Request Meal Plan View
             <View style={styles.formContainer}>
               <RequestWorkoutHeader setViewState={setViewState}/>
-              
               <View style={styles.requestWOContainer}>
                 {/* Trainer Picker */}
                 <Text style={styles.requestHeaders}>Choose Trainer</Text>
@@ -477,9 +498,18 @@ const WorkoutScreen = () => {
               <TouchableOpacity style={styles.buttonFeedback} onPress={() => setViewState("feedback")}>
                 <Text style={styles.buttonText}>Send Feedback</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonBlack} onPress={() => setViewState("request")}>
-                <Text style={styles.buttonText}>Request New Workout</Text>
-              </TouchableOpacity>
+              { workouts.some(w => w.status === "pending" || w.status === "completed") ? (
+                <View style={styles.centerContainer}>
+                  <Text style={[styles.subtitle2, { marginTop: 60 }]}>
+                    Note: If you wish to request a new workout plan, please contact your trainer to delete  your existing PERSONAL workout before requesting a new one.
+                  </Text>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.buttonBlack} onPress={() => setViewState("request")}>
+                  <Text style={styles.buttonText}>Request New Workout</Text>
+                </TouchableOpacity>
+              )
+              }
             </View> 
           ) : viewState === "delete" ? (
             <View style={styles.overlay}>
@@ -504,16 +534,18 @@ const WorkoutScreen = () => {
             <>
               <View style={styles.planContainer}>
                 <PersonalWorkoutsHeader setViewState={setViewState} />
-                {workouts.filter(w => String(w.visibleTo) === String(userID)).length > 0 ? (
+                {workouts.filter(w => (String(w.visibleTo) === String(userID)) && String(w.status) === "completed").length > 0 ? (
                   <View>
                     <WorkoutsContainer
                       workouts={workouts.filter(w => String(w.visibleTo) === String(userID) && w.status === "completed")}
                       onWorkoutPress={handleWorkoutPress}
                       onTrashPress={handleTrashPress}
                     />
-                    <TouchableOpacity style={styles.buttonBlack} onPress={() => setViewState("request")}>
-                      <Text style={styles.buttonText}>Request New Workout</Text>
-                    </TouchableOpacity>
+                    <View style={styles.centerContainer}>
+                      <Text style={[styles.subtitle2, { marginTop: 10 }]}>
+                        Note: If you wish to request a new workout plan, please contact your trainer to delete your existing PERSONAL workout before requesting a new one.
+                      </Text>
+                    </View>
                   </View>
                 ) : workouts.some(workout => workout.status === "pending") ? (
                   <View style={styles.centerContainer}>
