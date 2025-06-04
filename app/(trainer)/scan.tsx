@@ -10,6 +10,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Camera, CameraView } from 'expo-camera';
 import { router } from 'expo-router';
 import { getItem } from '@/utils/storageUtils';
+import Toast from 'react-native-toast-message';
 
 import Header from '@/components/ScanHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -78,14 +79,28 @@ export default function ScanScreen() {
           location: "mobile-app"
          }),
       });
-  
+      
+      // Handle HTTP errors
       if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
+        const errorData = await response.json();
+        setAccessStatus("denied");
+        
+        // Handle specific error cases
+        if (response.status === 404) {
+          setErrorMessage('Facility not found. Please scan a valid QR code.');
+        } else if (response.status === 403) {
+          setErrorMessage(errorData.reason || 'Access denied. Please check your membership status.');
+        } else if (response.status === 400) {
+          setErrorMessage('Invalid QR code. Please try again.');
+        } else {
+          setErrorMessage('An error occurred. Please try again.');
+        }
+        
+        setShowPopup(true);
+        return;
       }
 
       const result = await response.json();
-  
-      // Check access status from the response
       const hasAccess = result.status === 'success';
   
       setAccessStatus(hasAccess ? "granted" : "denied");
@@ -94,10 +109,16 @@ export default function ScanScreen() {
       }
       setShowPopup(true);
     } catch (error) {
-      console.error("API Error:", error);
       setAccessStatus("denied");
-      setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred.');
+      setErrorMessage('Network error. Please check your connection and try again.');
       setShowPopup(true);
+      
+      Toast.show({
+        type: 'error',
+        text1: 'Connection Error',
+        text2: 'Please check your internet connection.',
+        topOffset: 80,
+      });
     } finally {
       setIsLoading(false);
     }

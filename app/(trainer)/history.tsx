@@ -30,11 +30,10 @@ export default function HistoryScreen() {
       });
 
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('Failed to fetch access logs');
       }
         
       const data = await response.json();
-      console.log("Access logs data:", data);
 
       // Sort the logs in descending order (most recent first)
       setAccessLogs(
@@ -44,16 +43,16 @@ export default function HistoryScreen() {
         )
       );
     } catch (error) {
-      console.error("Error fetching access logs:", error);
-
       Toast.show({
         type: "error",
         text1: "Failed to load access logs",
-        text2: "Please try again later",
-        });
-      } finally {
-        setLoading(false);
-      }
+        text2: "Please check your connection and try again",
+        topOffset: 80,
+        visibilityTime: 3000,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useFocusEffect(
