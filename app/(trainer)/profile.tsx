@@ -31,19 +31,6 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
-    
-  useEffect(() => {
-    if (params.showToast === "true") {
-      setTimeout(() => {
-        Toast.show({
-          type: "error",
-          text1: "Profile Incomplete",
-          text2: "Please complete all profile details before proceeding.",
-          topOffset: 80,
-        });
-      }, 4000); // Adding a short delay to ensure Toast renders properly
-    }
-  }, [params.showToast]);
 
   const fetchProfile = async () => {
     try {
