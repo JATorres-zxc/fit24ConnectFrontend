@@ -477,7 +477,7 @@ const WorkoutScreen = () => {
       const trainerID = await getItem('userID');
       const requesteeID = selectedMemberData?.requesteeID || null; 
 
-      if (String(workout?.id) === String(plan.id)) {
+      if (String(workout?.id) === String(plan?.id)) {
         // Workout exists, so we'll update it, for personal member
         const updateResponse = await fetch(`${API_BASE_URL}/api/workouts/workout-programs/${plan.id}/`, {
           method: 'PATCH',
